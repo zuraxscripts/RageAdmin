@@ -23,7 +23,6 @@ STATUS_FILE = DATA_DIR / 'update_status.json'
 LOG_FILE = DATA_DIR / 'update.log'
 DEFAULT_PANEL_PORT = 20000
 PANEL_PORT = DEFAULT_PANEL_PORT
-CONNECTOR_API_URL = 'https://api.github.com/repos/zuraxscripts/hpm-connector/releases/latest'
 RAGEMP_SERVER_ARCHIVE_URL = 'https://cdn.rage.mp/updater/prerelease/server-files/linux_x64.tar.gz'
 RAGEMP_SERVER_DIR_NAME = 'ragemp-srv'
 RAGEMP_SERVER_EXECUTABLE = 'ragemp-server'
@@ -404,117 +403,6 @@ def _save_server_config(cfg: dict):
         storage.save_config(cfg)
     except Exception:
         pass
-
-
-def _parse_settings_xml(path: Path):
-    try:
-        import xml.etree.ElementTree as ET
-        if not path.exists():
-            return None
-        tree = ET.parse(path)
-        root = tree.getroot()
-        data = {}
-        resources = []
-        for child in root:
-            tag = child.tag
-            if tag == 'resource':
-                if child.text:
-                    resources.append(child.text.strip())
-            else:
-                data[tag] = child.text if child.text is not None else ''
-        data['resources'] = resources
-        return data
-    except Exception:
-        return None
-
-
-def _write_settings_xml(path: Path, data: dict):
-    import xml.etree.ElementTree as ET
-    root = ET.Element('settings')
-    simple_fields = ['hostname', 'hostaddress', 'listed', 'port', 'maxplayers',
-                     'episode', 'secret', 'loglevel', 'chat']
-    for field in simple_fields:
-        if field in data:
-            el = ET.SubElement(root, field)
-            val = data[field]
-            if isinstance(val, bool):
-                el.text = 'true' if val else 'false'
-            else:
-                el.text = str(val)
-    for res in data.get('resources', []):
-        el = ET.SubElement(root, 'resource')
-        el.text = str(res).strip()
-    tree = ET.ElementTree(root)
-    ET.indent(tree, space='  ')
-    tree.write(path, encoding='unicode', xml_declaration=True)
-
-
-def _install_connector(server_dir: Path):
-    _log('Resolving latest hpm-connector release...')
-    req = urllib.request.Request(CONNECTOR_API_URL, headers={'User-Agent': USER_AGENT})
-    with urllib.request.urlopen(req) as resp:
-        data = json.loads(resp.read().decode('utf-8'))
-    zip_url = data.get('zipball_url')
-    tag = data.get('tag_name') or 'latest'
-    if not zip_url:
-        raise RuntimeError('Failed to resolve hpm-connector release zipball')
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmpdir = Path(tmpdir)
-        zip_path = tmpdir / f'hpm_connector_{tag}.zip'
-        _download_with_progress(zip_url, zip_path, _status['progress'], min(95, _status['progress'] + 10), f'hpm-connector {tag}')
-
-        extract_dir = tmpdir / 'connector_extract'
-        extract_dir.mkdir(parents=True, exist_ok=True)
-        with zipfile.ZipFile(zip_path, 'r') as zf:
-            zf.extractall(extract_dir)
-
-        top_dirs = [p for p in extract_dir.iterdir() if p.is_dir()]
-        source_dir = top_dirs[0] if top_dirs else extract_dir
-
-        resources_dir = server_dir / 'resources'
-        target_dir = resources_dir / 'hpm-connector'
-        if target_dir.exists():
-            shutil.rmtree(target_dir, ignore_errors=True)
-        shutil.copytree(source_dir, target_dir, dirs_exist_ok=True)
-
-    _log('hpm-connector installed')
-
-
-def _update_connector_config(server_dir: Path, panel_secret: str, panel_host: str = None):
-    panel_host = panel_host or _get_panel_host()
-    server_lua = server_dir / 'resources' / 'hpm-connector' / 'server.lua'
-    if not server_lua.exists():
-        raise RuntimeError('hpm-connector server.lua not found')
-    text = server_lua.read_text(encoding='utf-8', errors='ignore')
-    text, host_count = re.subn(
-        r'(?m)^local\s+PANEL_HOST\s*=.*$',
-        f'local PANEL_HOST = "{panel_host}"',
-        text
-    )
-    text, secret_count = re.subn(
-        r'(?m)^local\s+PANEL_SECRET\s*=.*$',
-        f'local PANEL_SECRET = "{panel_secret}"',
-        text
-    )
-    if host_count == 0:
-        text = f'local PANEL_HOST = "{panel_host}"\n' + text
-    if secret_count == 0:
-        text = f'local PANEL_SECRET = "{panel_secret}"\n' + text
-    server_lua.write_text(text, encoding='utf-8')
-
-
-def _ensure_connector_resource(server_dir: Path):
-    settings_path = server_dir / 'settings.xml'
-    data = _parse_settings_xml(settings_path) or {}
-    resources = data.get('resources', [])
-    if 'hpm-connector' not in resources:
-        resources.append('hpm-connector')
-        data['resources'] = resources
-        _write_settings_xml(settings_path, data)
-        _log('settings.xml updated with hpm-connector')
-
-
 def _update_panel_version(version: str):
     if not version:
         return

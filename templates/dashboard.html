@@ -172,7 +172,7 @@
       border-radius:14px;
       border:1px solid rgba(255,255,255,.10);
       background:
-        radial-gradient(220px 80px at 12% 0%, rgba(79,70,229,.16), transparent 60%),
+        radial-gradient(220px 80px at 12% 0%, rgba(var(--primary-rgb),.16), transparent 60%),
         rgba(0,0,0,.24);
       box-shadow: 0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.03);
     }
@@ -188,8 +188,8 @@
       border-radius:10px;
       display:grid;
       place-items:center;
-      border:1px solid rgba(79,70,229,.45);
-      background: rgba(79,70,229,.18);
+      border:1px solid rgba(var(--primary-rgb),.45);
+      background: rgba(var(--primary-rgb),.18);
       color:#c7d2fe;
       flex:0 0 auto;
     }
@@ -227,8 +227,8 @@
       flex:0 0 auto;
     }
     .panel-version-refresh:hover{
-      border-color: rgba(79,70,229,.45);
-      background: rgba(79,70,229,.18);
+      border-color: rgba(var(--primary-rgb),.45);
+      background: rgba(var(--primary-rgb),.18);
       transform: translateY(-1px);
     }
     .panel-version-refresh:active{
@@ -257,8 +257,8 @@
       transform: translateY(-1px);
     }
     .nav-item.active{
-      background: rgba(79,70,229,.18);
-      border-color: rgba(79,70,229,.35);
+      background: rgba(var(--primary-rgb),.18);
+      border-color: rgba(var(--primary-rgb),.35);
     }
     .nav-item i{width:18px; opacity:.95}
 
@@ -389,7 +389,7 @@
       border-radius:16px;
       border:1px solid rgba(255,255,255,.08);
       background:
-        radial-gradient(200px 90px at 10% 0%, rgba(79,70,229,.16), transparent 60%),
+        radial-gradient(200px 90px at 10% 0%, rgba(var(--primary-rgb),.16), transparent 60%),
         rgba(0,0,0,.22);
       box-shadow: 0 0 0 1px rgba(255,255,255,.03) inset;
       transition: transform .12s ease, border-color .12s ease, background .12s ease;
@@ -401,8 +401,8 @@
     .stat-icon{
       width:28px;height:28px;border-radius:10px;
       display:grid;place-items:center;
-      border:1px solid rgba(79,70,229,.35);
-      background: rgba(79,70,229,.14);
+      border:1px solid rgba(var(--primary-rgb),.35);
+      background: rgba(var(--primary-rgb),.14);
       color:#c7d2fe;
     }
     .stat-value{ font-size:24px; font-weight:750; margin-top:8px; letter-spacing:.2px; }
@@ -410,8 +410,8 @@
     .stat-tile.accent-cpu,
     .stat-tile.accent-mem,
     .stat-tile.accent-players{
-      border-color: rgba(79,70,229,.35);
-      background: linear-gradient(180deg, rgba(79,70,229,.18), rgba(0,0,0,.24));
+      border-color: rgba(var(--primary-rgb),.35);
+      background: linear-gradient(180deg, rgba(var(--primary-rgb),.18), rgba(0,0,0,.24));
     }
 
     .overview-mini{
@@ -433,8 +433,8 @@
     .overview-icon{
       width:32px;height:32px;border-radius:12px;
       display:grid;place-items:center;
-      border:1px solid rgba(79,70,229,.35);
-      background: rgba(79,70,229,.14);
+      border:1px solid rgba(var(--primary-rgb),.35);
+      background: rgba(var(--primary-rgb),.14);
       color:#c7d2fe;
       flex-shrink:0;
     }
@@ -463,8 +463,8 @@
     }
     .mini-badge.on{
       color:#c7d2fe;
-      border-color: rgba(79,70,229,.45);
-      background: rgba(79,70,229,.18);
+      border-color: rgba(var(--primary-rgb),.45);
+      background: rgba(var(--primary-rgb),.18);
     }
 
     .actions{
@@ -485,8 +485,8 @@
     .btnx:hover{ border-color: rgba(255,255,255,.20); background: rgba(255,255,255,.08); transform: translateY(-1px); color:var(--text);}
     .btnx:active{ transform: translateY(0) scale(.99); }
     .btnx:disabled{opacity:.45;cursor:not-allowed;transform:none;}
-    .btnx.primary{ background: rgba(79,70,229,.20); border-color: rgba(79,70,229,.35); }
-    .btnx.primary:hover{ background: rgba(79,70,229,.26); }
+    .btnx.primary{ background: rgba(var(--primary-rgb),.20); border-color: rgba(var(--primary-rgb),.35); }
+    .btnx.primary:hover{ background: rgba(var(--primary-rgb),.26); }
     .btnx.danger{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.28); }
     .btnx.danger:hover{ background: rgba(239,68,68,.18); }
     .btnx.success{ background: rgba(34,197,94,.14); border-color: rgba(34,197,94,.28); }
@@ -495,11 +495,11 @@
     .btnx.warning:hover{ background: rgba(245,158,11,.18); }
     .btnx.sm{padding:6px 10px; font-size:12px; border-radius:10px;}
     .btnx.primary.prominent{
-      background: linear-gradient(180deg, rgba(79,70,229,.45), rgba(79,70,229,.22));
-      border-color: rgba(79,70,229,.65);
-      box-shadow: 0 10px 24px rgba(79,70,229,.25), inset 0 1px 0 rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(var(--primary-rgb),.45), rgba(var(--primary-rgb),.22));
+      border-color: rgba(var(--primary-rgb),.65);
+      box-shadow: 0 10px 24px rgba(var(--primary-rgb),.25), inset 0 1px 0 rgba(255,255,255,.12);
     }
-    .btnx.primary.prominent:hover{ background: rgba(79,70,229,.55); }
+    .btnx.primary.prominent:hover{ background: rgba(var(--primary-rgb),.55); }
 
     .page-section{ display:none; }
     .page-section.active{
@@ -532,7 +532,7 @@
       border-radius:16px;
       border:1px solid rgba(255,255,255,.10);
       background:
-        radial-gradient(600px 180px at 10% 0%, rgba(79,70,229,.12), transparent 60%),
+        radial-gradient(600px 180px at 10% 0%, rgba(var(--primary-rgb),.12), transparent 60%),
         rgba(0,0,0,.50);
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.02), inset 0 20px 40px rgba(0,0,0,.35);
       padding:12px;
@@ -577,7 +577,7 @@
     .console-chip.info{ color:#93c5fd; border-color: rgba(59,130,246,.45); background: rgba(59,130,246,.12); }
     .console-chip.warn{ color:#fbbf24; border-color: rgba(245,158,11,.45); background: rgba(245,158,11,.12); }
     .console-chip.error{ color:#f87171; border-color: rgba(239,68,68,.45); background: rgba(239,68,68,.12); }
-    .console-chip.system{ color:#a78bfa; border-color: rgba(167,139,250,.45); background: rgba(167,139,250,.12); }
+    .console-chip.system{ color:#e3cf83; border-color: rgba(var(--primary-rgb),.45); background: rgba(var(--primary-rgb),.12); }
     .console-line-text{
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-size:12px;
@@ -594,10 +594,10 @@
     }
     .console-line.c-error{ border-color: rgba(239,68,68,.22); background: rgba(239,68,68,.08); }
     .console-line.c-warn{ border-color: rgba(245,158,11,.22); background: rgba(245,158,11,.08); }
-    .console-line.c-system{ border-color: rgba(167,139,250,.22); background: rgba(167,139,250,.08); }
+    .console-line.c-system{ border-color: rgba(var(--primary-rgb),.22); background: rgba(var(--primary-rgb),.08); }
     .console-line.c-error .console-line-rail{ background:#f87171; }
     .console-line.c-warn .console-line-rail{ background:#fbbf24; }
-    .console-line.c-system .console-line-rail{ background:#a78bfa; }
+    .console-line.c-system .console-line-rail{ background:#e3cf83; }
     @keyframes lineEnter{
       from{opacity:0; transform: translateY(4px);}
       to{opacity:1; transform: translateY(0);}
@@ -619,7 +619,7 @@
       transition: border-color .12s ease, background .12s ease;
     }
     .inputx:focus{
-      border-color: rgba(79,70,229,.45);
+      border-color: rgba(var(--primary-rgb),.45);
       background: rgba(0,0,0,.30);
     }
     textarea.inputx{resize:vertical;min-height:100px;}
@@ -663,8 +663,8 @@
     }
     .avatar-option img{width:100%;height:100%;object-fit:cover;display:block;}
     .avatar-option.selected{
-      border-color: rgba(79,70,229,.6);
-      box-shadow: 0 0 0 2px rgba(79,70,229,.25);
+      border-color: rgba(var(--primary-rgb),.6);
+      box-shadow: 0 0 0 2px rgba(var(--primary-rgb),.25);
     }
     .avatar-option:hover{ transform: translateY(-1px); }
     .avatar-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
@@ -832,8 +832,8 @@
       gap:6px;
     }
     .role-pill.admin{
-      border-color: rgba(79,70,229,.45);
-      background: rgba(79,70,229,.18);
+      border-color: rgba(var(--primary-rgb),.45);
+      background: rgba(var(--primary-rgb),.18);
       color: #c7d2fe;
     }
 
@@ -1033,10 +1033,10 @@
       cursor:pointer;
       transition: border-color .12s ease, background .12s ease;
     }
-    .player-profile-tab:hover{ border-color: rgba(79,70,229,.45); }
+    .player-profile-tab:hover{ border-color: rgba(var(--primary-rgb),.45); }
     .player-profile-tab.active{
-      border-color: rgba(79,70,229,.7);
-      background: rgba(79,70,229,.22);
+      border-color: rgba(var(--primary-rgb),.7);
+      background: rgba(var(--primary-rgb),.22);
     }
     .player-profile-main{
       padding:16px;
@@ -1213,12 +1213,12 @@
       transition: transform .12s ease, border-color .12s ease, background .12s ease;
     }
     .settings-category-tab:hover{
-      border-color: rgba(79,70,229,.38);
+      border-color: rgba(var(--primary-rgb),.38);
       transform: translateY(-1px);
     }
     .settings-category-tab.active{
-      border-color: rgba(79,70,229,.6);
-      background: rgba(79,70,229,.2);
+      border-color: rgba(var(--primary-rgb),.6);
+      background: rgba(var(--primary-rgb),.2);
     }
     .settings-category-panel{
       display:none;
@@ -1315,7 +1315,7 @@
     .toggle-wrap{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
     .toggle{width:44px;height:24px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.10);position:relative;transition:background .2s,border-color .2s;flex-shrink:0;}
     .toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:999px;background:var(--text);transition:transform .2s;}
-    .toggle.on{background:rgba(79,70,229,.5);border-color:rgba(79,70,229,.6);}
+    .toggle.on{background:rgba(var(--primary-rgb),.5);border-color:rgba(var(--primary-rgb),.6);}
     .toggle.on::after{transform:translateX(20px);}
 
     .breadcrumbs{
@@ -1532,7 +1532,7 @@
     .log-card.log-start::before{ background: #34d399; }
     .log-card.log-stop::before{ background: #f87171; }
     .log-card.log-restart::before{ background: #fbbf24; }
-    .log-card.log-command::before{ background: #c084fc; }
+    .log-card.log-command::before{ background: #d8c072; }
     .log-card.log-edit::before{ background: #fb923c; }
 
     .log-action.log-login{ color:var(--info); border-color: rgba(59,130,246,.4); background: rgba(59,130,246,.12); }
@@ -1540,7 +1540,7 @@
     .log-action.log-start{ color:var(--success); border-color: rgba(34,197,94,.4); background: rgba(34,197,94,.12); }
     .log-action.log-stop{ color:var(--danger); border-color: rgba(239,68,68,.4); background: rgba(239,68,68,.12); }
     .log-action.log-restart{ color:var(--warning); border-color: rgba(245,158,11,.45); background: rgba(245,158,11,.12); }
-    .log-action.log-command{ color:#c084fc; border-color: rgba(192,132,252,.45); background: rgba(192,132,252,.12); }
+    .log-action.log-command{ color:#d8c072; border-color: rgba(var(--primary-rgb),.45); background: rgba(var(--primary-rgb),.12); }
     .log-action.log-edit{ color:#fb923c; border-color: rgba(251,146,60,.45); background: rgba(251,146,60,.12); }
 
     .toast-wrap{
@@ -1588,8 +1588,8 @@
       transition:border-color .2s,background .2s;
     }
     .upload-area:hover,.upload-area.dragover{
-      border-color:rgba(79,70,229,.5);
-      background:rgba(79,70,229,.06);
+      border-color:rgba(var(--primary-rgb),.5);
+      background:rgba(var(--primary-rgb),.06);
     }
 
     .CodeMirror{
@@ -1600,7 +1600,7 @@
     .CodeMirror-gutters{background:rgba(0,0,0,.3) !important;border-right:1px solid rgba(255,255,255,.08) !important;}
     .CodeMirror-linenumber{color:var(--muted) !important;}
     .CodeMirror-cursor{border-left:2px solid var(--primary) !important;}
-    .CodeMirror-selected{background:rgba(79,70,229,.25) !important;}
+    .CodeMirror-selected{background:rgba(var(--primary-rgb),.25) !important;}
     .CodeMirror-matchingbracket{color:var(--success) !important;border-bottom:1px solid var(--success);}
 
     ::-webkit-scrollbar{width:8px;height:8px;}
@@ -1622,7 +1622,7 @@
       background:var(--text);transition:transform .2s;
     }
     .checkbox input[type="checkbox"]:checked{
-      background:rgba(79,70,229,.5);border-color:rgba(79,70,229,.6);
+      background:rgba(var(--primary-rgb),.5);border-color:rgba(var(--primary-rgb),.6);
     }
     .checkbox input[type="checkbox"]:checked::after{
       transform:translateX(18px);
@@ -1632,7 +1632,7 @@
       appearance:none;-webkit-appearance:none;-moz-appearance:none;
       background-image:
         linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0)),
-        radial-gradient(120px 40px at 18% -10%, rgba(79,70,229,.18), transparent 70%),
+        radial-gradient(120px 40px at 18% -10%, rgba(var(--primary-rgb),.18), transparent 70%),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23c2c6da' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
       background-repeat:no-repeat, no-repeat, no-repeat;
       background-position:0 0, 0 0, right 14px center;
@@ -1647,8 +1647,8 @@
       background-color: rgba(0,0,0,.32);
     }
     select.inputx:focus{
-      border-color: rgba(79,70,229,.75);
-      box-shadow: 0 0 0 3px rgba(79,70,229,.22), inset 0 1px 0 rgba(255,255,255,.06);
+      border-color: rgba(var(--primary-rgb),.75);
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb),.22), inset 0 1px 0 rgba(255,255,255,.06);
     }
     select.inputx option{
       background:#0f0f12;
@@ -1662,7 +1662,7 @@
     .console-new-msgs{
       position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
       padding:6px 14px;border-radius:999px;
-      background:rgba(79,70,229,.85);color:#fff;font-size:12px;font-weight:600;
+      background:rgba(var(--primary-rgb),.85);color:#fff;font-size:12px;font-weight:600;
       cursor:pointer;z-index:10;display:none;
       animation:fadeIn .2s ease-out;
       box-shadow:0 4px 12px rgba(0,0,0,.3);
@@ -1672,8 +1672,8 @@
     .selection-toolbar{
       display:none;align-items:center;gap:12px;
       padding:10px 14px;margin-bottom:12px;
-      border:1px solid rgba(79,70,229,.3);border-radius:14px;
-      background:rgba(79,70,229,.08);
+      border:1px solid rgba(var(--primary-rgb),.3);border-radius:14px;
+      background:rgba(var(--primary-rgb),.08);
       animation:fadeIn .2s ease-out;
     }
     .selection-toolbar.visible{display:flex;}
@@ -2164,7 +2164,7 @@
           <div class="cardx-body">
             <div class="settings-category-tabs" id="settingsCategoryTabs">
               <button class="settings-category-tab active" data-settings-cat="general"><span data-i18n="settings_tab_general">General</span></button>
-              <button class="settings-category-tab" data-settings-cat="hmpserver"><span data-i18n="settings_tab_hmpserver">HMPServer</span></button>
+              <button class="settings-category-tab" data-settings-cat="ragemp"><span data-i18n="settings_tab_hmpserver">RageMP</span></button>
               <button class="settings-category-tab" data-settings-cat="discord"><span data-i18n="settings_tab_discord">Discord</span></button>
             </div>
           </div>
@@ -2182,7 +2182,7 @@
           </div>
         </div>
 
-        <div class="settings-category-panel" id="settingsCategoryhmpserver">
+        <div class="settings-category-panel" id="settingsCategoryragemp">
           <div class="cardx" style="margin-bottom:14px;">
             <div class="cardx-header">
               <div class="cardx-title"><i class="fa-solid fa-gear"></i> <span data-i18n="card_server_settings">Server Settings</span></div>
@@ -2301,8 +2301,8 @@
               </div>
             </div>
             <div class="form-hint" style="margin-top:10px;">
-              <span data-i18n="players_sync_hint_1">Player data syncs every 5 seconds via the</span> <strong>panel-connector</strong> <span data-i18n="players_sync_hint_2">resource.</span>
-              <span data-i18n="players_sync_hint_3">Kick/ban actions are queued and executed on next sync.</span>
+              <span data-i18n="players_sync_hint_1">Player data syncs through the</span> <strong>RageAdmin package</strong> <span data-i18n="players_sync_hint_2">running inside your RageMP server.</span>
+              <span data-i18n="players_sync_hint_3">Warn/message/kick/ban actions are queued and executed by the package within a few seconds.</span>
             </div>
           </div>
         </div>
@@ -2346,9 +2346,9 @@
               <div class="resources-empty" data-i18n="loading">Loading...</div>
             </div>
             <div class="form-hint" style="margin-top:10px;">
-              <span data-i18n="resources_hint_1">Resources configured in settings.xml are auto-started with the server.</span>
+              <span data-i18n="resources_hint_1">Packages enabled in the server config start automatically with the server.</span>
               <span data-i18n="resources_hint_2">Use Start/Stop/Restart to manage them at runtime.</span>
-              <span data-i18n="resources_hint_3">The</span> <strong>panel-connector</strong> <span data-i18n="resources_hint_4">resource enables real-time communication between the server and this panel.</span>
+              <span data-i18n="resources_hint_3">The</span> <strong>RageAdmin package</strong> <span data-i18n="resources_hint_4">enables real-time communication between the server and this panel.</span>
             </div>
           </div>
         </div>
@@ -2366,7 +2366,7 @@
               <div class="resources-empty" data-i18n="loading">Loading...</div>
             </div>
             <div class="form-hint" style="margin-top:10px;">
-              <span data-i18n="addons_hint_1">Addons configured in settings.xml are auto-started with the server.</span>
+              <span data-i18n="addons_hint_1">Optional addons or plugins may require a full server restart, depending on how they load.</span>
               <span data-i18n="addons_hint_2">Use Start to load addons at runtime.</span>
               <span data-i18n="addons_hint_3">Addons are loaded from</span> <strong>/addons/</strong>.
               <span data-i18n="addons_hint_4">Stopping/restarting addons requires full server restart.</span>
@@ -3355,12 +3355,16 @@
         return { cls: 'c-warn', label: 'Warn', chip: 'warn' };
       }
       if (
+        clean.includes('rageadmin') ||
+        clean.includes('bridge') ||
         clean.includes('start') ||
         clean.includes('stop') ||
         clean.includes('restart') ||
         clean.includes('online') ||
         clean.includes('offline') ||
         clean.includes('listening') ||
+        clean.includes('networking has been started') ||
+        clean.includes('ready to accept connections') ||
         clean.includes('resource')
       ) {
         return { cls: 'c-system', label: 'System', chip: 'system' };
@@ -4493,7 +4497,7 @@
             <button class="btnx sm primary" id="btnRegenPanelSecret"><i class="fa-solid fa-rotate"></i> ${t('secret_regen','Regenerate')}</button>
           </div>
         </div>
-        <div class="form-hint">${t('panel_secret_hint','Secret key for panel-connector resource communication. Must match the PANEL_SECRET in panel-connector/server.lua.')}</div>
+        <div class="form-hint">${t('panel_secret_hint','Secret key for RageAdmin package communication. Must match panelSecret in packages/rageadmin/config.json.')}</div>
         <div class="form-hint secret-note" id="panelSecretNote">${t('secret_unlock_hint','Enter your account password to edit or regenerate.')}</div>
       </div>`;
 
@@ -5559,7 +5563,7 @@
         resources.forEach(r => {
           const statusClass = r.status === 'started' ? 'running' : (r.status === 'stopped' ? 'stopped' : 'unknown');
           const statusLabel = r.status === 'started' ? t('res_started','Started') : (r.status === 'stopped' ? t('res_stopped','Stopped') : t('res_unknown','Unknown'));
-          const configBadge = r.configured ? `<span class="badgeX success" style="font-size:11px;padding:3px 8px;">${t('res_configured','in settings.xml')}</span>` : '';
+          const configBadge = r.configured ? `<span class="badgeX success" style="font-size:11px;padding:3px 8px;">${t('res_configured','enabled in server config')}</span>` : '';
           const metaBadge = r.has_meta ? '' : `<span class="badgeX danger" style="font-size:11px;padding:3px 8px;">${t('res_missing_meta','no meta.xml')}</span>`;
           const canConfigure = currentUser && currentUser.role === 'admin';
           const loadBtn = (canConfigure && !r.configured)
@@ -5599,14 +5603,14 @@
             if(act === 'configure'){
               const ok = await openConfirmModal({
                 title: t('confirm_title','Confirm'),
-                message: t('res_confirm_add','Add {name} to settings.xml?').replace('{name}', name),
+                message: t('res_confirm_add','Enable {name} in server config?').replace('{name}', name),
                 confirmText: t('res_add_settings','Add to settings'),
                 confirmStyle: 'primary'
               });
               if(!ok) return;
               const out = await apiPost(`/api/resources/${encodeURIComponent(name)}/configure`);
               if(out.success){
-                toast('success', t('label_resource','Resource'), t('res_added_settings','Added to settings.xml.'));
+                toast('success', t('label_resource','Resource'), t('res_added_settings','Enabled in server config.'));
                 setTimeout(loadResources, 300);
               } else {
                 toast('error', t('label_resource','Resource'), out.message || t('error_failed','Failed'));
@@ -5650,7 +5654,7 @@
         addons.forEach(a => {
           const statusClass = a.status === 'started' ? 'running' : (a.status === 'stopped' ? 'stopped' : 'unknown');
           const statusLabel = a.status === 'started' ? t('res_started','Started') : (a.status === 'stopped' ? t('res_stopped','Stopped') : t('res_unknown','Unknown'));
-          const configBadge = a.configured ? `<span class="badgeX success" style="font-size:11px;padding:3px 8px;">${t('res_configured','in settings.xml')}</span>` : '';
+          const configBadge = a.configured ? `<span class="badgeX success" style="font-size:11px;padding:3px 8px;">${t('res_configured','enabled in server config')}</span>` : '';
           const metaBadge = a.has_meta ? '' : `<span class="badgeX danger" style="font-size:11px;padding:3px 8px;">${t('res_missing_meta','no meta.xml')}</span>`;
           const canConfigure = currentUser && currentUser.role === 'admin';
           const loadBtn = (canConfigure && !a.configured)
@@ -5688,14 +5692,14 @@
             if(act === 'configure'){
               const ok = await openConfirmModal({
                 title: t('confirm_title','Confirm'),
-                message: t('res_confirm_add','Add {name} to settings.xml?').replace('{name}', name),
+                message: t('res_confirm_add','Enable {name} in server config?').replace('{name}', name),
                 confirmText: t('res_add_settings','Add to settings'),
                 confirmStyle: 'primary'
               });
               if(!ok) return;
               const out = await apiPost(`/api/addons/${encodeURIComponent(name)}/configure`);
               if(out.success){
-                toast('success', t('label_addon','Addon'), t('res_added_settings','Added to settings.xml.'));
+                toast('success', t('label_addon','Addon'), t('res_added_settings','Enabled in server config.'));
                 setTimeout(loadAddons, 300);
               } else {
                 toast('error', t('label_addon','Addon'), out.message || t('error_failed','Failed'));
@@ -6740,3 +6744,4 @@
   </script>
 </body>
 </html>
+

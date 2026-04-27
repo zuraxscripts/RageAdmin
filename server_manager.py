@@ -147,6 +147,8 @@ server_state = {
 server_process = None
 console_lines = []
 MAX_CONSOLE_LINES = 1000
+ragemp_startup_table_active = False
+ragemp_startup_table_armed = False
 
                                                                     
 resource_states = {}
@@ -218,6 +220,18 @@ RAGEMP_SERVER_ROOT_DIR = ROOT_DIR / 'RageMP-Server'
 RAGEMP_SERVER_DIR_NAME = 'ragemp-srv'
 RAGEMP_SERVER_EXECUTABLE = 'ragemp-server'
 RAGEMP_CONTENT_DIRS = ('packages', 'client_packages', 'maps', 'plugins')
+RAGEMP_BRIDGE_PACKAGE_NAME = 'rageadmin'
+RAGEMP_BRIDGE_TEMPLATE_DIR = ROOT_DIR / 'package_templates' / RAGEMP_BRIDGE_PACKAGE_NAME
+RAGEMP_STARTUP_TABLE_END_MARKERS = (
+    '[info] loading nodejs packages',
+    '[info] starting packages',
+    '[done] server packages have been started.',
+    '[done] started resource transfer server',
+    '[done] client-side packages weight',
+    '[info] initializing networking',
+    '[done] networking has been started',
+    '[done] the server is ready to accept connections.'
+)
 
 
 def _resolve_ragemp_default_port():
@@ -262,7 +276,6 @@ RAGEMP_DEFAULT_SETTINGS = {
     'allow-cef-debugging': False,
     'voice-chat': True
 }
-SETUP_CONNECTOR_API_URL = 'https://api.github.com/repos/zuraxscripts/hpm-connector/releases/latest'
 SETUP_DOWNLOAD_DIR = DATA_DIR / 'downloads'
 DEFAULT_PANEL_PORT = 20000
 PANEL_PORT = DEFAULT_PANEL_PORT
@@ -1035,6 +1048,10 @@ def _persist_panel_port(port: int):
         return
     panel_config['panel_port'] = port
     save_panel_config(panel_config)
+    try:
+        _install_ragemp_bridge_package()
+    except Exception:
+        pass
 
 
 def _default_discord_settings():
@@ -2108,9 +2125,15 @@ def log_user_action(username, action, details=""):
     with open(log_file, 'a') as f:
         f.write(log_entry)
 
+
+def _reset_ragemp_console_filters():
+    global ragemp_startup_table_active, ragemp_startup_table_armed
+    ragemp_startup_table_active = False
+    ragemp_startup_table_armed = False
+
 def add_console_line(line, username=None):
     
-    global console_lines
+    global console_lines, ragemp_startup_table_active, ragemp_startup_table_armed
     timestamp = datetime.now().strftime('%H:%M:%S')
 
                                                           
@@ -2126,11 +2149,40 @@ def add_console_line(line, username=None):
       | \x1B\[\d*[A-HJKSTfn]        # Cursor/erase sequences
       | [\x00-\x08\x0e-\x1f]        # Remaining control chars except \t \n \r
     ''', re.VERBOSE)
-    clean_line = ansi_escape.sub('', line)
-
-                                                                                       
+    clean_line = ansi_escape.sub('', str(line or ''))
+    clean_line = clean_line.replace('\r', '\n')
     clean_line = clean_line.strip('\r\n')
-    clean_line = re.sub(r'^(\[\d{2}:\d{2}:\d{2}\]\s*){1,3}', '', clean_line).lstrip()
+    clean_line = re.sub(r'^(\[\d{2}:\d{2}:\d{2}\]\s*){1,3}', '', clean_line).strip()
+    clean_line = re.sub(r'\s+', ' ', clean_line)
+    lower_line = clean_line.lower()
+    is_ansi_reset = bool(re.fullmatch(r'\[\d+m\]', clean_line, re.IGNORECASE))
+    is_separator = bool(
+        re.fullmatch(r'\[=+\]', clean_line) or
+        re.fullmatch(r'=+', clean_line) or
+        re.fullmatch(r'\[[-=| ]+\]', clean_line)
+    )
+
+    if not clean_line:
+        return
+    if clean_line in {'||', '|', '[]'}:
+        return
+    if is_ansi_reset:
+        return
+    if lower_line.startswith('[info] starting rage multiplayer server'):
+        ragemp_startup_table_armed = True
+    if ragemp_startup_table_active:
+        if any(lower_line.startswith(marker) for marker in RAGEMP_STARTUP_TABLE_END_MARKERS):
+            ragemp_startup_table_active = False
+        else:
+            return
+    if ragemp_startup_table_armed and is_separator:
+        ragemp_startup_table_armed = False
+        ragemp_startup_table_active = True
+        return
+    if ragemp_startup_table_armed and lower_line and not lower_line.startswith('[info] starting rage multiplayer server'):
+        ragemp_startup_table_armed = False
+    if is_separator:
+        return
 
     formatted_line = f"[{timestamp}] {clean_line}"
     console_lines.append(formatted_line)
@@ -2189,6 +2241,39 @@ def _resolve_server_executable_path(path_value=None):
 
 def get_server_dir():
     return str(_resolve_server_executable_path().parent)
+
+
+def _get_ragemp_bridge_target_dir(server_dir=None):
+    base_dir = Path(server_dir) if server_dir is not None else Path(get_server_dir())
+    return base_dir.resolve() / 'packages' / RAGEMP_BRIDGE_PACKAGE_NAME
+
+
+def _build_ragemp_bridge_config():
+    host = get_panel_host()
+    secret = str((panel_config or {}).get('panel_secret') or 'changeme').strip() or 'changeme'
+    return {
+        'panelHost': host,
+        'panelSecret': secret,
+        'syncIntervalMs': 5000,
+        'heartbeatIntervalMs': 15000,
+        'requestTimeoutMs': 5000,
+        'logVerbose': True
+    }
+
+
+def _install_ragemp_bridge_package(server_dir=None):
+    target_dir = _get_ragemp_bridge_target_dir(server_dir)
+    target_dir.parent.mkdir(parents=True, exist_ok=True)
+    if not RAGEMP_BRIDGE_TEMPLATE_DIR.exists():
+        raise RuntimeError(f'RageAdmin package template not found: {RAGEMP_BRIDGE_TEMPLATE_DIR}')
+
+    shutil.copytree(RAGEMP_BRIDGE_TEMPLATE_DIR, target_dir, dirs_exist_ok=True)
+    config_path = target_dir / 'config.json'
+    config_path.write_text(
+        json.dumps(_build_ragemp_bridge_config(), indent=4),
+        encoding='utf-8'
+    )
+    return target_dir
 
 
 def jail_path(requested_path):
@@ -2323,10 +2408,13 @@ def start_server(username):
         return {'success': False, 'message': 'Server is already running'}
 
     try:
+        _reset_ragemp_console_filters()
         server_path = _resolve_server_executable_path()
 
         if not server_path.exists():
             return {'success': False, 'message': f'Server executable not found: {server_path}'}
+
+        _install_ragemp_bridge_package(server_path.parent)
 
         try:
             os.chmod(server_path, 0o755)
@@ -2458,10 +2546,10 @@ def monitor_process():
             if not line:
                 continue
             try:
-                decoded_line = line.decode('utf-8', errors='replace').rstrip('\r\n')
-                                                                            
+                decoded_line = line.decode('utf-8', errors='replace')
                 decoded_line = ''.join(ch for ch in decoded_line if ch == '\t' or ch == '\n' or ch == '\r' or (ord(ch) >= 32 and ord(ch) != 127))
-                add_console_line(decoded_line)
+                for part in decoded_line.replace('\r', '\n').split('\n'):
+                    add_console_line(part)
             except Exception:
                 continue
 
@@ -2761,6 +2849,7 @@ def _ensure_ragemp_runtime_files(server_dir: Path):
     server_dir = server_dir.resolve()
     conf_path = server_dir / 'conf.json'
     _ensure_ragemp_content_dirs(server_dir)
+    _install_ragemp_bridge_package(server_dir)
     if conf_path.exists():
         return
 
@@ -2803,10 +2892,23 @@ def ensure_server_files():
     if server_path.exists():
         _setup_update(message='Server executable already present, skipping download')
         info = _load_ragemp_local_info()
+        if _ragemp_local_info_is_empty(info):
+            try:
+                remote_info = _fetch_remote_ragemp_info(str(info.get('archive_url') or SETUP_SERVER_ARCHIVE_URL).strip())
+                _persist_local_ragemp_info(
+                    version=remote_info.get('version') or '',
+                    archive_url=remote_info.get('archive_url') or str(info.get('archive_url') or SETUP_SERVER_ARCHIVE_URL).strip(),
+                    etag=remote_info.get('etag') or '',
+                    last_modified=remote_info.get('last_modified') or ''
+                )
+                info = _load_ragemp_local_info()
+            except Exception:
+                pass
         detected = str(info.get('version') or '').strip()
         if detected:
             _setup_update(message=f'RageMP build detected: {detected}')
         _ensure_ragemp_runtime_files(server_path.parent)
+        _setup_update(message='RageAdmin package synchronized')
         return
 
     _setup_update(step='Downloading server files', message='Downloading RageMP server files...')
@@ -2842,6 +2944,7 @@ def ensure_server_files():
         pass
 
     _ensure_ragemp_runtime_files(target_dir)
+    _setup_update(message='RageAdmin package installed')
 
     resolved_archive_url = str(downloaded_url or SETUP_SERVER_ARCHIVE_URL or '').strip()
     remote_info = _fetch_remote_ragemp_info(resolved_archive_url)
@@ -2858,80 +2961,6 @@ def ensure_server_files():
         _setup_update(message=f'Server files ready (RageMP build {detected_version})')
     else:
         _setup_update(message='Server files ready')
-
-
-def install_hpm_connector():
-    
-    _setup_update(step='Downloading connector', message='Resolving latest hpm-connector release...')
-    req = urllib.request.Request(SETUP_CONNECTOR_API_URL, headers={'User-Agent': 'RageAdmin/1.0'})
-    with urllib.request.urlopen(req) as resp:
-        data = json.loads(resp.read().decode('utf-8'))
-
-    zip_url = data.get('zipball_url')
-    tag = data.get('tag_name') or 'latest'
-    if not zip_url:
-        raise RuntimeError('Failed to resolve hpm-connector release zipball')
-
-    zip_path = SETUP_DOWNLOAD_DIR / f'hpm_connector_{tag}.zip'
-    _download_with_progress(zip_url, zip_path, 60, 85, f'hpm-connector {tag}')
-
-    extract_dir = SETUP_DOWNLOAD_DIR / 'connector_extract'
-    if extract_dir.exists():
-        shutil.rmtree(extract_dir, ignore_errors=True)
-    extract_dir.mkdir(parents=True, exist_ok=True)
-
-    with zipfile.ZipFile(zip_path, 'r') as zf:
-        zf.extractall(extract_dir)
-
-                                                     
-    top_dirs = [p for p in extract_dir.iterdir() if p.is_dir()]
-    source_dir = top_dirs[0] if top_dirs else extract_dir
-
-    resources_dir = Path(get_server_dir()) / 'resources'
-    target_dir = resources_dir / 'hpm-connector'
-    if target_dir.exists():
-        shutil.rmtree(target_dir, ignore_errors=True)
-    _merge_tree(source_dir, target_dir)
-
-    _setup_update(message='hpm-connector installed')
-
-
-def ensure_connector_resource():
-    settings = parse_settings_xml() or {}
-    resources = settings.get('resources', [])
-    if 'hpm-connector' not in resources:
-        resources.append('hpm-connector')
-        settings['resources'] = resources
-        write_settings_xml(settings)
-        _setup_update(message='settings.xml updated with hpm-connector')
-
-
-def update_connector_config(panel_secret: str, panel_host: str = None):
-    
-    panel_host = panel_host or get_panel_host()
-    server_lua = Path(get_server_dir()) / 'resources' / 'hpm-connector' / 'server.lua'
-    if not server_lua.exists():
-        raise RuntimeError('hpm-connector server.lua not found')
-    text = server_lua.read_text(encoding='utf-8', errors='ignore')
-    text, host_count = re.subn(
-        r'(?m)^local\s+PANEL_HOST\s*=.*$',
-        f'local PANEL_HOST = \"{panel_host}\"',
-        text
-    )
-    text, secret_count = re.subn(
-        r'(?m)^local\s+PANEL_SECRET\s*=.*$',
-        f'local PANEL_SECRET = \"{panel_secret}\"',
-        text
-    )
-    if host_count == 0:
-        text = f'local PANEL_HOST = \"{panel_host}\"\\n' + text
-    if secret_count == 0:
-        text = f'local PANEL_SECRET = \"{panel_secret}\"\\n' + text
-    server_lua.write_text(text, encoding='utf-8')
-    _setup_update(message='hpm-connector server.lua updated with panel secret')
-
-                                                          
-
 def _safe_json_load(path: Path, default):
     try:
         if path.exists():
@@ -3134,6 +3163,11 @@ def _load_ragemp_local_info():
     }
 
 
+def _ragemp_local_info_is_empty(info) -> bool:
+    info = info or {}
+    return not any(str(info.get(key) or '').strip() for key in ('version', 'etag', 'last_modified'))
+
+
 def _guess_version_from_url(url: str) -> str:
     if not url:
         return ''
@@ -3214,11 +3248,21 @@ def check_for_updates(force: bool = False):
             ragemp_archive = str(data.get('archive_url') or '').strip()
             ragemp_etag = str(data.get('etag') or '').strip()
             ragemp_last_modified = str(data.get('last_modified') or '').strip()
-            ragemp_available = (
-                (ragemp_etag and ragemp_etag != str(ragemp_local.get('etag') or '').strip()) or
-                (ragemp_last_modified and ragemp_last_modified != str(ragemp_local.get('last_modified') or '').strip()) or
-                (not ragemp_local.get('version') and bool(ragemp_archive))
-            )
+            if _ragemp_local_info_is_empty(ragemp_local) and _resolve_server_executable_path().exists():
+                _persist_local_ragemp_info(
+                    version=ragemp_latest,
+                    archive_url=ragemp_archive or ragemp_url,
+                    etag=ragemp_etag,
+                    last_modified=ragemp_last_modified
+                )
+                ragemp_local = _load_ragemp_local_info()
+                ragemp_available = False
+            else:
+                ragemp_available = (
+                    (ragemp_etag and ragemp_etag != str(ragemp_local.get('etag') or '').strip()) or
+                    (ragemp_last_modified and ragemp_last_modified != str(ragemp_local.get('last_modified') or '').strip()) or
+                    (not ragemp_local.get('version') and bool(ragemp_archive))
+                )
         except Exception as e:
             errors.append(f'RageMP update check failed: {e}')
 
@@ -3837,6 +3881,10 @@ def api_set_panel_config():
         discord_changed = True
 
     save_panel_config(panel_config)
+    try:
+        _install_ragemp_bridge_package()
+    except Exception:
+        pass
     if discord_changed:
         discord_runtime.sync_from_config(force=True)
     discord_runtime.request_status_refresh(force=True)
@@ -4531,7 +4579,7 @@ def api_resource_configure(name):
 
     settings = parse_settings_xml()
     if settings is None:
-        return jsonify({'success': False, 'message': 'settings.xml not found'}), 404
+        return jsonify({'success': False, 'message': 'Server config not found'}), 404
 
     resources = settings.get('resources', [])
     if safe_name not in resources:
@@ -4618,7 +4666,7 @@ def api_addon_configure(name):
 
     settings = parse_settings_xml()
     if settings is None:
-        return jsonify({'success': False, 'message': 'settings.xml not found'}), 404
+        return jsonify({'success': False, 'message': 'Server config not found'}), 404
 
     addons = settings.get('addons', [])
     if safe_name not in addons:
@@ -5111,7 +5159,7 @@ def api_players_ban():
     connected_sid = str(server_id) if server_id is not None else ''
     if connected_sid and connected_sid in connected_players:
         pending_actions.append({
-            'type': 'kick',
+            'type': 'ban',
             'serverId': connected_players[connected_sid].get('serverId', server_id),
             'reason': f'Banned: {reason}'
         })
