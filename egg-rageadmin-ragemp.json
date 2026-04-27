@@ -6,7 +6,7 @@
     },
     "exported_at": "2026-04-27T18:30:00+02:00",
     "name": "RageAdmin",
-    "author": "Zurax",
+    "author": "zurax@example.com",
     "description": "RageAdmin - web-based management panel for RageMP servers. Requires 3 ports: RageMP game port, RageMP transfer/http port (game port + 1), and a separate panel port.",
     "features": null,
     "docker_images": {
@@ -19,7 +19,7 @@
     "startup": "bash /home/container/start-rageadmin.sh",
     "config": {
         "files": "{}",
-        "startup": "{\r\n    \"done\": \"Access: http://0.0.0.0:{{PANEL_PORT}}\"\r\n}",
+        "startup": "{\r\n    \"done\": \"\",\r\n    \"userInteraction\": []\r\n}",
         "logs": "{}",
         "stop": "^C"
     },

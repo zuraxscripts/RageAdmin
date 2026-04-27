@@ -47,6 +47,15 @@ def _resolve_ragemp_default_bind():
     return '127.0.0.1'
 
 
+def _is_official_ragemp_archive(url: str = '') -> bool:
+    normalized = str(url or '').strip().lower()
+    return normalized.startswith('https://cdn.rage.mp/updater/prerelease/server-files/')
+
+
+def _looks_like_header_date_version(version: str = '') -> bool:
+    return bool(re.fullmatch(r'\d{4}-\d{2}-\d{2}', str(version or '').strip()))
+
+
 RAGEMP_DEFAULT_SETTINGS = {
     'announce': False,
     'bind': _resolve_ragemp_default_bind(),
@@ -312,6 +321,7 @@ def _terminate_process_quiet(proc):
 
 
 def _ensure_ragemp_runtime_files(server_dir: Path):
+    server_dir = server_dir.resolve()
     conf_path = server_dir / 'conf.json'
     _ensure_ragemp_content_dirs(server_dir)
     if conf_path.exists():
@@ -344,7 +354,12 @@ def _ensure_ragemp_runtime_files(server_dir: Path):
         _write_default_ragemp_conf(conf_path)
 
 
-def _format_ragemp_build_label(last_modified: str = '', etag: str = '') -> str:
+def _format_ragemp_build_label(last_modified: str = '', etag: str = '', archive_url: str = '') -> str:
+    etag = str(etag or '').strip().strip('"')
+    if etag:
+        return f'build {etag[:8]}'
+    if _is_official_ragemp_archive(archive_url):
+        return 'official-prerelease'
     last_modified = str(last_modified or '').strip()
     if last_modified:
         try:
@@ -352,9 +367,6 @@ def _format_ragemp_build_label(last_modified: str = '', etag: str = '') -> str:
             return parsed.strftime('%Y-%m-%d')
         except Exception:
             pass
-    etag = str(etag or '').strip().strip('"')
-    if etag:
-        return etag[:12]
     return ''
 
 
@@ -513,7 +525,11 @@ def _update_panel_version(version: str):
 
 def _update_ragemp_info(version: str, archive_url: str, etag: str = '', last_modified: str = ''):
     cfg = _load_server_config()
-    cfg['ragemp_version'] = str(version or _format_ragemp_build_label(last_modified, etag) or '')
+    version = str(version or '').strip()
+    formatted = _format_ragemp_build_label(last_modified, etag, archive_url)
+    if not version or (_looks_like_header_date_version(version) and formatted):
+        version = formatted
+    cfg['ragemp_version'] = str(version or '')
     if archive_url:
         cfg['ragemp_archive_url'] = str(archive_url)
     if etag:
@@ -577,8 +593,11 @@ def perform_ragemp_update(archive_url: str, version: str, etag: str, last_modifi
             raise RuntimeError('ragemp-server not found in extracted RageMP archive')
 
         server_cfg = _load_server_config()
-        server_path = server_cfg.get('server_path', './RageMP-Server/ragemp-srv/ragemp-server')
-        server_dir = Path(server_path).resolve().parent
+        server_path = Path(str(server_cfg.get('server_path', './RageMP-Server/ragemp-srv/ragemp-server')) or './RageMP-Server/ragemp-srv/ragemp-server')
+        if not server_path.is_absolute():
+            server_path = ROOT_DIR / server_path
+        server_path = server_path.resolve()
+        server_dir = server_path if server_path.is_dir() else server_path.parent
         if not server_dir.exists():
             raise RuntimeError(f'Server directory not found: {server_dir}')
 

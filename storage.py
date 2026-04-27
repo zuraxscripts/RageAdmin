@@ -3,10 +3,11 @@ from pathlib import Path
 
 import db
 
-DATA_DIR = Path('./data')
+ROOT_DIR = Path(__file__).resolve().parent
+DATA_DIR = ROOT_DIR / 'data'
 USERS_FILE = DATA_DIR / 'users.json'
 CONFIG_FILE = DATA_DIR / 'config.json'
-PANEL_CONFIG_FILE = Path('./panel_config.json')
+PANEL_CONFIG_FILE = ROOT_DIR / 'panel_config.json'
 BANS_FILE = DATA_DIR / 'bans.json'
 PLAYER_PROFILES_FILE = DATA_DIR / 'player_profiles.json'
 

@@ -47,6 +47,8 @@ except Exception:
 import db
 import storage
 
+ROOT_DIR = Path(__file__).resolve().parent
+
 
 def _env_bool(name: str, default: bool = False) -> bool:
     raw = os.getenv(name)
@@ -115,13 +117,14 @@ RATE_LIMIT_MAX_ATTEMPTS = 5
 RATE_LIMIT_LOCK_SECONDS = 300             
 
        
-DATA_DIR = Path('./data')
+DATA_DIR = ROOT_DIR / 'data'
 CONFIG_FILE = DATA_DIR / 'config.json'
-PANEL_CONFIG_FILE = Path('./panel_config.json')
-LOCALES_DIR = Path('./locales')
+PANEL_CONFIG_FILE = ROOT_DIR / 'panel_config.json'
+LOCALES_DIR = ROOT_DIR / 'locales'
 LOGS_DIR = DATA_DIR / 'logs'
 PID_FILE = DATA_DIR / 'server.pid'
-PFP_DIR = Path('./templates/pfp')
+TEMPLATES_DIR = ROOT_DIR / 'templates'
+PFP_DIR = TEMPLATES_DIR / 'pfp'
 PFP_ALLOWED_EXTS = {'.png', '.jpg', '.jpeg', '.svg', '.webp'}
 
                     
@@ -211,7 +214,7 @@ BANS_FILE = DATA_DIR / 'bans.json'
 
                       
 SETUP_SERVER_ARCHIVE_URL = 'https://cdn.rage.mp/updater/prerelease/server-files/linux_x64.tar.gz'
-RAGEMP_SERVER_ROOT_DIR = Path('./RageMP-Server')
+RAGEMP_SERVER_ROOT_DIR = ROOT_DIR / 'RageMP-Server'
 RAGEMP_SERVER_DIR_NAME = 'ragemp-srv'
 RAGEMP_SERVER_EXECUTABLE = 'ragemp-server'
 RAGEMP_CONTENT_DIRS = ('packages', 'client_packages', 'maps', 'plugins')
@@ -232,6 +235,15 @@ def _resolve_ragemp_default_bind():
     if os.getenv('SERVER_PORT'):
         return '0.0.0.0'
     return '127.0.0.1'
+
+
+def _is_official_ragemp_archive(url: str = '') -> bool:
+    normalized = str(url or '').strip().lower()
+    return normalized.startswith('https://cdn.rage.mp/updater/prerelease/server-files/')
+
+
+def _looks_like_header_date_version(version: str = '') -> bool:
+    return bool(re.fullmatch(r'\d{4}-\d{2}-\d{2}', str(version or '').strip()))
 
 
 RAGEMP_DEFAULT_SETTINGS = {
@@ -361,8 +373,8 @@ def _announce_setup_pin(pin: str):
 
                                                          
                                                               
-PANEL_VERSION_FILE = Path('./panel_version.json')
-UPDATE_CONFIG_FILE = Path('./update_config.json')
+PANEL_VERSION_FILE = ROOT_DIR / 'panel_version.json'
+UPDATE_CONFIG_FILE = ROOT_DIR / 'update_config.json'
 UPDATE_STATUS_FILE = DATA_DIR / 'update_status.json'
 UPDATE_JOB_FILE = DATA_DIR / 'update_job.json'
 
@@ -2156,10 +2168,27 @@ config = load_config()
 
                                                         
 
+def _resolve_runtime_path(path_value, default=''):
+    raw = str(path_value or default or '').strip()
+    if not raw:
+        return ROOT_DIR.resolve()
+    path = Path(raw)
+    if not path.is_absolute():
+        path = ROOT_DIR / path
+    return path.resolve()
+
+
+def _resolve_server_executable_path(path_value=None):
+    if path_value is None:
+        path_value = (config or {}).get('server_path', './RageMP-Server/ragemp-srv/ragemp-server')
+    path = _resolve_runtime_path(path_value, './RageMP-Server/ragemp-srv/ragemp-server')
+    if path.is_dir():
+        return (path / RAGEMP_SERVER_EXECUTABLE).resolve()
+    return path
+
+
 def get_server_dir():
-    
-    server_path = os.path.abspath(config.get('server_path', './RageMP-Server/ragemp-srv/ragemp-server'))
-    return os.path.dirname(server_path)
+    return str(_resolve_server_executable_path().parent)
 
 
 def jail_path(requested_path):
@@ -2294,9 +2323,9 @@ def start_server(username):
         return {'success': False, 'message': 'Server is already running'}
 
     try:
-        server_path = config.get('server_path', './RageMP-Server/ragemp-srv/ragemp-server')
+        server_path = _resolve_server_executable_path()
 
-        if not os.path.exists(server_path):
+        if not server_path.exists():
             return {'success': False, 'message': f'Server executable not found: {server_path}'}
 
         try:
@@ -2305,8 +2334,8 @@ def start_server(username):
             pass                                    
 
         server_process = subprocess.Popen(
-            [server_path],
-            cwd=get_server_dir(),
+            [str(server_path)],
+            cwd=str(server_path.parent),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             stdin=subprocess.PIPE,
@@ -2729,12 +2758,13 @@ def _terminate_setup_process(proc):
 
 
 def _ensure_ragemp_runtime_files(server_dir: Path):
+    server_dir = server_dir.resolve()
     conf_path = server_dir / 'conf.json'
     _ensure_ragemp_content_dirs(server_dir)
     if conf_path.exists():
         return
 
-    server_bin = server_dir / RAGEMP_SERVER_EXECUTABLE
+    server_bin = (server_dir / RAGEMP_SERVER_EXECUTABLE).resolve()
     if not server_bin.exists():
         raise RuntimeError(f'RageMP server executable missing: {server_bin}')
 
@@ -2769,7 +2799,7 @@ def _ensure_ragemp_runtime_files(server_dir: Path):
 def ensure_server_files():
     global config
 
-    server_path = Path(config.get('server_path', './RageMP-Server/ragemp-srv/ragemp-server'))
+    server_path = _resolve_server_executable_path(config.get('server_path', './RageMP-Server/ragemp-srv/ragemp-server'))
     if server_path.exists():
         _setup_update(message='Server executable already present, skipping download')
         info = _load_ragemp_local_info()
@@ -3004,7 +3034,12 @@ def _is_unknown_version_value(version: str) -> bool:
     return val in ('', '0', '0.0', '0.0.0', 'v0', 'v0.0', 'v0.0.0')
 
 
-def _format_ragemp_build_label(last_modified: str = '', etag: str = '') -> str:
+def _format_ragemp_build_label(last_modified: str = '', etag: str = '', archive_url: str = '') -> str:
+    etag = str(etag or '').strip().strip('"')
+    if etag:
+        return f'build {etag[:8]}'
+    if _is_official_ragemp_archive(archive_url):
+        return 'official-prerelease'
     last_modified = str(last_modified or '').strip()
     if last_modified:
         try:
@@ -3012,9 +3047,6 @@ def _format_ragemp_build_label(last_modified: str = '', etag: str = '') -> str:
             return parsed.strftime('%Y-%m-%d')
         except Exception:
             pass
-    etag = str(etag or '').strip().strip('"')
-    if etag:
-        return etag[:12]
     return ''
 
 
@@ -3026,7 +3058,7 @@ def _fetch_remote_ragemp_info(url: str = ''):
         etag = str(resp.headers.get('ETag') or '').strip()
         last_modified = str(resp.headers.get('Last-Modified') or '').strip()
     return {
-        'version': _format_ragemp_build_label(last_modified, etag),
+        'version': _format_ragemp_build_label(last_modified, etag, final_url or archive_url),
         'archive_url': final_url or archive_url,
         'etag': etag,
         'last_modified': last_modified
@@ -3039,6 +3071,9 @@ def _persist_local_ragemp_info(version: str = '', archive_url: str = '', etag: s
     archive_url = str(archive_url or '').strip()
     etag = str(etag or '').strip()
     last_modified = str(last_modified or '').strip()
+    formatted = _format_ragemp_build_label(last_modified, etag, archive_url)
+    if not version or (_looks_like_header_date_version(version) and formatted):
+        version = formatted
 
     if not config:
         config = storage.load_config()
@@ -3081,11 +3116,12 @@ def _load_ragemp_local_info():
     archive_url = str((config or {}).get('ragemp_archive_url') or '').strip()
     etag = str((config or {}).get('ragemp_etag') or '').strip()
     last_modified = str((config or {}).get('ragemp_last_modified') or '').strip()
+    formatted = _format_ragemp_build_label(last_modified, etag, archive_url)
 
     if not archive_url:
         archive_url = defaults['archive_url']
-    if not version:
-        version = _format_ragemp_build_label(last_modified, etag)
+    if not version or (_looks_like_header_date_version(version) and formatted):
+        version = formatted
 
     if version or archive_url or etag or last_modified:
         _persist_local_ragemp_info(version, archive_url, etag, last_modified)
@@ -3286,12 +3322,12 @@ def index():
     if user and user.get('force_password_change'):
         return redirect(url_for('change_password'))
 
-    return send_from_directory('.', 'templates/dashboard.html')
+    return send_from_directory(str(TEMPLATES_DIR), 'dashboard.html')
 
 @app.route('/logo.png')
 def logo():
     
-    return send_from_directory('templates', 'logo.png')
+    return send_from_directory(str(TEMPLATES_DIR), 'logo.png')
 
 @app.route('/pfp/<filename>')
 def pfp_file(filename):
@@ -3307,7 +3343,7 @@ def setup():
     if not setup_required():
         return redirect(url_for('index'))
     ensure_setup_pin()
-    return send_from_directory('.', 'templates/setup.html')
+    return send_from_directory(str(TEMPLATES_DIR), 'setup.html')
 
 @app.route('/login')
 def login():
@@ -3318,7 +3354,7 @@ def login():
     if 'username' in session:
         return redirect(url_for('index'))
 
-    return send_from_directory('.', 'templates/login.html')
+    return send_from_directory(str(TEMPLATES_DIR), 'login.html')
 
 @app.route('/change-password')
 def change_password():
@@ -3326,7 +3362,7 @@ def change_password():
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    return send_from_directory('.', 'templates/change_password.html')
+    return send_from_directory(str(TEMPLATES_DIR), 'change_password.html')
 
                                                       
 

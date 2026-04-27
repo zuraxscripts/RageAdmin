@@ -7,12 +7,13 @@ import signal
 import time
 from pathlib import Path
 
-REQUIREMENTS_FILE = "requirements.txt"
-PANEL_CONFIG_FILE = Path("panel_config.json")
+ROOT_DIR = Path(__file__).resolve().parent
+REQUIREMENTS_FILE = ROOT_DIR / "requirements.txt"
+PANEL_CONFIG_FILE = ROOT_DIR / "panel_config.json"
 DEFAULT_PANEL_PORT = 20000
 
 processes = []
-RESTART_FLAG = Path("data") / "restart.flag"
+RESTART_FLAG = ROOT_DIR / "data" / "restart.flag"
 
 
 def _parse_port(value):
@@ -46,16 +47,17 @@ def _resolve_default_panel_port():
 
 
 def install_dependencies():
-    if not os.path.exists(REQUIREMENTS_FILE):
+    if not REQUIREMENTS_FILE.exists():
         print("[WARN] requirements.txt not found, skipping install")
         return
 
     print("[INFO] Checking / installing dependencies...")
     result = subprocess.run(
-        [sys.executable, "-m", "pip", "install", "-r", REQUIREMENTS_FILE,
+        [sys.executable, "-m", "pip", "install", "-r", str(REQUIREMENTS_FILE),
          "--quiet", "--disable-pip-version-check"],
         capture_output=True,
         text=True,
+        cwd=str(ROOT_DIR),
     )
     if result.returncode == 0:
         print("[OK]   Dependencies ready")
@@ -115,7 +117,8 @@ def main():
                                      
     print(f"[INFO] Starting Web Control Panel on port {args.port}...")
     web_proc = subprocess.Popen(
-        [sys.executable, "server_manager.py", "--port", str(args.port)],
+        [sys.executable, str(ROOT_DIR / "server_manager.py"), "--port", str(args.port)],
+        cwd=str(ROOT_DIR),
         stdout=sys.stdout,
         stderr=sys.stderr,
     )

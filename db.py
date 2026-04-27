@@ -9,7 +9,8 @@ try:
 except Exception:                                                
     Fernet = None
 
-DATA_DIR = Path('./data')
+ROOT_DIR = Path(__file__).resolve().parent
+DATA_DIR = ROOT_DIR / 'data'
 DB_CONFIG_FILE = DATA_DIR / 'db.json'
 DB_KEY_FILE = DATA_DIR / 'db.key'
 

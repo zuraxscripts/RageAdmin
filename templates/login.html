@@ -28,11 +28,12 @@
                         radial-gradient(1200px 800px at 100% 0%, rgba(124,104,35,.12), transparent 55%),
                         var(--bg);
             color: var(--text);
-            min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
-            padding: 1rem;
+            padding: clamp(1rem, 4vh, 3rem) 1rem;
+            overflow-x: hidden;
         }
 
         .login-container {
@@ -48,14 +49,16 @@
 
         .logo {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: clamp(0.875rem, 2vh, 1.5rem);
         }
 
         .logo img {
-            width: 220px;
+            width: clamp(96px, 16vw, 144px);
+            max-height: min(16vh, 144px);
             height: auto;
             display: inline-block;
-            margin-bottom: 12px;
+            object-fit: contain;
+            margin-bottom: 10px;
         }
 
         .logo h1 {
@@ -74,7 +77,7 @@
             background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
             border: 1px solid var(--border);
             border-radius: 18px;
-            padding: 2rem;
+            padding: clamp(1.25rem, 2vw, 2rem);
             box-shadow: 0 10px 30px rgba(0,0,0,.35);
         }
 
@@ -180,6 +183,10 @@
             color: var(--muted);
             cursor: pointer;
         }
+
+        @media (max-width: 520px) {
+            .card { padding: 1.25rem; }
+        }
     </style>
 </head>
 <body>
@@ -187,7 +194,7 @@
         <div class="logo">
             <img src="/logo.png" alt="RageAdmin">
             <h1 data-i18n="brand_name">RageAdmin</h1>
-            <p data-i18n="brand_tagline">GTA IV Multiplayer Server Manager</p>
+            <p data-i18n="brand_tagline">Admin panel for GTA V RageMP servers</p>
         </div>
 
         <div class="card">

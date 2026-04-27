@@ -29,16 +29,17 @@
                         radial-gradient(1200px 800px at 100% 0%, rgba(124,104,35,.12), transparent 55%),
                         var(--bg);
             color: var(--text);
-            min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
-            padding: 1rem;
+            padding: clamp(0.75rem, 3vh, 2rem) 1rem;
+            overflow-x: hidden;
         }
 
         .setup-container {
             width: 100%;
-            max-width: 460px;
+            max-width: 720px;
             animation: fadeUp 0.4s ease-out;
         }
 
@@ -49,14 +50,16 @@
 
         .logo {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: clamp(0.875rem, 2vh, 1.5rem);
         }
 
         .logo img {
-            width: 220px;
+            width: clamp(96px, 16vw, 148px);
+            max-height: min(16vh, 148px);
             height: auto;
             display: inline-block;
-            margin-bottom: 12px;
+            object-fit: contain;
+            margin-bottom: 10px;
         }
 
         .logo h1 {
@@ -75,8 +78,11 @@
             background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
             border: 1px solid var(--border);
             border-radius: 18px;
-            padding: 2rem;
+            padding: clamp(1rem, 2vw, 2rem);
             box-shadow: 0 10px 30px rgba(0,0,0,.35);
+            max-height: min(820px, calc(100dvh - 2rem));
+            overflow: auto;
+            scrollbar-gutter: stable;
         }
 
         .card-title {
@@ -173,6 +179,17 @@
         .btn-secondary:hover { background: rgba(255,255,255,.08); transform: translateY(-1px); }
 
         .form-group { margin-bottom: 1.25rem; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-grid .form-group {
+            margin-bottom: 0;
+        }
 
         .form-label {
             display: block;
@@ -441,6 +458,8 @@
             .step-actions { flex-direction: column; }
             .summary-grid { grid-template-columns: 1fr; }
             .progress-log { max-height: 26vh; }
+            .form-grid { grid-template-columns: 1fr; }
+            .card { max-height: none; overflow: visible; }
         }
     </style>
 </head>
@@ -449,7 +468,7 @@
         <div class="logo">
             <img src="/logo.png" alt="RageAdmin">
             <h1 data-i18n="brand_name">RageAdmin</h1>
-            <p data-i18n="brand_tagline">GTA IV Multiplayer Server Manager</p>
+            <p data-i18n="brand_tagline">Admin panel for GTA V RageMP servers</p>
         </div>
 
         <div class="card">
@@ -492,20 +511,22 @@
                         <p class="form-hint" data-i18n="setup_username_hint">This will be your administrator account</p>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label"><i class="fa-solid fa-lock"></i> <span data-i18n="setup_password">Admin Password</span></label>
-                        <input type="password" class="form-input" id="password" placeholder="Enter a strong password" data-i18n-placeholder="setup_password_placeholder" required autocomplete="new-password">
-                        <div class="password-strength">
-                            <div class="strength-bar">
-                                <div class="strength-fill" id="strengthBar"></div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-lock"></i> <span data-i18n="setup_password">Admin Password</span></label>
+                            <input type="password" class="form-input" id="password" placeholder="Enter a strong password" data-i18n-placeholder="setup_password_placeholder" required autocomplete="new-password">
+                            <div class="password-strength">
+                                <div class="strength-bar">
+                                    <div class="strength-fill" id="strengthBar"></div>
+                                </div>
+                                <p class="strength-text" id="strengthText" data-i18n="password_strength_hint">Enter password to check strength</p>
                             </div>
-                            <p class="strength-text" id="strengthText" data-i18n="password_strength_hint">Enter password to check strength</p>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label class="form-label"><i class="fa-solid fa-lock"></i> <span data-i18n="setup_confirm">Confirm Password</span></label>
-                        <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm your password" data-i18n-placeholder="setup_confirm_placeholder" required autocomplete="new-password">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-lock"></i> <span data-i18n="setup_confirm">Confirm Password</span></label>
+                            <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm your password" data-i18n-placeholder="setup_confirm_placeholder" required autocomplete="new-password">
+                        </div>
                     </div>
 
                     <div class="step-actions">
@@ -517,31 +538,33 @@
                 </div>
 
                 <div class="setup-step" id="step3">
-                    <div class="form-group">
-                        <label class="form-label"><i class="fa-solid fa-database"></i> Database Host</label>
-                        <input type="text" class="form-input" id="dbHost" placeholder="127.0.0.1" required autocomplete="off">
-                        <p class="form-hint">Database endpoint / IP</p>
-                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-database"></i> Database Host</label>
+                            <input type="text" class="form-input" id="dbHost" placeholder="127.0.0.1" required autocomplete="off">
+                            <p class="form-hint">Database endpoint / IP</p>
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label"><i class="fa-solid fa-network-wired"></i> Database Port</label>
-                        <input type="number" class="form-input" id="dbPort" placeholder="3306" value="3306" required autocomplete="off">
-                    </div>
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-network-wired"></i> Database Port</label>
+                            <input type="number" class="form-input" id="dbPort" placeholder="3306" value="3306" required autocomplete="off">
+                        </div>
 
-                    <div class="form-group">
-                        <label class="form-label"><i class="fa-solid fa-user"></i> Database Username</label>
-                        <input type="text" class="form-input" id="dbUser" placeholder="root" required autocomplete="off">
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-user"></i> Database Username</label>
+                            <input type="text" class="form-input" id="dbUser" placeholder="root" required autocomplete="off">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="fa-solid fa-database"></i> Database Name</label>
+                            <input type="text" class="form-input" id="dbName" placeholder="ragemp" required autocomplete="off">
+                            <p class="form-hint">Database must already exist</p>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label"><i class="fa-solid fa-lock"></i> Database Password</label>
                         <input type="password" class="form-input" id="dbPassword" placeholder="Database password" required autocomplete="off">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label"><i class="fa-solid fa-database"></i> Database Name</label>
-                        <input type="text" class="form-input" id="dbName" placeholder="ragemp" required autocomplete="off">
-                        <p class="form-hint">Database must already exist</p>
                     </div>
 
                     <div class="form-group">
