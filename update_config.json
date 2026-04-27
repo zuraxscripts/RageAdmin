@@ -1,0 +1,5 @@
+﻿{
+    "panel_repo": "zuraxscripts/RageAdmin",
+    "ragemp_server_url": "https://cdn.rage.mp/updater/prerelease/server-files/linux_x64.tar.gz",
+    "check_interval_minutes": 10
+}

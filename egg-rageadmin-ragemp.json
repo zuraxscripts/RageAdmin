@@ -1,0 +1,65 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-04-27T18:30:00+02:00",
+    "name": "RageAdmin",
+    "author": "Zurax",
+    "description": "RageAdmin - web-based management panel for RageMP servers. Requires 3 ports: RageMP game port, RageMP transfer/http port (game port + 1), and a separate panel port.",
+    "features": null,
+    "docker_images": {
+        "ghcr.io/parkervcp/yolks:python_3.9": "ghcr.io/parkervcp/yolks:python_3.9",
+        "ghcr.io/parkervcp/yolks:python_3.10": "ghcr.io/parkervcp/yolks:python_3.10",
+        "ghcr.io/parkervcp/yolks:python_3.11": "ghcr.io/parkervcp/yolks:python_3.11",
+        "ghcr.io/parkervcp/yolks:python_3.12": "ghcr.io/parkervcp/yolks:python_3.12"
+    },
+    "file_denylist": [],
+    "startup": "bash /home/container/start-rageadmin.sh",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"Access: http://0.0.0.0:{{PANEL_PORT}}\"\r\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\r\nset -e\r\napt update\r\napt install -y git curl python3 python3-pip ca-certificates\r\n\r\nmkdir -p /mnt/server\r\ncd /mnt/server\r\n\r\necho -e \"Cleaning target directory...\"\r\nfind /mnt/server -mindepth 1 -maxdepth 1 -exec rm -rf {} +\r\n\r\necho -e \"Cloning RageAdmin from ${GIT_REPO_URL} (${GIT_BRANCH})...\"\r\ngit clone --depth 1 --branch \"${GIT_BRANCH}\" \"${GIT_REPO_URL}\" .\r\n\r\ncat > /mnt/server/start-rageadmin.sh <<'EOF'\r\n#!/bin/bash\r\nset -e\r\ncd /home/container\r\n\r\nGAME_PORT=\"${SERVER_PORT:-22005}\"\r\nTRANSFER_PORT=\"$((GAME_PORT + 1))\"\r\nPANEL_HTTP_PORT=\"${PANEL_PORT:-22007}\"\r\n\r\nif [[ \"${PANEL_HTTP_PORT}\" == \"${GAME_PORT}\" || \"${PANEL_HTTP_PORT}\" == \"${TRANSFER_PORT}\" ]]; then\r\n    echo \"[ERROR] PANEL_PORT (${PANEL_HTTP_PORT}) must be different from SERVER_PORT (${GAME_PORT}) and SERVER_PORT+1 (${TRANSFER_PORT}).\"\r\n    exit 1\r\nfi\r\n\r\nif [[ -f requirements.txt ]]; then\r\n    python3 -m pip install --user -r requirements.txt\r\nfi\r\n\r\npython3 - <<'PY'\r\nimport json\r\nimport os\r\nfrom pathlib import Path\r\n\r\nconf_path = Path('RageMP-Server/ragemp-srv/conf.json')\r\nconf_path.parent.mkdir(parents=True, exist_ok=True)\r\n\r\ndata = {}\r\nif conf_path.exists():\r\n    try:\r\n        loaded = json.loads(conf_path.read_text(encoding='utf-8-sig'))\r\n        if isinstance(loaded, dict):\r\n            data = loaded\r\n    except Exception:\r\n        data = {}\r\n\r\ngame_port = int(os.environ.get('SERVER_PORT', '22005'))\r\ndata['port'] = game_port\r\ndata['bind'] = '0.0.0.0'\r\n\r\nconf_path.write_text(json.dumps(data, indent=4), encoding='utf-8')\r\nPY\r\n\r\necho \"[INFO] This egg expects 3 allocations: SERVER_PORT, SERVER_PORT+1, and PANEL_PORT.\"\r\necho \"[INFO] RageMP game port: ${GAME_PORT}\"\r\necho \"[INFO] RageMP transfer/http port: ${TRANSFER_PORT}\"\r\necho \"[INFO] RageAdmin panel port: ${PANEL_HTTP_PORT}\"\r\n\r\npython3 main.py --port \"${PANEL_HTTP_PORT}\"\r\nEOF\r\nchmod +x /mnt/server/start-rageadmin.sh\r\n\r\necho -e \"Installation completed.\"",
+            "container": "ghcr.io/parkervcp/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Panel Port",
+            "description": "RageAdmin web panel HTTP port. This must be a third allocation and must not match SERVER_PORT or SERVER_PORT+1.",
+            "env_variable": "PANEL_PORT",
+            "default_value": "22007",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|min:1|max:65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Repository URL",
+            "description": "Repository to clone during installation",
+            "env_variable": "GIT_REPO_URL",
+            "default_value": "https://github.com/zuraxscripts/RageAdmin.git",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:255",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Branch",
+            "description": "Branch cloned during installation",
+            "env_variable": "GIT_BRANCH",
+            "default_value": "main",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:64",
+            "field_type": "text"
+        }
+    ]
+}
