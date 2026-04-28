@@ -237,7 +237,7 @@
     }
 
     .sidebar-runtime{
-      margin-top:12px;
+      margin-top:4px;
       padding:14px;
       border-radius:16px;
       border:1px solid rgba(255,255,255,.10);
@@ -247,13 +247,16 @@
       box-shadow: 0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.03);
     }
     .sidebar-runtime .runtime-toolbar{
-      margin-bottom:12px;
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap:8px;
+      margin:14px 0 12px;
     }
     .sidebar-runtime .runtime-tool{
-      width:38px;
-      height:38px;
-      border-radius:11px;
+      width:100%;
+      min-height:42px;
+      justify-content:flex-start;
+      border-radius:12px;
     }
     .sidebar-runtime-name{
       font-size:16px;
@@ -314,6 +317,16 @@
       flex:1;
       overflow-y:auto;
     }
+    .top-nav{
+      display:flex;
+      flex-direction:row;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:0;
+      flex:none;
+      overflow:visible;
+      width:100%;
+    }
     .nav-item{
       display:flex; align-items:center; gap:10px;
       padding:10px 12px;
@@ -334,6 +347,18 @@
       border-color: rgba(var(--primary-rgb),.35);
     }
     .nav-item i{width:18px; opacity:.95}
+    .top-nav .nav-item{
+      padding:11px 14px;
+      background: rgba(255,255,255,.03);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+    .top-nav .nav-item.active{
+      background: linear-gradient(180deg, rgba(var(--primary-rgb),.24), rgba(var(--primary-rgb),.14));
+      border-color: rgba(var(--primary-rgb),.4);
+      box-shadow: 0 10px 22px rgba(var(--primary-rgb),.12), inset 0 0 0 1px rgba(255,255,255,.04);
+    }
 
     .sidebar-footer{
       margin-top:auto;
@@ -366,10 +391,15 @@
     }
 
     .topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      padding:10px;
       margin-bottom:14px;
-      flex-wrap:wrap;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      box-shadow: var(--shadow);
     }
 
     .update-banner{
@@ -1966,10 +1996,8 @@
       .hamburger{ display:flex; }
       .main{ padding-top:60px; }
       .stat{ grid-column: span 6; }
-      .status-chip{min-width:auto;flex:1;margin-left:50px;}
       .dash-overview,.dash-console{grid-column: span 12;}
-      .topbar{flex-direction:column;align-items:stretch;}
-      .topbar .actions{justify-content:flex-end;}
+      .topbar{padding:12px 12px 12px 62px;}
       .modal-content-custom{width:100% !important;max-height:95vh;}
       .settings-col{ grid-column: span 12; }
       textarea.inputx.discord-json{
@@ -1993,6 +2021,8 @@
       .topbar .actions{width:100%;justify-content:flex-start;}
       .cardx-header .actions .btnx,
       .topbar .actions .btnx{flex:1 1 calc(50% - 6px);}
+      .topbar{padding:10px 10px 10px 56px;}
+      .top-nav .nav-item{flex:1 1 calc(50% - 4px);justify-content:center;}
       .cmdbar{flex-direction:column;}
       .cmdbar .btnx{width:100%;}
       .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
@@ -2180,36 +2210,28 @@
         <img class="brand-logo-img" src="/logo.png" alt="RageAdmin">
       </div>
 
-      <nav class="nav">
-        <div class="nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-simple"></i> <span data-i18n="nav_dashboard">Dashboard</span></div>
-        <div class="nav-item" data-page="console"><i class="fa-solid fa-terminal"></i> <span data-i18n="nav_console">Console</span></div>
-        <div class="nav-item" data-page="files"><i class="fa-solid fa-folder-open"></i> <span data-i18n="nav_files">Files</span></div>
-        <div class="nav-item" data-page="resources" id="resourcesNav" style="display:none;"><i class="fa-solid fa-puzzle-piece"></i> <span data-i18n="nav_resources">Resources</span></div>
-        <div class="nav-item" data-page="addons" id="addonsNav" style="display:none;"><i class="fa-solid fa-cubes"></i> <span data-i18n="nav_addons">Addons</span></div>
-        <div class="nav-item" data-page="settings" id="settingsNav" style="display:none;"><i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Settings</span></div>
-        <div class="nav-item" data-page="logs"><i class="fa-solid fa-file-lines"></i> <span data-i18n="nav_logs">Logs</span></div>
-        <div class="nav-item" data-page="players"><i class="fa-solid fa-users"></i> <span data-i18n="nav_players">Players</span></div>
-        <div class="nav-item" data-page="admin" id="adminNav" style="display:none;"><i class="fa-solid fa-shield"></i> <span data-i18n="nav_admin">Admin</span></div>
-      </nav>
-
       <section class="sidebar-runtime">
-        <div class="runtime-toolbar">
-          <button class="runtime-tool success" id="btnDashStart" title="Start">
-            <i class="fa-solid fa-play"></i>
-          </button>
-          <button class="runtime-tool danger" id="btnDashStop" title="Stop">
-            <i class="fa-solid fa-stop"></i>
-          </button>
-          <button class="runtime-tool primary" id="btnDashRestart" title="Restart">
-            <i class="fa-solid fa-rotate"></i>
-          </button>
-          <button class="runtime-tool warning" id="btnDashAnnounce" title="Announce">
-            <i class="fa-solid fa-bullhorn"></i>
-          </button>
-        </div>
-
         <div class="sidebar-runtime-name" id="runtimeServerName">RageMP Server</div>
         <div class="sidebar-runtime-meta" id="runtimeServerMeta" data-i18n="status_waiting">Waiting for status...</div>
+
+        <div class="runtime-toolbar">
+          <button class="btnx success runtime-tool" id="btnDashStart" title="Start">
+            <i class="fa-solid fa-play"></i>
+            <span data-i18n="btn_start">Start</span>
+          </button>
+          <button class="btnx danger runtime-tool" id="btnDashStop" title="Stop">
+            <i class="fa-solid fa-stop"></i>
+            <span data-i18n="btn_stop">Stop</span>
+          </button>
+          <button class="btnx primary runtime-tool" id="btnDashRestart" title="Restart">
+            <i class="fa-solid fa-rotate"></i>
+            <span data-i18n="btn_restart">Restart</span>
+          </button>
+          <button class="btnx warning runtime-tool" id="btnDashAnnounce" title="Announce">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span data-i18n="btn_announce">Announce</span>
+          </button>
+        </div>
 
         <div class="runtime-grid">
           <div class="runtime-row">
@@ -2277,19 +2299,17 @@
     
     <main class="main">
       <div class="topbar">
-        <div class="status-chip">
-          <div class="dot" id="statusDot"></div>
-          <div>
-            <div class="title" id="statusTitle" data-i18n="status_offline">Server Offline</div>
-            <div class="desc" id="statusDesc" data-i18n="status_waiting">Waiting for status...</div>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button class="btnx success" id="btnStart"><i class="fa-solid fa-play"></i> <span data-i18n="btn_start">Start</span></button>
-          <button class="btnx danger" id="btnStop"><i class="fa-solid fa-stop"></i> <span data-i18n="btn_stop">Stop</span></button>
-          <button class="btnx primary" id="btnRestart"><i class="fa-solid fa-rotate"></i> <span data-i18n="btn_restart">Restart</span></button>
-        </div>
+        <nav class="nav top-nav">
+          <div class="nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-simple"></i> <span data-i18n="nav_dashboard">Dashboard</span></div>
+          <div class="nav-item" data-page="console"><i class="fa-solid fa-terminal"></i> <span data-i18n="nav_console">Console</span></div>
+          <div class="nav-item" data-page="files"><i class="fa-solid fa-folder-open"></i> <span data-i18n="nav_files">Files</span></div>
+          <div class="nav-item" data-page="resources" id="resourcesNav" style="display:none;"><i class="fa-solid fa-puzzle-piece"></i> <span data-i18n="nav_resources">Resources</span></div>
+          <div class="nav-item" data-page="addons" id="addonsNav" style="display:none;"><i class="fa-solid fa-cubes"></i> <span data-i18n="nav_addons">Addons</span></div>
+          <div class="nav-item" data-page="settings" id="settingsNav" style="display:none;"><i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Settings</span></div>
+          <div class="nav-item" data-page="logs"><i class="fa-solid fa-file-lines"></i> <span data-i18n="nav_logs">Logs</span></div>
+          <div class="nav-item" data-page="players"><i class="fa-solid fa-users"></i> <span data-i18n="nav_players">Players</span></div>
+          <div class="nav-item" data-page="admin" id="adminNav" style="display:none;"><i class="fa-solid fa-shield"></i> <span data-i18n="nav_admin">Admin</span></div>
+        </nav>
       </div>
 
       <div class="update-banner" id="updateBanner">
@@ -4127,32 +4147,29 @@
       drawDashboardCharts();
     });
 
+    function setButtonDisabled(id, disabled){
+      const el = document.getElementById(id);
+      if(el) el.disabled = disabled;
+    }
+
     function updateStatusIndicator(running){
       serverRunning = running;
       const dot = document.getElementById('statusDot');
       const title = document.getElementById('statusTitle');
       const desc = document.getElementById('statusDesc');
-      if (!dot || !title || !desc) return;
       if(running){
-        dot.classList.add('on');
-        title.textContent = t('status_online', 'Server Online');
-        desc.textContent = t('status_online_desc', 'Streaming stats and console.');
+        if(dot) dot.classList.add('on');
+        if(title) title.textContent = t('status_online', 'Server Online');
+        if(desc) desc.textContent = t('status_online_desc', 'Streaming stats and console.');
       } else {
-        dot.classList.remove('on');
-        title.textContent = t('status_offline', 'Server Offline');
-        desc.textContent = t('status_offline_desc', 'Start the server to go online.');
+        if(dot) dot.classList.remove('on');
+        if(title) title.textContent = t('status_offline', 'Server Offline');
+        if(desc) desc.textContent = t('status_offline_desc', 'Start the server to go online.');
       }
-      document.getElementById('btnStart').disabled = running;
-      document.getElementById('btnStop').disabled = !running;
-      document.getElementById('btnRestart').disabled = !running;
-      const btnDashStart = document.getElementById('btnDashStart');
-      const btnDashStop = document.getElementById('btnDashStop');
-      const btnDashRestart = document.getElementById('btnDashRestart');
-      const btnDashAnnounce = document.getElementById('btnDashAnnounce');
-      if(btnDashStart) btnDashStart.disabled = running;
-      if(btnDashStop) btnDashStop.disabled = !running;
-      if(btnDashRestart) btnDashRestart.disabled = !running;
-      if(btnDashAnnounce) btnDashAnnounce.disabled = !running;
+      setButtonDisabled('btnDashStart', running);
+      setButtonDisabled('btnDashStop', !running);
+      setButtonDisabled('btnDashRestart', !running);
+      setButtonDisabled('btnDashAnnounce', !running);
     }
 
     async function apiPost(url, body){
@@ -7086,16 +7103,18 @@
       return d.toLocaleString();
     }
 
-    document.getElementById('btnStart').addEventListener('click', startServer);
-    document.getElementById('btnStop').addEventListener('click', stopServer);
-    document.getElementById('btnRestart').addEventListener('click', restartServer);
-    document.getElementById('btnDashStart').addEventListener('click', startServer);
-    document.getElementById('btnDashStop').addEventListener('click', stopServer);
-    document.getElementById('btnDashRestart').addEventListener('click', restartServer);
-    document.getElementById('btnDashAnnounce').addEventListener('click', broadcastMessage);
-    document.getElementById('btnOpenSchedule').addEventListener('click', openScheduledRestartPanel);
+    function bindClick(id, handler){
+      const el = document.getElementById(id);
+      if(el) el.addEventListener('click', handler);
+    }
+
+    bindClick('btnDashStart', startServer);
+    bindClick('btnDashStop', stopServer);
+    bindClick('btnDashRestart', restartServer);
+    bindClick('btnDashAnnounce', broadcastMessage);
+    bindClick('btnOpenSchedule', openScheduledRestartPanel);
     const btnRefreshStatus = document.getElementById('btnRefreshStatus');
-    btnRefreshStatus.addEventListener('click', () => runWithLoading(btnRefreshStatus, () => fetchStatus(true)));
+    if(btnRefreshStatus) btnRefreshStatus.addEventListener('click', () => runWithLoading(btnRefreshStatus, () => fetchStatus(true)));
 
     document.getElementById('btnClearDashConsole').addEventListener('click', ()=> document.getElementById('dashboardConsole').innerHTML = '');
     document.getElementById('btnClearConsole').addEventListener('click', ()=> document.getElementById('mainConsole').innerHTML = '');
