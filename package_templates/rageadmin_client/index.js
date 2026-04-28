@@ -3,7 +3,6 @@ const UI_URL = 'http://package/rageadmin/ui/index.html';
 let browser = null;
 let browserReady = false;
 let queuedCalls = [];
-let lastMonitorPayload = null;
 
 function safeJson(value, fallback) {
     if (typeof value === 'string') {
@@ -59,22 +58,13 @@ mp.events.add('browserDomReady', (createdBrowser) => {
         return;
     }
     browserReady = true;
-    callBrowser('rageadminSetConnection', { connected: true });
-    if (lastMonitorPayload) {
-        callBrowser('rageadminSetMonitor', lastMonitorPayload);
-    }
     flushBrowserCalls();
 });
 
 mp.events.add('browserLoadingFailed', (createdBrowser, url, errorCode) => {
     if (browser && createdBrowser === browser) {
-        mp.gui.chat.push(`[RageAdmin] Monitor UI failed to load (${errorCode || 'unknown'}): ${url || UI_URL}`);
+        mp.gui.chat.push(`[RageAdmin] Notice UI failed to load (${errorCode || 'unknown'}): ${url || UI_URL}`);
     }
-});
-
-mp.events.add('rageadmin:ui:monitor', (rawPayload) => {
-    lastMonitorPayload = rawPayload || '{}';
-    callBrowser('rageadminSetMonitor', lastMonitorPayload);
 });
 
 mp.events.add('rageadmin:ui:notice', (rawPayload) => {
@@ -83,9 +73,6 @@ mp.events.add('rageadmin:ui:notice', (rawPayload) => {
 
 mp.events.add('playerReady', () => {
     ensureBrowser();
-    if (lastMonitorPayload) {
-        callBrowser('rageadminSetMonitor', lastMonitorPayload);
-    }
 });
 
 ensureBrowser();

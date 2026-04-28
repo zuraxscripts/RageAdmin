@@ -658,6 +658,8 @@ def _append_runtime_sample(force=False, emit_socket=True):
 def build_runtime_status_payload(include_history=False):
     _normalize_runtime_stats_history()
     now_ts = time.time()
+    settings = parse_settings_xml() or {}
+    discord_cfg = _get_discord_config() or {}
     payload = {
         'running': server_state['running'],
         'uptime': int(now_ts - server_state['start_time']) if server_state['start_time'] else 0,
@@ -671,6 +673,9 @@ def build_runtime_status_payload(include_history=False):
         'max_players': _current_max_players(),
         'resources_running': _current_resources_running(),
         'resources_total': len(resource_states),
+        'server_name': str(settings.get('name') or 'RageMP Server').strip() or 'RageMP Server',
+        'discord_bot_enabled': bool(discord_cfg.get('enabled')),
+        'next_scheduled_restart': _compute_next_scheduled_restart(panel_config.get('scheduled_restarts') or []),
         'bridge_online': _bridge_online(now_ts),
         'bridge_last_heartbeat': panel_connector_last_heartbeat,
         'bridge_age_sec': round(max(0.0, now_ts - panel_connector_last_heartbeat), 1) if panel_connector_last_heartbeat else None
@@ -1480,30 +1485,6 @@ def _status_template_context():
         'nextScheduledRestart': _compute_next_scheduled_restart(panel_config.get('scheduled_restarts') or []),
         'uptime': _format_uptime_short(uptime_seconds),
         '_status_color': status_color
-    }
-
-
-def _build_txadmin_monitor_payload():
-    settings = parse_settings_xml() or {}
-    discord_cfg = _get_discord_config()
-    uptime_seconds = int(time.time() - server_state['start_time']) if server_state.get('start_time') else 0
-    max_players = 0
-    try:
-        max_players = max(0, int(settings.get('maxplayers') or 0))
-    except Exception:
-        max_players = 0
-
-    return {
-        'serverName': str(settings.get('name') or 'RageMP Server').strip() or 'RageMP Server',
-        'status': 'online' if server_state.get('running') else 'offline',
-        'playersOnline': len(connected_players),
-        'playersMax': max_players,
-        'uptimeSec': uptime_seconds,
-        'uptimeText': _format_uptime_short(uptime_seconds),
-        'discordBotEnabled': bool((discord_cfg or {}).get('enabled')),
-        'nextRestart': _compute_next_scheduled_restart(panel_config.get('scheduled_restarts') or []),
-        'autoRestart': bool(server_state.get('auto_restart')),
-        'panelName': str((panel_config or {}).get('panel_name') or 'RageAdmin').strip() or 'RageAdmin'
     }
 
 
@@ -5196,7 +5177,7 @@ def api_panel_hook_heartbeat():
     socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
     if was_stale:
         discord_runtime.request_status_refresh(force=True)
-    return jsonify({'ok': True, 'monitor': _build_txadmin_monitor_payload()})
+    return jsonify({'ok': True})
 
 
 @app.route('/api/panel-hook/pending-actions', methods=['GET'])

@@ -21,7 +21,6 @@ let state = {
     joinTimes: new Map(),
     pendingConnections: new Map(),
     playerMeta: new Map(),
-    monitor: null,
     syncTimer: null,
     heartbeatTimer: null,
     configTimer: null,
@@ -339,9 +338,7 @@ function syncPlayers() {
     requestJson('POST', '/api/panel-hook/players-sync', { players }, (err) => {
         if (err) {
             logError(`players-sync failed: ${err.message}`);
-            return;
         }
-        broadcastMonitorState(false);
     });
 }
 
@@ -351,14 +348,10 @@ function sendHeartbeat() {
         package: 'rageadmin',
         playerCount: mp.players.toArray().length,
         panelHost: state.config.panelHost
-    }, (err, response) => {
+    }, (err) => {
         if (err) {
             logError(`heartbeat failed: ${err.message}`);
-            broadcastMonitorState(true);
             return;
-        }
-        if (response && response.monitor && typeof response.monitor === 'object') {
-            updateMonitorState(response.monitor, true);
         }
     });
 }
@@ -393,37 +386,6 @@ function emitAllClientEvent(eventName, payload) {
     try {
         mp.players.call(eventName, [serialized]);
     } catch (err) {}
-}
-
-function buildMonitorState(overrides) {
-    const base = Object.assign({}, state.monitor || {}, overrides || {});
-    base.playersOnline = mp.players.toArray().length;
-    return base;
-}
-
-function broadcastMonitorState(disconnected) {
-    const payload = buildMonitorState({ disconnected: !!disconnected });
-    if (!payload || Object.keys(payload).length === 0) {
-        return;
-    }
-    emitAllClientEvent('rageadmin:ui:monitor', payload);
-}
-
-function updateMonitorState(monitor, broadcastNow) {
-    if (!monitor || typeof monitor !== 'object') {
-        return;
-    }
-    state.monitor = buildMonitorState(monitor);
-    if (broadcastNow) {
-        broadcastMonitorState(false);
-    }
-}
-
-function sendMonitorToPlayer(player) {
-    if (!player || !state.monitor) {
-        return;
-    }
-    emitClientEvent(player, 'rageadmin:ui:monitor', buildMonitorState());
 }
 
 function buildUiNotice(action, fallbackTitle, fallbackVariant) {
@@ -549,20 +511,16 @@ mp.events.add('playerJoin', (player) => {
     state.joinTimes.set(getServerId(player), Math.floor(Date.now() / 1000));
     attachMetaToPlayer(player);
     sendPlayerJoin(player);
-    sendMonitorToPlayer(player);
-    setTimeout(() => broadcastMonitorState(false), 300);
     setTimeout(syncPlayers, 250);
 });
 
 mp.events.add('playerReady', (player) => {
     if (player) {
         sendPlayerJoin(player);
-        sendMonitorToPlayer(player);
     }
 });
 
 mp.events.add('playerQuit', (player, exitType, reason) => {
     sendPlayerDisconnect(player, exitType, reason);
-    setTimeout(() => broadcastMonitorState(false), 300);
     setTimeout(syncPlayers, 250);
 });

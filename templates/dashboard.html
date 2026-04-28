@@ -377,7 +377,8 @@
       gap:14px;
     }
     .dash-overview{ grid-column: span 7; }
-    .dash-console{ grid-column: span 5; }
+    .dash-runtime{ grid-column: span 5; }
+    .dash-console{ grid-column: span 12; }
     .stat-grid{
       display:grid;
       grid-template-columns: repeat(2, minmax(0,1fr));
@@ -510,6 +511,148 @@
       color:#c7d2fe;
       border-color: rgba(var(--primary-rgb),.45);
       background: rgba(var(--primary-rgb),.18);
+    }
+
+    .runtime-panel{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .runtime-toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .runtime-tool{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .runtime-tool:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,.18);
+      background: rgba(255,255,255,.10);
+    }
+    .runtime-tool:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      transform:none;
+    }
+    .runtime-tool.success{ background: rgba(34,197,94,.14); border-color: rgba(34,197,94,.28); }
+    .runtime-tool.danger{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.28); }
+    .runtime-tool.primary{ background: rgba(var(--primary-rgb),.20); border-color: rgba(var(--primary-rgb),.35); }
+    .runtime-tool.warning{ background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.28); }
+    .runtime-hero{
+      padding:14px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        radial-gradient(220px 110px at 0% 0%, rgba(var(--primary-rgb),.16), transparent 60%),
+        rgba(0,0,0,.24);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+    .runtime-eyebrow{
+      font-size:10px;
+      letter-spacing:.10em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .runtime-server-name{
+      margin-top:8px;
+      font-size:22px;
+      font-weight:750;
+      line-height:1.1;
+      word-break:break-word;
+    }
+    .runtime-server-meta{
+      margin-top:6px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+    .runtime-grid{
+      display:grid;
+      gap:10px;
+    }
+    .runtime-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:11px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.20);
+    }
+    .runtime-row-label{
+      font-size:12px;
+      color:#d5d9e0;
+    }
+    .runtime-row-value{
+      font-size:13px;
+      font-weight:700;
+      text-align:right;
+      color:#f3f4f6;
+    }
+    .runtime-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:92px;
+      padding:5px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#dfe3ea;
+    }
+    .runtime-pill.online{
+      color:#08120c;
+      background: rgba(34,197,94,.94);
+      border-color: rgba(34,197,94,1);
+    }
+    .runtime-pill.offline{
+      color:#fff4f4;
+      background: rgba(239,68,68,.20);
+      border-color: rgba(239,68,68,.48);
+    }
+    .runtime-pill.waiting{
+      color:#fff7e6;
+      background: rgba(245,158,11,.18);
+      border-color: rgba(245,158,11,.34);
+    }
+    .runtime-pill.neutral{
+      color:#f2f5f9;
+      background: rgba(255,255,255,.07);
+      border-color: rgba(255,255,255,.10);
+    }
+    .runtime-footer{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+    }
+    .runtime-footer-copy{
+      flex:1;
+      min-width:220px;
+      font-size:12px;
+      line-height:1.5;
+      color:var(--muted);
     }
 
     .actions{
@@ -1752,7 +1895,7 @@
       .main{ padding-top:60px; }
       .stat{ grid-column: span 6; }
       .status-chip{min-width:auto;flex:1;margin-left:50px;}
-      .dash-overview,.dash-console{grid-column: span 12;}
+      .dash-overview,.dash-runtime,.dash-console{grid-column: span 12;}
       .topbar{flex-direction:column;align-items:stretch;}
       .topbar .actions{justify-content:flex-end;}
       .modal-content-custom{width:100% !important;max-height:95vh;}
@@ -1809,7 +1952,7 @@
       .file-actions .btnx.sm span.action-label{display:none;}
       .resource-actions .action-label{display:none;}
       .status-chip{margin-left:50px;}
-      .dash-overview,.dash-console{grid-column: span 12;}
+      .dash-overview,.dash-runtime,.dash-console{grid-column: span 12;}
     }
 
     @media (prefers-reduced-motion: reduce){
@@ -2158,6 +2301,68 @@
                     <div class="overview-label" data-i18n="overview_last_update">Last Update</div>
                     <div class="overview-value" id="statusUpdated">-</div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cardx dash-runtime">
+            <div class="cardx-header">
+              <div class="cardx-title"><i class="fa-solid fa-wave-square"></i> <span data-i18n="card_server_runtime">Server Runtime</span></div>
+            </div>
+            <div class="cardx-body">
+              <div class="runtime-panel">
+                <div class="runtime-toolbar">
+                  <button class="runtime-tool success" id="btnDashStart" title="Start">
+                    <i class="fa-solid fa-play"></i>
+                  </button>
+                  <button class="runtime-tool danger" id="btnDashStop" title="Stop">
+                    <i class="fa-solid fa-stop"></i>
+                  </button>
+                  <button class="runtime-tool primary" id="btnDashRestart" title="Restart">
+                    <i class="fa-solid fa-rotate"></i>
+                  </button>
+                  <button class="runtime-tool warning" id="btnDashAnnounce" title="Announce">
+                    <i class="fa-solid fa-bullhorn"></i>
+                  </button>
+                </div>
+
+                <div class="runtime-hero">
+                  <div class="runtime-eyebrow" data-i18n="runtime_panel_sync">Panel Sync</div>
+                  <div class="runtime-server-name" id="runtimeServerName">RageMP Server</div>
+                  <div class="runtime-server-meta" id="runtimeServerMeta" data-i18n="status_waiting">Waiting for status...</div>
+                </div>
+
+                <div class="runtime-grid">
+                  <div class="runtime-row">
+                    <span class="runtime-row-label" data-i18n="runtime_server_label">Server</span>
+                    <span class="runtime-pill offline" id="runtimeServerBadge">OFFLINE</span>
+                  </div>
+                  <div class="runtime-row">
+                    <span class="runtime-row-label" data-i18n="stat_uptime">Uptime</span>
+                    <span class="runtime-row-value" id="runtimeUptime">0s</span>
+                  </div>
+                  <div class="runtime-row">
+                    <span class="runtime-row-label" data-i18n="runtime_players_label">Players</span>
+                    <span class="runtime-row-value" id="runtimePlayers">0 / 0</span>
+                  </div>
+                  <div class="runtime-row">
+                    <span class="runtime-row-label" data-i18n="runtime_bridge_label">Bridge</span>
+                    <span class="runtime-pill waiting" id="runtimeBridge">WAITING</span>
+                  </div>
+                  <div class="runtime-row">
+                    <span class="runtime-row-label" data-i18n="runtime_discord_label">Discord Bot</span>
+                    <span class="runtime-pill neutral" id="runtimeDiscord">DISABLED</span>
+                  </div>
+                  <div class="runtime-row">
+                    <span class="runtime-row-label" data-i18n="runtime_next_restart_label">Next Restart</span>
+                    <span class="runtime-row-value" id="runtimeNextRestart">Nothing scheduled</span>
+                  </div>
+                </div>
+
+                <div class="runtime-footer">
+                  <div class="runtime-footer-copy" data-i18n="runtime_schedule_hint">Scheduled restarts are managed in Panel Configuration.</div>
+                  <button class="btnx" id="btnOpenSchedule"><i class="fa-solid fa-clock"></i> <span data-i18n="btn_open_schedule">Open Schedule</span></button>
                 </div>
               </div>
             </div>
@@ -3600,6 +3805,12 @@
       el.classList.toggle('on', !!on);
     }
 
+    function setRuntimePill(el, variant, label){
+      if(!el) return;
+      el.textContent = label;
+      el.className = `runtime-pill ${variant || 'neutral'}`;
+    }
+
     function setStatsHistory(samples){
       runtimeHistory = (Array.isArray(samples) ? samples : [])
         .filter(row => row && typeof row === 'object')
@@ -3723,9 +3934,21 @@
 
       updateStatusIndicator(!!data.running);
 
-      document.getElementById('uptime').textContent = formatUptime(data.uptime || 0);
-      document.getElementById('cpu').textContent = (data.cpu ?? 0).toFixed(1) + '%';
-      document.getElementById('memory').textContent = (data.memory ?? 0).toFixed(1) + ' MB';
+      const uptimeText = formatUptime(data.uptime || 0);
+      const cpuText = (data.cpu ?? 0).toFixed(1) + '%';
+      const memoryText = (data.memory ?? 0).toFixed(1) + ' MB';
+      const onlinePlayers = Number(data.players_online || 0);
+      const maxPlayers = Number(data.max_players || 0);
+      const totalProfiles = Number(data.players_saved || 0);
+      const offlineProfiles = Math.max(0, totalProfiles - onlinePlayers);
+      const nextRestart = String(data.next_scheduled_restart || '').trim() || t('runtime_not_scheduled','Nothing scheduled');
+      const serverName = String(data.server_name || 'RageMP Server').trim() || 'RageMP Server';
+      const bridgeOnline = !!data.bridge_online;
+      const discordEnabled = !!data.discord_bot_enabled;
+
+      document.getElementById('uptime').textContent = uptimeText;
+      document.getElementById('cpu').textContent = cpuText;
+      document.getElementById('memory').textContent = memoryText;
 
       const restartEl = document.getElementById('restartCount');
       if (restartEl) restartEl.textContent = (data.restart_count ?? 0);
@@ -3736,9 +3959,6 @@
       const bridgeEl = document.getElementById('bridgeBadge');
       if (bridgeEl) setMiniBadge(bridgeEl, !!data.bridge_online, t('label_connected','Connected'), t('label_waiting','Waiting'));
 
-      const totalProfiles = Number(data.players_saved || 0);
-      const onlinePlayers = Number(data.players_online || 0);
-      const offlineProfiles = Math.max(0, totalProfiles - onlinePlayers);
       setPlayerCounters({
         total: totalProfiles,
         online: onlinePlayers,
@@ -3753,13 +3973,42 @@
         resourcesSummaryEl.textContent = `${Number(data.resources_running || 0)} / ${Number(data.resources_total || 0)}`;
       }
 
-      const maxPlayers = Number(data.max_players || 0);
       const trendPlayersMeta = document.getElementById('trendPlayersMeta');
       if(trendPlayersMeta) trendPlayersMeta.textContent = `${onlinePlayers} / ${maxPlayers}`;
       const trendCpuMeta = document.getElementById('trendCpuMeta');
-      if(trendCpuMeta) trendCpuMeta.textContent = `${(data.cpu ?? 0).toFixed(1)}%`;
+      if(trendCpuMeta) trendCpuMeta.textContent = cpuText;
       const trendMemoryMeta = document.getElementById('trendMemoryMeta');
-      if(trendMemoryMeta) trendMemoryMeta.textContent = `${(data.memory ?? 0).toFixed(1)} MB`;
+      if(trendMemoryMeta) trendMemoryMeta.textContent = memoryText;
+
+      const runtimeServerName = document.getElementById('runtimeServerName');
+      if(runtimeServerName) runtimeServerName.textContent = serverName;
+      const runtimeServerMeta = document.getElementById('runtimeServerMeta');
+      if(runtimeServerMeta){
+        runtimeServerMeta.textContent = data.running
+          ? `${onlinePlayers} / ${maxPlayers} ${t('runtime_players_live','players live')}`
+          : t('status_offline_desc','Start the server to go online.');
+      }
+      setRuntimePill(
+        document.getElementById('runtimeServerBadge'),
+        data.running ? 'online' : 'offline',
+        data.running ? t('status_online_short','Online') : t('status_offline_short','Offline')
+      );
+      const runtimeUptime = document.getElementById('runtimeUptime');
+      if(runtimeUptime) runtimeUptime.textContent = uptimeText;
+      const runtimePlayers = document.getElementById('runtimePlayers');
+      if(runtimePlayers) runtimePlayers.textContent = `${onlinePlayers} / ${maxPlayers}`;
+      setRuntimePill(
+        document.getElementById('runtimeBridge'),
+        bridgeOnline ? 'online' : 'waiting',
+        bridgeOnline ? t('label_connected','Connected') : t('label_waiting','Waiting')
+      );
+      setRuntimePill(
+        document.getElementById('runtimeDiscord'),
+        discordEnabled ? 'online' : 'neutral',
+        discordEnabled ? t('label_enabled','Enabled') : t('label_disabled','Disabled')
+      );
+      const runtimeNextRestart = document.getElementById('runtimeNextRestart');
+      if(runtimeNextRestart) runtimeNextRestart.textContent = nextRestart;
 
       if(Array.isArray(data.history)){
         setStatsHistory(data.history);
@@ -3781,6 +4030,26 @@
       if (updatedEl) {
         updatedEl.textContent = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       }
+    }
+
+    function focusScheduledRestartEditor(attempt = 0){
+      const group = document.getElementById('panelScheduledRestartsGroup');
+      const input = document.getElementById('newSchedInput');
+      if(group && input){
+        group.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        input.focus();
+        input.select();
+        return;
+      }
+      if(attempt < 20){
+        window.setTimeout(() => focusScheduledRestartEditor(attempt + 1), 150);
+      }
+    }
+
+    function openScheduledRestartPanel(){
+      switchPage('settings');
+      setSettingsCategory('general', true);
+      focusScheduledRestartEditor();
     }
 
     async function fetchStatus(force = false){
@@ -3816,6 +4085,14 @@
       document.getElementById('btnStart').disabled = running;
       document.getElementById('btnStop').disabled = !running;
       document.getElementById('btnRestart').disabled = !running;
+      const btnDashStart = document.getElementById('btnDashStart');
+      const btnDashStop = document.getElementById('btnDashStop');
+      const btnDashRestart = document.getElementById('btnDashRestart');
+      const btnDashAnnounce = document.getElementById('btnDashAnnounce');
+      if(btnDashStart) btnDashStart.disabled = running;
+      if(btnDashStop) btnDashStop.disabled = !running;
+      if(btnDashRestart) btnDashRestart.disabled = !running;
+      if(btnDashAnnounce) btnDashAnnounce.disabled = !running;
     }
 
     async function apiPost(url, body){
@@ -3860,19 +4137,19 @@
       const out = await apiPost('/api/start');
       if(out.success) toast('success', t('label_server','Server'), t('toast_server_started'));
       else toast('error', t('label_server','Server'), out.message || t('toast_server_start_failed'));
-      fetchStatus();
+      fetchStatus(true);
     }
     async function stopServer(){
       const out = await apiPost('/api/stop');
       if(out.success) toast('success', t('label_server','Server'), t('toast_server_stopped'));
       else toast('error', t('label_server','Server'), out.message || t('toast_server_stop_failed'));
-      fetchStatus();
+      fetchStatus(true);
     }
     async function restartServer(){
       const out = await apiPost('/api/restart');
       if(out.success) toast('success', t('label_server','Server'), t('toast_server_restarted'));
       else toast('error', t('label_server','Server'), out.message || t('toast_server_restart_failed'));
-      fetchStatus();
+      fetchStatus(true);
     }
 
     async function sendCommand(){
@@ -4771,7 +5048,7 @@
       </div>`;
 
       const times = data.scheduled_restarts || [];
-      html += `<div class="form-group">
+      html += `<div class="form-group" id="panelScheduledRestartsGroup">
         <label class="form-label">${t('panel_scheduled_restarts','Scheduled Restarts')}</label>
         <div class="form-hint" style="margin-top:0;margin-bottom:8px;">${t('panel_scheduled_restarts_hint')}</div>
         <div class="tag-list" id="schedRestartTags">
@@ -6752,8 +7029,13 @@
     document.getElementById('btnStart').addEventListener('click', startServer);
     document.getElementById('btnStop').addEventListener('click', stopServer);
     document.getElementById('btnRestart').addEventListener('click', restartServer);
+    document.getElementById('btnDashStart').addEventListener('click', startServer);
+    document.getElementById('btnDashStop').addEventListener('click', stopServer);
+    document.getElementById('btnDashRestart').addEventListener('click', restartServer);
+    document.getElementById('btnDashAnnounce').addEventListener('click', broadcastMessage);
+    document.getElementById('btnOpenSchedule').addEventListener('click', openScheduledRestartPanel);
     const btnRefreshStatus = document.getElementById('btnRefreshStatus');
-    btnRefreshStatus.addEventListener('click', () => runWithLoading(btnRefreshStatus, fetchStatus));
+    btnRefreshStatus.addEventListener('click', () => runWithLoading(btnRefreshStatus, () => fetchStatus(true)));
 
     document.getElementById('btnClearDashConsole').addEventListener('click', ()=> document.getElementById('dashboardConsole').innerHTML = '');
     document.getElementById('btnClearConsole').addEventListener('click', ()=> document.getElementById('mainConsole').innerHTML = '');
@@ -6989,7 +7271,7 @@
       await loadLocale();
       await loadCurrentUser();
       applyCmdPerms();
-      await fetchStatus();
+      await fetchStatus(true);
       if(!statusPoller){
         statusPoller = setInterval(() => fetchStatus(true), 5000);
       }

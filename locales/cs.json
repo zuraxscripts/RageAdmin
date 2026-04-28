@@ -562,5 +562,20 @@
     "setup_pin_invalid": "Neplatn? setup PIN.",
     "players_section_saved": "Ulozeni hraci (Profily)",
     "players_profile_connections": "Pocet pripojeni",
-    "players_profile_last_ip": "Posledni IP"
+    "players_profile_last_ip": "Posledni IP",
+    "card_server_runtime": "Beh serveru",
+    "status_online_short": "Online",
+    "status_offline_short": "Offline",
+    "label_enabled": "Povoleno",
+    "label_disabled": "Vypnuto",
+    "runtime_panel_sync": "Panel Sync",
+    "runtime_server_label": "Server",
+    "runtime_players_label": "Hraci",
+    "runtime_bridge_label": "Bridge",
+    "runtime_discord_label": "Discord Bot",
+    "runtime_next_restart_label": "Dalsi restart",
+    "runtime_schedule_hint": "Planovane restarty sa spravuju v konfiguraci panelu.",
+    "runtime_players_live": "hracu online",
+    "runtime_not_scheduled": "Nic neni naplanovane",
+    "btn_open_schedule": "Otevrit plan"
 }
