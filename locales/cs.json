@@ -577,5 +577,22 @@
     "runtime_schedule_hint": "Planovane restarty sa spravuju v konfiguraci panelu.",
     "runtime_players_live": "hracu online",
     "runtime_not_scheduled": "Nic neni naplanovane",
-    "btn_open_schedule": "Otevrit plan"
+    "btn_open_schedule": "Otevrit plan",
+    "nav_live_console": "Live Console",
+    "nav_server_log": "Server Log",
+    "nav_cfg_editor": "CFG Editor",
+    "nav_history": "History",
+    "nav_player_drops": "Player Drops",
+    "nav_whitelist": "Whitelist",
+    "nav_admins": "Admins",
+    "nav_system": "System",
+    "sidebar_server_title": "Server",
+    "players_rail_summary": "Players",
+    "players_rail_filter": "Filter by Name or ID",
+    "players_rail_shortcut": "ctrl+k",
+    "players_rail_empty_title": "No players online.",
+    "players_rail_empty_hint": "Invite some friends to join in!",
+    "players_rail_no_match_title": "No matching players.",
+    "players_rail_no_match_hint": "Try a different name or ID.",
+    "players_rail_online_now": "Online now"
 }
