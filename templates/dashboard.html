@@ -2158,449 +2158,6 @@
     }
     .CodeMirror-cursor{border-left:2px solid var(--primary) !important;}
     .CodeMirror-selected{background:rgba(var(--primary-rgb),.22) !important;}
-
-    .app{
-      grid-template-columns: 258px minmax(0,1fr) 258px;
-      grid-template-rows: 58px minmax(0,1fr);
-      background:#1c1d20;
-    }
-    .tx-header{
-      grid-column:1 / -1;
-      display:grid;
-      grid-template-columns: 258px minmax(0,1fr) 258px;
-      align-items:center;
-      gap:12px;
-      min-height:58px;
-      padding:0 12px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      background:#242529;
-      position:sticky;
-      top:0;
-      z-index:280;
-    }
-    .tx-header-left{
-      display:flex;
-      align-items:center;
-      padding-left:6px;
-      min-width:0;
-    }
-    .tx-header-brand{
-      display:flex;
-      align-items:center;
-      min-width:0;
-    }
-    .tx-header-brand img{
-      width:128px;
-      max-width:100%;
-      height:auto;
-      display:block;
-      object-fit:contain;
-    }
-    .header-nav{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      overflow-x:auto;
-      scrollbar-width:none;
-      min-width:0;
-    }
-    .header-nav::-webkit-scrollbar{display:none;}
-    .header-nav .nav-item,
-    .header-nav .header-proxy{
-      flex:0 0 auto;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      min-height:36px;
-      padding:0 14px;
-      border-radius:8px;
-      border:1px solid transparent;
-      background:transparent;
-      color:#f3f4f7;
-      font-size:13px;
-      font-weight:650;
-      cursor:pointer;
-      transition: background .12s ease, border-color .12s ease, color .12s ease;
-      white-space:nowrap;
-    }
-    .header-nav .nav-item:hover,
-    .header-nav .header-proxy:hover{
-      background:rgba(255,255,255,.06);
-      border-color:rgba(255,255,255,.08);
-      transform:none;
-    }
-    .header-nav .nav-item.active{
-      background:#4a4c53;
-      border-color:#4a4c53;
-    }
-    .header-nav .header-proxy .chev{
-      font-size:10px;
-      opacity:.7;
-    }
-    .header-user{
-      justify-self:end;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-      color:#d8dae1;
-      font-size:13px;
-      font-weight:600;
-    }
-    .header-user-name{
-      min-width:0;
-      max-width:160px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .header-user-mark{
-      width:30px;
-      height:30px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.05);
-      display:grid;
-      place-items:center;
-      color:#f3f4f7;
-      flex:0 0 auto;
-    }
-    .sidebar{
-      grid-column:1;
-      grid-row:2;
-      top:58px;
-      height:calc(100vh - 58px);
-      padding:18px 10px 18px 10px;
-      background:#1b1c1f;
-      border-right:1px solid rgba(255,255,255,.08);
-      backdrop-filter:none;
-      overflow-x:hidden;
-      overflow-y:auto;
-    }
-    .brand{display:none;}
-    .sidebar-server-card{
-      padding:12px 16px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-    }
-    .sidebar-server-label{
-      font-size:11px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:var(--muted);
-    }
-    .sidebar-server-name{
-      margin-top:4px;
-      font-size:18px;
-      font-weight:750;
-      line-height:1.15;
-      word-break:break-word;
-    }
-    .sidebar .nav{
-      margin-top:14px;
-      flex:0 0 auto;
-      overflow:visible;
-      gap:8px;
-    }
-    .sidebar .nav-item{
-      padding:12px 16px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.04);
-      background:transparent;
-      font-size:13px;
-      font-weight:650;
-      color:#f3f4f7;
-      transform:none !important;
-    }
-    .sidebar .nav-item:hover{
-      background:rgba(255,255,255,.04);
-      border-color:rgba(255,255,255,.08);
-      transform:none;
-    }
-    .sidebar .nav-item.active{
-      background:#4a4c53;
-      border-color:#4a4c53;
-    }
-    .sidebar .nav-item i{
-      width:16px;
-      font-size:14px;
-      opacity:.92;
-    }
-    .sidebar-runtime{
-      margin-top:14px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-    }
-    .panel-version-card{
-      margin-top:auto;
-      background:rgba(255,255,255,.03);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-    }
-    .user-card{
-      margin-top:8px;
-      background:rgba(255,255,255,.03);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-    }
-    .sidebar-footer{
-      margin-top:8px;
-      padding-top:0;
-    }
-    .main{
-      grid-column:2;
-      grid-row:2;
-      padding:18px 16px 20px;
-      background:#1f2024;
-    }
-    .topbar{display:none !important;}
-    .update-banner{margin-bottom:16px;}
-    .page-section{display:none;}
-    .page-section.active{display:block;animation:none;}
-    .players-rail{
-      grid-column:3;
-      grid-row:2;
-      position:sticky;
-      top:58px;
-      height:calc(100vh - 58px);
-      padding:18px 10px;
-      border-left:1px solid rgba(255,255,255,.08);
-      background:#1b1c1f;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      overflow:hidden;
-    }
-    .players-rail-summary{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-      padding:18px 16px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-    }
-    .players-rail-summary-icon{
-      width:56px;
-      height:56px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      display:grid;
-      place-items:center;
-      color:#9ea1ad;
-      font-size:28px;
-    }
-    .players-rail-summary-meta{
-      min-width:0;
-      flex:1;
-      text-align:right;
-    }
-    .players-rail-summary-value{
-      font-size:42px;
-      line-height:1;
-      font-weight:760;
-      color:#f4f6fa;
-    }
-    .players-rail-summary-label{
-      margin-top:8px;
-      font-size:13px;
-      color:#c2c5cf;
-    }
-    .players-rail-panel{
-      min-height:0;
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      padding:10px;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-    }
-    .players-rail-search{
-      position:relative;
-    }
-    .players-rail-search input{
-      width:100%;
-      min-height:40px;
-      padding:0 66px 0 14px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,.10);
-      background:#202126;
-      color:#f3f4f7;
-      outline:none;
-    }
-    .players-rail-kbd{
-      position:absolute;
-      right:10px;
-      top:50%;
-      transform:translateY(-50%);
-      padding:3px 6px;
-      border-radius:7px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.04);
-      color:var(--muted);
-      font-size:11px;
-      font-weight:700;
-      text-transform:lowercase;
-    }
-    .players-rail-list{
-      min-height:0;
-      flex:1;
-      overflow:auto;
-      border-radius:12px;
-      background:#1f2024;
-      border:1px solid rgba(255,255,255,.05);
-    }
-    .players-rail-empty{
-      min-height:220px;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      padding:24px 18px;
-      text-align:center;
-      color:var(--muted);
-      gap:8px;
-    }
-    .players-rail-empty strong{
-      font-size:16px;
-      font-style:italic;
-      font-weight:600;
-      color:#d9dbe3;
-    }
-    .players-rail-empty span{
-      font-size:13px;
-    }
-    .players-rail-item{
-      width:100%;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:12px 14px;
-      border-bottom:1px solid rgba(255,255,255,.05);
-      border:none;
-      background:transparent;
-      color:inherit;
-      text-align:left;
-      font-family:inherit;
-      cursor:pointer;
-      transition: background .12s ease;
-    }
-    .players-rail-item:hover{
-      background:rgba(255,255,255,.04);
-    }
-    .players-rail-item:last-child{
-      border-bottom:none;
-    }
-    .players-rail-item-main{
-      min-width:0;
-      flex:1;
-    }
-    .players-rail-item-name{
-      font-size:13px;
-      font-weight:700;
-      color:#f4f6fa;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .players-rail-item-meta{
-      margin-top:4px;
-      font-size:11px;
-      color:var(--muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-    .players-rail-item-ping{
-      flex:0 0 auto;
-      font-size:11px;
-      font-weight:700;
-      color:#d8c072;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:999px;
-      padding:4px 8px;
-      background:rgba(255,255,255,.03);
-    }
-    .dash-grid{
-      gap:16px;
-    }
-    .cardx{
-      border-color:rgba(255,255,255,.08);
-      background:#242529;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
-    }
-    .cardx-header{
-      background:rgba(255,255,255,.02);
-    }
-    .console{
-      background:#1d1e22;
-    }
-    @media (max-width: 1420px){
-      .app{
-        grid-template-columns: 246px minmax(0,1fr) 238px;
-      }
-      .tx-header{
-        grid-template-columns: 246px minmax(0,1fr) 238px;
-      }
-    }
-    @media (max-width: 1180px){
-      .app{
-        grid-template-columns: 246px minmax(0,1fr);
-      }
-      .tx-header{
-        grid-template-columns: 246px minmax(0,1fr);
-      }
-      .players-rail{
-        display:none;
-      }
-      .header-user{
-        display:none;
-      }
-    }
-    @media (max-width: 980px){
-      .tx-header{
-        grid-template-columns: minmax(0,1fr);
-        padding:0 12px 0 56px;
-      }
-      .tx-header-left{
-        display:none;
-      }
-      .header-nav{
-        width:100%;
-      }
-      .app{
-        grid-template-columns:minmax(0,1fr);
-      }
-      .main{
-        grid-column:1;
-      }
-      .sidebar{
-        position:fixed;
-        top:58px;
-        left:-280px;
-        width:258px;
-        height:calc(100vh - 58px);
-        z-index:260;
-        transition:left .18s ease;
-      }
-      .sidebar.open{
-        left:0;
-      }
-      .hamburger{
-        display:flex;
-        top:8px;
-        left:10px;
-      }
-    }
   </style>
 </head>
 
@@ -2617,40 +2174,22 @@
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="app">
-    <header class="tx-header">
-      <div class="tx-header-left">
-        <div class="tx-header-brand">
-          <img src="/logo.png" alt="RageAdmin">
-        </div>
-      </div>
-      <nav class="header-nav">
-        <button type="button" class="nav-item" data-page="players"><span data-i18n="nav_players">Players</span></button>
-        <button type="button" class="nav-item" data-page="logs"><span data-i18n="nav_history">History</span></button>
-        <button type="button" class="header-proxy" data-shell-page="dashboard"><span data-i18n="nav_player_drops">Player Drops</span></button>
-        <button type="button" class="header-proxy" data-shell-page="players" data-shell-focus="saved"><span data-i18n="nav_whitelist">Whitelist</span></button>
-        <button type="button" class="nav-item" data-page="admin" id="adminNav" style="display:none;"><span data-i18n="nav_admins">Admins</span></button>
-        <button type="button" class="nav-item" data-page="settings" id="settingsNav" style="display:none;"><span data-i18n="nav_settings">Settings</span></button>
-        <button type="button" class="header-proxy" data-shell-page="files"><span data-i18n="nav_system">System</span> <i class="fa-solid fa-chevron-down chev"></i></button>
-      </nav>
-      <div class="header-user">
-        <div class="header-user-name" id="headerCurrentUser">-</div>
-        <div class="header-user-mark"><i class="fa-solid fa-layer-group"></i></div>
-      </div>
-    </header>
     
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-server-card">
-        <div class="sidebar-server-label" data-i18n="sidebar_server_title">Server</div>
-        <div class="sidebar-server-name" id="serverSidebarName">RageMP Server</div>
+      <div class="brand" style="justify-content:center;">
+        <img class="brand-logo-img" src="/logo.png" alt="RageAdmin">
       </div>
 
       <nav class="nav">
         <div class="nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-simple"></i> <span data-i18n="nav_dashboard">Dashboard</span></div>
-        <div class="nav-item" data-page="console"><i class="fa-solid fa-terminal"></i> <span data-i18n="nav_live_console">Live Console</span></div>
-        <div class="nav-item" data-page="resources" id="resourcesNav" style="display:none;"><i class="fa-solid fa-cube"></i> <span data-i18n="nav_resources">Resources</span></div>
-        <div class="nav-item" data-page="logs"><i class="fa-solid fa-eye"></i> <span data-i18n="nav_server_log">Server Log</span></div>
-        <div class="nav-item" data-page="files"><i class="fa-solid fa-file-code"></i> <span data-i18n="nav_cfg_editor">CFG Editor</span></div>
+        <div class="nav-item" data-page="console"><i class="fa-solid fa-terminal"></i> <span data-i18n="nav_console">Console</span></div>
+        <div class="nav-item" data-page="files"><i class="fa-solid fa-folder-open"></i> <span data-i18n="nav_files">Files</span></div>
+        <div class="nav-item" data-page="resources" id="resourcesNav" style="display:none;"><i class="fa-solid fa-puzzle-piece"></i> <span data-i18n="nav_resources">Resources</span></div>
         <div class="nav-item" data-page="addons" id="addonsNav" style="display:none;"><i class="fa-solid fa-cubes"></i> <span data-i18n="nav_addons">Addons</span></div>
+        <div class="nav-item" data-page="settings" id="settingsNav" style="display:none;"><i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Settings</span></div>
+        <div class="nav-item" data-page="logs"><i class="fa-solid fa-file-lines"></i> <span data-i18n="nav_logs">Logs</span></div>
+        <div class="nav-item" data-page="players"><i class="fa-solid fa-users"></i> <span data-i18n="nav_players">Players</span></div>
+        <div class="nav-item" data-page="admin" id="adminNav" style="display:none;"><i class="fa-solid fa-shield"></i> <span data-i18n="nav_admin">Admin</span></div>
       </nav>
 
       <section class="sidebar-runtime">
@@ -2908,7 +2447,7 @@
       <section class="page-section" id="pageConsole">
         <div class="cardx">
           <div class="cardx-header">
-            <div class="cardx-title"><i class="fa-solid fa-terminal"></i> <span data-i18n="nav_live_console">Live Console</span></div>
+            <div class="cardx-title"><i class="fa-solid fa-terminal"></i> <span data-i18n="card_console">Console</span></div>
             <div class="actions">
               <button class="btnx" id="btnClearConsole"><i class="fa-solid fa-broom"></i> <span data-i18n="btn_clear">Clear</span></button>
               <button class="btnx" id="btnScrollBottom"><i class="fa-solid fa-down-long"></i> <span data-i18n="btn_bottom">Bottom</span></button>
@@ -2932,7 +2471,7 @@
       <section class="page-section" id="pageFiles">
         <div class="cardx">
           <div class="cardx-header">
-            <div class="cardx-title"><i class="fa-solid fa-file-code"></i> <span data-i18n="nav_cfg_editor">CFG Editor</span></div>
+            <div class="cardx-title"><i class="fa-solid fa-folder-open"></i> <span data-i18n="card_files">Files</span></div>
             <div class="actions">
               <button class="btnx" id="btnNewFile"><i class="fa-solid fa-file-circle-plus"></i> <span data-i18n="btn_new_file">New File</span></button>
               <button class="btnx" id="btnNewFolder"><i class="fa-solid fa-folder-plus"></i> <span data-i18n="btn_new_folder">New Folder</span></button>
@@ -3031,7 +2570,7 @@
       <section class="page-section" id="pageLogs">
         <div class="cardx">
           <div class="cardx-header">
-            <div class="cardx-title"><i class="fa-solid fa-eye"></i> <span data-i18n="nav_server_log">Server Log</span></div>
+            <div class="cardx-title"><i class="fa-solid fa-file-lines"></i> <span data-i18n="card_logs">Logs</span></div>
             <div class="actions logs-filters">
               <div class="select-wrap">
                 <select class="inputx" id="logUserSelect" style="width:auto;min-width:170px;"></select>
@@ -3191,7 +2730,7 @@
       <section class="page-section" id="pageAdmin">
         <div class="cardx">
           <div class="cardx-header">
-            <div class="cardx-title"><i class="fa-solid fa-shield"></i> <span data-i18n="nav_admins">Admins</span></div>
+            <div class="cardx-title"><i class="fa-solid fa-shield"></i> <span data-i18n="card_admin">Admin</span></div>
             <button class="btnx primary" id="btnOpenCreateUser"><i class="fa-solid fa-user-plus"></i> <span data-i18n="btn_create_user">Create User</span></button>
           </div>
           <div class="cardx-body">
@@ -3218,29 +2757,6 @@
       </section>
 
     </main>
-
-    <aside class="players-rail" id="playersRail">
-      <div class="players-rail-summary">
-        <div class="players-rail-summary-icon"><i class="fa-solid fa-user-group"></i></div>
-        <div class="players-rail-summary-meta">
-          <div class="players-rail-summary-value" id="playersRailCount">0</div>
-          <div class="players-rail-summary-label" data-i18n="players_rail_summary">Players</div>
-        </div>
-      </div>
-
-      <div class="players-rail-panel">
-        <div class="players-rail-search">
-          <input id="playersRailSearch" type="text" placeholder="Filter by Name or ID" data-i18n-placeholder="players_rail_filter" />
-          <span class="players-rail-kbd" data-i18n="players_rail_shortcut">ctrl+k</span>
-        </div>
-        <div class="players-rail-list" id="playersRailList">
-          <div class="players-rail-empty">
-            <strong data-i18n="players_rail_empty_title">No players online.</strong>
-            <span data-i18n="players_rail_empty_hint">Invite some friends to join in!</span>
-          </div>
-        </div>
-      </div>
-    </aside>
   </div>
 
   
@@ -3711,7 +3227,6 @@
     let updatePoller = null;
     let statusPoller = null;
     let playersSignature = '';
-    let playersRailSource = [];
     let runtimeHistory = [];
     let lastRuntimeStatus = null;
     let discordSaveInFlight = false;
@@ -4069,25 +3584,6 @@
       });
     }
 
-    function focusPlayersSavedTable(attempt = 0){
-      const target = document.getElementById('playersSavedList');
-      if(target){
-        const tableWrap = target.closest('.table-wrap');
-        if(tableWrap) tableWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return;
-      }
-      if(attempt < 16){
-        window.setTimeout(() => focusPlayersSavedTable(attempt + 1), 120);
-      }
-    }
-
-    function navigateShellProxy(pageId, focus){
-      switchPage(pageId);
-      if(focus === 'saved'){
-        window.setTimeout(() => focusPlayersSavedTable(), 160);
-      }
-    }
-
     function switchPage(pageId){
       if(currentPage === 'settings' && (settingsDirty || panelConfigDirty || discordConfigDirty)){
         pendingNavTarget = pageId;
@@ -4129,9 +3625,6 @@
 
     document.querySelectorAll('.nav-item[data-page]').forEach(el=>{
       el.addEventListener('click', ()=> switchPage(el.getAttribute('data-page')));
-    });
-    document.querySelectorAll('.header-proxy[data-shell-page]').forEach(el => {
-      el.addEventListener('click', () => navigateShellProxy(el.getAttribute('data-shell-page'), el.getAttribute('data-shell-focus') || ''));
     });
     document.querySelectorAll('.settings-category-tab[data-settings-cat]').forEach(btn => {
       btn.addEventListener('click', () => setSettingsCategory(btn.getAttribute('data-settings-cat')));
@@ -4549,8 +4042,6 @@
 
       const runtimeServerName = document.getElementById('runtimeServerName');
       if(runtimeServerName) runtimeServerName.textContent = serverName;
-      const serverSidebarName = document.getElementById('serverSidebarName');
-      if(serverSidebarName) serverSidebarName.textContent = serverName;
       const runtimeServerMeta = document.getElementById('runtimeServerMeta');
       if(runtimeServerMeta){
         runtimeServerMeta.textContent = data.running
@@ -6351,26 +5842,19 @@
 
         const displayName = data.display_name || data.username || t('label_user','User');
         document.getElementById('userName').textContent = displayName;
-        const headerCurrentUser = document.getElementById('headerCurrentUser');
-        if(headerCurrentUser) headerCurrentUser.textContent = displayName;
         document.getElementById('userRole').textContent = formatRole(data.role || 'user');
         renderAvatar(document.getElementById('userAvatar'), data.avatar_url || '', displayName);
 
-        const adminNav = document.getElementById('adminNav');
-        const settingsNav = document.getElementById('settingsNav');
-        const playersRail = document.getElementById('playersRail');
         if(data.role === 'admin'){
-          if(adminNav) adminNav.style.display = '';
-          if(settingsNav) settingsNav.style.display = '';
+          document.getElementById('adminNav').style.display = '';
+          document.getElementById('settingsNav').style.display = '';
           document.getElementById('permPill').textContent = t('perm_admin','Admin');
-          if(playersRail) playersRail.style.display = '';
         } else {
           const p = data.permissions || {};
           const enabled = Object.keys(p).filter(k => p[k] === true).length;
           document.getElementById('permPill').textContent = `${t('perm_label','Perms')}: ${enabled}`;
 
-          if(p.can_view_settings && settingsNav) settingsNav.style.display = '';
-          if(playersRail && p.can_view_players === false) playersRail.style.display = 'none';
+          if(p.can_view_settings) document.getElementById('settingsNav').style.display = '';
         }
 
         if(data.role !== 'admin'){
@@ -6606,8 +6090,6 @@
         currentUser.avatar_url = data.avatar_url || '';
         const displayNameOut = data.display_name || currentUser.username || t('label_user','User');
         document.getElementById('userName').textContent = displayNameOut;
-        const headerCurrentUser = document.getElementById('headerCurrentUser');
-        if(headerCurrentUser) headerCurrentUser.textContent = displayNameOut;
         renderAvatar(document.getElementById('userAvatar'), data.avatar_url || '', displayNameOut);
         profileDraft.display_name = displayName;
         if(data.avatar_url) profileDraft.avatar_url = data.avatar_url;
@@ -6866,16 +6348,6 @@
       };
     }
 
-    function normalizePlayersPayload(data){
-      let list = Array.isArray(data && data.players) ? data.players : [];
-      if(list.length === 0 && (Array.isArray(data && data.online_players) || Array.isArray(data && data.saved_players))){
-        const onlineRows = (Array.isArray(data && data.online_players) ? data.online_players : []).map(p => ({ ...p, online: true }));
-        const savedRows = (Array.isArray(data && data.saved_players) ? data.saved_players : []).map(p => ({ ...p, online: false }));
-        list = [...onlineRows, ...savedRows];
-      }
-      return Array.isArray(list) ? list : [];
-    }
-
     function setPlayerCounters(input){
       const counts = {
         total: 0,
@@ -6892,8 +6364,6 @@
       }
       const countEl = document.getElementById('playerCount');
       if(countEl) countEl.textContent = counts.online;
-      const railCountEl = document.getElementById('playersRailCount');
-      if(railCountEl) railCountEl.textContent = counts.online;
       const badgeEl = document.getElementById('playerCountBadge');
       if(badgeEl) badgeEl.textContent = counts.total;
       const onlineBadge = document.getElementById('playerCountOnlineBadge');
@@ -6907,90 +6377,6 @@
         const maxPlayers = Number((lastRuntimeStatus && lastRuntimeStatus.max_players) || 0);
         trendPlayersMeta.textContent = `${counts.online} / ${maxPlayers}`;
       }
-    }
-
-    function setPlayersRailSource(players){
-      playersRailSource = (Array.isArray(players) ? players : []).filter(p => p && typeof p === 'object');
-      renderPlayersRail();
-    }
-
-    function renderPlayersRail(){
-      const rail = document.getElementById('playersRail');
-      const listEl = document.getElementById('playersRailList');
-      const countEl = document.getElementById('playersRailCount');
-      const searchEl = document.getElementById('playersRailSearch');
-      if(!rail || !listEl) return;
-
-      const online = playersRailSource.filter(p => !!p.online);
-      if(countEl) countEl.textContent = String(online.length);
-
-      const query = String((searchEl && searchEl.value) || '').trim().toLowerCase();
-      const filtered = online.filter((p) => {
-        if(!query) return true;
-        return [
-          String(p.name || '').toLowerCase(),
-          String(p.playerId || '').toLowerCase(),
-          String(p.serverId || '').toLowerCase()
-        ].some(part => part.includes(query));
-      });
-
-      if(filtered.length === 0){
-        const title = query
-          ? t('players_rail_no_match_title','No matching players.')
-          : t('players_rail_empty_title','No players online.');
-        const hint = query
-          ? t('players_rail_no_match_hint','Try a different name or ID.')
-          : t('players_rail_empty_hint','Invite some friends to join in!');
-        listEl.innerHTML = `
-          <div class="players-rail-empty">
-            <strong>${escapeHtml(title)}</strong>
-            <span>${escapeHtml(hint)}</span>
-          </div>
-        `;
-        return;
-      }
-
-      listEl.innerHTML = filtered.map((p) => {
-        const ref = String(p.playerId || p.serverId || '').trim();
-        const meta = [
-          p.serverId !== undefined && p.serverId !== null && String(p.serverId).trim() !== '' ? `SID ${p.serverId}` : '',
-          p.playerId ? `PID ${p.playerId}` : '',
-          p.last_connection ? formatIsoDateTime(p.last_connection) : ''
-        ].filter(Boolean).join(' • ');
-        return `
-          <button type="button" class="players-rail-item" data-player-ref="${escapeHtml(ref)}">
-            <div class="players-rail-item-main">
-              <div class="players-rail-item-name">${escapeHtml(p.name || 'Unknown')}</div>
-              <div class="players-rail-item-meta">${escapeHtml(meta || t('players_rail_online_now','Online now'))}</div>
-            </div>
-            <div class="players-rail-item-ping">${Number(p.ping || 0)} ms</div>
-          </button>
-        `;
-      }).join('');
-
-      listEl.querySelectorAll('.players-rail-item[data-player-ref]').forEach((btn) => {
-        btn.addEventListener('click', async () => {
-          const ref = btn.getAttribute('data-player-ref');
-          if(ref) await openPlayerProfileModal(ref);
-        });
-      });
-    }
-
-    async function loadPlayersRail(){
-      const rail = document.getElementById('playersRail');
-      if(!rail) return;
-      try {
-        const res = await fetch('/api/players');
-        if(res.status === 401) return (window.location.href = '/login');
-        if(res.status === 403){
-          rail.style.display = 'none';
-          return;
-        }
-        if(!res.ok) return;
-        const data = await res.json();
-        const list = normalizePlayersPayload(data);
-        setPlayersRailSource(list);
-      } catch(e) {}
     }
 
     let activePlayerProfile = null;
@@ -7450,8 +6836,12 @@
           return;
         }
         const data = await res.json();
-        const list = normalizePlayersPayload(data);
-        setPlayersRailSource(list);
+        let list = Array.isArray(data.players) ? data.players : [];
+        if(list.length === 0 && (Array.isArray(data.online_players) || Array.isArray(data.saved_players))){
+          const onlineRows = (Array.isArray(data.online_players) ? data.online_players : []).map(p => ({ ...p, online: true }));
+          const savedRows = (Array.isArray(data.saved_players) ? data.saved_players : []).map(p => ({ ...p, online: false }));
+          list = [...onlineRows, ...savedRows];
+        }
         renderPlayersRows(list, { force: !!opts.force, animate: !!opts.animate });
       } catch(e) {
         playersSignature = '';
@@ -7557,7 +6947,12 @@
     }
 
     socket.on('players_update', (data) => {
-      const players = normalizePlayersPayload(data);
+      let players = Array.isArray(data.players) ? data.players : [];
+      if(players.length === 0 && (Array.isArray(data.online_players) || Array.isArray(data.saved_players))){
+        const onlineRows = (Array.isArray(data.online_players) ? data.online_players : []).map(p => ({ ...p, online: true }));
+        const savedRows = (Array.isArray(data.saved_players) ? data.saved_players : []).map(p => ({ ...p, online: false }));
+        players = [...onlineRows, ...savedRows];
+      }
       const onlineCount = Array.isArray(data.online_players)
         ? data.online_players.length
         : players.filter(p => p && p.online).length;
@@ -7568,7 +6963,6 @@
         ? Number(data.counts.total)
         : players.length;
       setPlayerCounters({ total: totalCount, online: onlineCount, saved: savedCount });
-      setPlayersRailSource(players);
       if(currentPage === 'players') {
         renderPlayersRows(players, { animate: true });
       }
@@ -7717,26 +7111,6 @@
     document.getElementById('btnUpload').addEventListener('click', openUploadModal);
 
     document.getElementById('logoutBtn').addEventListener('click', logout);
-    const playersRailSearch = document.getElementById('playersRailSearch');
-    if(playersRailSearch){
-      playersRailSearch.addEventListener('input', renderPlayersRail);
-      playersRailSearch.addEventListener('keydown', (e) => {
-        if(e.key === 'Escape'){
-          playersRailSearch.value = '';
-          renderPlayersRail();
-        }
-      });
-    }
-    document.addEventListener('keydown', (e) => {
-      if((e.ctrlKey || e.metaKey) && String(e.key || '').toLowerCase() === 'k'){
-        const input = document.getElementById('playersRailSearch');
-        if(input && input.offsetParent !== null){
-          e.preventDefault();
-          input.focus();
-          input.select();
-        }
-      }
-    });
 
     document.getElementById('btnOpenCreateUser').addEventListener('click', openCreateUserModal);
     document.getElementById('btnCloseCreateUser').addEventListener('click', closeCreateUserModal);
@@ -7956,7 +7330,6 @@
       await fetchCsrfToken();
       await loadLocale();
       await loadCurrentUser();
-      await loadPlayersRail();
       applyCmdPerms();
       await fetchStatus(true);
       if(!statusPoller){
