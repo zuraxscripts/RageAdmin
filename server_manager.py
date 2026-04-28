@@ -44,7 +44,6 @@ except Exception:
     discord = None
     app_commands = None
 
-import db
 import storage
 
 ROOT_DIR = Path(__file__).resolve().parent
@@ -162,6 +161,12 @@ PROFILE_HISTORY_LIMIT = 120
 PROFILE_WARN_LIMIT = 200
 PROFILE_PLAYER_ID_PREFIX = 'PLR'
 PROFILE_PLAYER_ID_LEN = 12
+RUNTIME_SAMPLE_INTERVAL_SEC = 10
+RUNTIME_SAMPLE_MAX_POINTS = 720
+runtime_stats_history = storage.load_stats_history()
+runtime_stats_dirty = False
+runtime_stats_last_saved_at = 0.0
+runtime_stats_last_sample_at = 0.0
 
 
 DEFAULT_DISCORD_STATUS_EMBED_TEMPLATE = {
@@ -521,6 +526,142 @@ def _safe_int(value, default=0):
         return default
 
 
+def _normalize_runtime_stats_history():
+    global runtime_stats_history
+
+    if not isinstance(runtime_stats_history, dict):
+        runtime_stats_history = {}
+
+    samples = runtime_stats_history.get('samples')
+    if not isinstance(samples, list):
+        samples = []
+
+    max_points = max(60, _safe_int(runtime_stats_history.get('max_samples', RUNTIME_SAMPLE_MAX_POINTS), RUNTIME_SAMPLE_MAX_POINTS))
+    interval = max(5, _safe_int(runtime_stats_history.get('sample_interval_sec', RUNTIME_SAMPLE_INTERVAL_SEC), RUNTIME_SAMPLE_INTERVAL_SEC))
+
+    cleaned = []
+    for row in samples[-max_points:]:
+        if not isinstance(row, dict):
+            continue
+        cleaned.append({
+            'ts': _safe_profile_text(row.get('ts'), 64),
+            'cpu': round(float(row.get('cpu') or 0), 2),
+            'memory': round(float(row.get('memory') or 0), 2),
+            'players': max(0, _safe_int(row.get('players'), 0)),
+            'saved_players': max(0, _safe_int(row.get('saved_players'), 0)),
+            'max_players': max(0, _safe_int(row.get('max_players'), 0)),
+            'running': bool(row.get('running')),
+            'bridge_online': bool(row.get('bridge_online')),
+            'resources_running': max(0, _safe_int(row.get('resources_running'), 0))
+        })
+
+    runtime_stats_history = {
+        'samples': cleaned[-max_points:],
+        'sample_interval_sec': interval,
+        'max_samples': max_points,
+        'updated_at': _safe_profile_text(runtime_stats_history.get('updated_at'), 64)
+    }
+    return runtime_stats_history
+
+
+def _count_saved_player_profiles():
+    return sum(1 for profile in player_profiles.values() if isinstance(profile, dict))
+
+
+def _bridge_online(now_ts=None):
+    check_ts = now_ts if now_ts is not None else time.time()
+    return bool(panel_connector_last_heartbeat and (check_ts - panel_connector_last_heartbeat) <= 45)
+
+
+def _current_max_players():
+    try:
+        settings = parse_settings_xml()
+        return max(0, _safe_int((settings or {}).get('maxplayers'), 0))
+    except Exception:
+        return 0
+
+
+def _current_resources_running():
+    return sum(1 for state in resource_states.values() if state == 'started')
+
+
+def _build_runtime_sample(now_ts=None):
+    ts = now_ts if now_ts is not None else time.time()
+    return {
+        'ts': _now_iso(),
+        'cpu': round(float(server_state.get('cpu_usage') or 0), 2),
+        'memory': round(float(server_state.get('memory_usage') or 0), 2),
+        'players': len(connected_players),
+        'saved_players': _count_saved_player_profiles(),
+        'max_players': _current_max_players(),
+        'running': bool(server_state.get('running')),
+        'bridge_online': _bridge_online(ts),
+        'resources_running': _current_resources_running()
+    }
+
+
+def _save_runtime_stats_history():
+    global runtime_stats_last_saved_at
+    _normalize_runtime_stats_history()
+    runtime_stats_history['updated_at'] = _now_iso()
+    storage.save_stats_history(runtime_stats_history)
+    runtime_stats_last_saved_at = time.time()
+
+
+def _append_runtime_sample(force=False, emit_socket=True):
+    global runtime_stats_last_sample_at, runtime_stats_dirty
+
+    _normalize_runtime_stats_history()
+    now_ts = time.time()
+    interval = max(5, _safe_int(runtime_stats_history.get('sample_interval_sec'), RUNTIME_SAMPLE_INTERVAL_SEC))
+    if not force and runtime_stats_last_sample_at and (now_ts - runtime_stats_last_sample_at) < interval:
+        return None
+
+    sample = _build_runtime_sample(now_ts)
+    runtime_stats_history['samples'].append(sample)
+    max_points = max(60, _safe_int(runtime_stats_history.get('max_samples'), RUNTIME_SAMPLE_MAX_POINTS))
+    if len(runtime_stats_history['samples']) > max_points:
+        del runtime_stats_history['samples'][:-max_points]
+
+    runtime_stats_last_sample_at = now_ts
+    runtime_stats_dirty = True
+    _save_runtime_stats_history()
+
+    if emit_socket:
+        socketio.emit('stats_point', sample)
+    return sample
+
+
+def build_runtime_status_payload(include_history=False):
+    _normalize_runtime_stats_history()
+    now_ts = time.time()
+    payload = {
+        'running': server_state['running'],
+        'uptime': int(now_ts - server_state['start_time']) if server_state['start_time'] else 0,
+        'auto_restart': server_state['auto_restart'],
+        'restart_count': server_state['restart_count'],
+        'cpu': server_state['cpu_usage'],
+        'memory': server_state['memory_usage'],
+        'attached': server_state['attached'],
+        'players_online': len(connected_players),
+        'players_saved': _count_saved_player_profiles(),
+        'max_players': _current_max_players(),
+        'resources_running': _current_resources_running(),
+        'resources_total': len(resource_states),
+        'bridge_online': _bridge_online(now_ts),
+        'bridge_last_heartbeat': panel_connector_last_heartbeat,
+        'bridge_age_sec': round(max(0.0, now_ts - panel_connector_last_heartbeat), 1) if panel_connector_last_heartbeat else None
+    }
+    if include_history:
+        payload['history'] = list(runtime_stats_history.get('samples') or [])
+        payload['history_meta'] = {
+            'sample_interval_sec': _safe_int(runtime_stats_history.get('sample_interval_sec'), RUNTIME_SAMPLE_INTERVAL_SEC),
+            'max_samples': _safe_int(runtime_stats_history.get('max_samples'), RUNTIME_SAMPLE_MAX_POINTS),
+            'updated_at': runtime_stats_history.get('updated_at') or ''
+        }
+    return payload
+
+
 def _safe_profile_name(value):
     name = str(value or '').strip()
     if not name:
@@ -598,6 +739,13 @@ def _normalize_identifier_key(key):
     mapping = {
         'rockstarid': 'rockstar_id',
         'rockstar_id': 'rockstar_id',
+        'socialclub': 'social_club',
+        'social_club': 'social_club',
+        'rgscid': 'rgsc_id',
+        'rgsc_id': 'rgsc_id',
+        'serial': 'serial',
+        'gametype': 'game_type',
+        'game_type': 'game_type',
         'license': 'license',
         'license2': 'license2',
         'steam': 'steam',
@@ -618,7 +766,23 @@ def _extract_player_identifiers(player_data):
             if val:
                 out[_normalize_identifier_key(k)] = val
 
-    for key in ('rockstarId', 'rockstar_id', 'license', 'license2', 'steam', 'discord', 'xbl', 'live'):
+    for key in (
+        'rockstarId',
+        'rockstar_id',
+        'socialClub',
+        'social_club',
+        'rgscId',
+        'rgsc_id',
+        'serial',
+        'gameType',
+        'game_type',
+        'license',
+        'license2',
+        'steam',
+        'discord',
+        'xbl',
+        'live'
+    ):
         val = _safe_profile_text(src.get(key), 128)
         if val:
             out[_normalize_identifier_key(key)] = val
@@ -631,7 +795,7 @@ def _profile_candidate_keys(player_data, identifiers=None):
     ids = identifiers if isinstance(identifiers, dict) else _extract_player_identifiers(src)
     candidates = []
 
-    for id_key in ('rockstar_id', 'license', 'license2', 'steam', 'discord'):
+    for id_key in ('rgsc_id', 'serial', 'social_club', 'rockstar_id', 'license', 'license2', 'steam', 'discord'):
         val = _safe_profile_text(ids.get(id_key), 128)
         if val:
             candidates.append(f'{id_key}:{val.lower()}')
@@ -665,6 +829,7 @@ def _new_player_profile(profile_key):
         'player_id': _generate_player_id(),
         'first_seen_at': now,
         'last_connection_at': now,
+        'connections': 0,
         'total_playtime_sec': 0,
         'notes': '',
         'identifiers': {},
@@ -672,7 +837,12 @@ def _new_player_profile(profile_key):
         'history': [],
         'last_name': '',
         'last_ip': '',
-        'last_server_id': ''
+        'last_server_id': '',
+        'last_social_club': '',
+        'last_rgsc_id': '',
+        'last_serial': '',
+        'last_game_type': '',
+        'last_packet_loss': 0
     }
 
 
@@ -740,6 +910,7 @@ def _resolve_player_profile(player_data, touch_join=False):
         profile['player_id'] = _normalize_player_id(profile.get('player_id'))
     profile.setdefault('first_seen_at', _now_iso())
     profile.setdefault('last_connection_at', profile.get('first_seen_at') or _now_iso())
+    profile['connections'] = max(0, _safe_int(profile.get('connections'), 0))
     profile['total_playtime_sec'] = max(0, _safe_int(profile.get('total_playtime_sec'), 0))
     profile['notes'] = _safe_profile_text(profile.get('notes', ''), 2000)
     profile.setdefault('identifiers', {})
@@ -755,13 +926,23 @@ def _resolve_player_profile(player_data, touch_join=False):
     name = _safe_profile_name(src.get('name'))
     ip = normalize_player_ip(src.get('ip', ''))
     sid = str(src.get('serverId') or '').strip()
+    social_club = _safe_profile_text(identifiers.get('social_club') or src.get('socialClub') or profile.get('last_social_club'), 128)
+    rgsc_id = _safe_profile_text(identifiers.get('rgsc_id') or src.get('rgscId') or profile.get('last_rgsc_id'), 128)
+    serial = _safe_profile_text(identifiers.get('serial') or src.get('serial') or profile.get('last_serial'), 128)
+    game_type = _safe_profile_text(identifiers.get('game_type') or src.get('gameType') or profile.get('last_game_type'), 64)
     profile['last_name'] = name
     profile['last_ip'] = ip
     profile['last_server_id'] = sid
+    profile['last_social_club'] = social_club
+    profile['last_rgsc_id'] = rgsc_id
+    profile['last_serial'] = serial
+    profile['last_game_type'] = game_type
+    profile['last_packet_loss'] = max(0, _safe_int(src.get('packetLoss', profile.get('last_packet_loss', 0)), 0))
 
     if touch_join:
         _append_profile_history(profile, 'join', f'{name} ({sid or "?"})')
         profile['last_connection_at'] = _now_iso()
+        profile['connections'] = max(0, _safe_int(profile.get('connections'), 0)) + 1
 
     src['profile_key'] = profile_key
     src['playerId'] = profile.get('player_id') or ''
@@ -2082,7 +2263,7 @@ def setup_required():
         users = init_users()
         return len(users) == 0
     except Exception as e:
-        add_console_line(f'ERROR: Failed to load users (DB?): {e}')
+        add_console_line(f'ERROR: Failed to load users: {e}')
         return False
 
                                                       
@@ -2205,16 +2386,6 @@ def load_config():
 def save_config(cfg):
     
     storage.save_config(cfg)
-
-if db.is_configured():
-    try:
-        db.ensure_schema()
-    except Exception:
-        pass
-    try:
-        storage.migrate_json_to_db(force=False)
-    except Exception:
-        pass
 
 config = load_config()
 
@@ -2457,6 +2628,8 @@ def start_server(username):
         monitor_thread.start()
 
         socketio.emit('server_status', {'running': True})
+        socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
+        _append_runtime_sample(force=True, emit_socket=True)
 
         return {'success': True, 'message': 'Server started successfully'}
 
@@ -2515,6 +2688,8 @@ def stop_server(username):
         discord_runtime.request_status_refresh(force=True)
 
         socketio.emit('server_status', {'running': False})
+        socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
+        _append_runtime_sample(force=True, emit_socket=True)
 
         return {'success': True, 'message': 'Server stopped successfully'}
     except Exception as e:
@@ -2575,16 +2750,12 @@ def update_stats():
                     panel_connector_last_heartbeat = 0.0
                     remove_pid()
                     socketio.emit('server_status', {'running': False})
+                    socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
+                    _append_runtime_sample(force=True, emit_socket=True)
                     continue
 
                 server_state['cpu_usage'] = process.cpu_percent(interval=1)
                 server_state['memory_usage'] = process.memory_info().rss / (1024 * 1024)
-
-                socketio.emit('stats_update', {
-                    'cpu': server_state['cpu_usage'],
-                    'memory': server_state['memory_usage'],
-                    'uptime': int(time.time() - server_state['start_time']) if server_state['start_time'] else 0
-                })
             except psutil.NoSuchProcess:
                 add_console_line('!!! PROCESS NO LONGER EXISTS !!!')
                 server_state['running'] = False
@@ -2599,6 +2770,9 @@ def update_stats():
                 socketio.emit('server_status', {'running': False})
             except Exception:
                 pass
+
+        socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
+        _append_runtime_sample(force=False, emit_socket=True)
 
         time.sleep(2)
 
@@ -3447,18 +3621,12 @@ def api_setup():
         return jsonify({'success': False, 'message': 'Invalid setup PIN'}), 403
     username = (data.get('username') or '').strip()
     password = (data.get('password') or '').strip()
-    db_info = data.get('db') or {}
 
     if not username or not password:
         return jsonify({'success': False, 'message': 'Username and password required'})
 
     if len(password) < 8:
         return jsonify({'success': False, 'message': 'Password must be at least 8 characters'})
-
-    required_db = ['host', 'port', 'user', 'password', 'database']
-    missing = [k for k in required_db if not str(db_info.get(k, '')).strip()]
-    if missing:
-        return jsonify({'success': False, 'message': 'Database fields required: ' + ', '.join(missing)})
 
     with setup_lock:
         if setup_state['running']:
@@ -3474,20 +3642,8 @@ def api_setup():
     def _runner():
         global config, panel_config
         try:
-            _setup_update(step='Database', progress=5, message='Saving database configuration')
-            db.save_db_config({
-                'host': db_info.get('host'),
-                'port': db_info.get('port'),
-                'user': db_info.get('user'),
-                'password': db_info.get('password'),
-                'database': db_info.get('database')
-            })
-
-            _setup_update(step='Database', progress=10, message='Connecting to database')
-            db.ensure_schema()
-
-            _setup_update(step='Database', progress=15, message='Migrating existing JSON data')
-            storage.migrate_json_to_db(force=False)
+            _setup_update(step='Storage', progress=5, message='Preparing standalone file database')
+            storage.ensure_storage_files()
 
                                                               
             config = storage.load_config()
@@ -3523,22 +3679,8 @@ def api_setup():
 
 @app.route('/api/db-test', methods=['POST'])
 def api_db_test():
-    data = request.json or {}
-    required_db = ['host', 'port', 'user', 'password', 'database']
-    missing = [k for k in required_db if not str(data.get(k, '')).strip()]
-    if missing:
-        return jsonify({'success': False, 'message': 'Missing fields: ' + ', '.join(missing)})
-    try:
-        db.test_connection({
-            'host': data.get('host'),
-            'port': data.get('port'),
-            'user': data.get('user'),
-            'password': data.get('password'),
-            'database': data.get('database')
-        })
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
+    storage.ensure_storage_files()
+    return jsonify({'success': True, 'message': 'Standalone file storage is active'})
 
 
 @app.route('/api/setup-status', methods=['GET'])
@@ -4786,6 +4928,39 @@ def _check_panel_secret():
     return secrets.compare_digest(secret, expected)
 
 
+@app.route('/api/panel-hook/incoming-connection', methods=['POST'])
+def api_panel_hook_incoming_connection():
+    global panel_connector_last_heartbeat
+
+    if not _check_panel_secret():
+        return jsonify({'error': 'Invalid secret'}), 403
+
+    data = request.json or {}
+    data['ip'] = normalize_player_ip(data.get('ip', ''))
+    row = {
+        'name': data.get('name') or data.get('socialClub') or 'Unknown',
+        'ip': data.get('ip', ''),
+        'socialClub': _safe_profile_text(data.get('socialClub', ''), 128),
+        'rgscId': _safe_profile_text(data.get('rgscId', ''), 128),
+        'serial': _safe_profile_text(data.get('serial', ''), 128),
+        'gameType': _safe_profile_text(data.get('gameType', ''), 64),
+        'identifiers': _extract_player_identifiers(data)
+    }
+    _, profile = _resolve_player_profile(row, touch_join=False)
+    profile['last_connection_at'] = _now_iso()
+    _append_profile_history(
+        profile,
+        'incoming',
+        f'{row.get("name", "Unknown")} / {row.get("ip", "-") or "-"} / {row.get("rgscId", "-") or "-"}'
+    )
+    save_player_profiles(player_profiles)
+
+    panel_connector_last_heartbeat = time.time()
+    socketio.emit('players_update', _players_payload())
+    socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
+    return jsonify({'ok': True})
+
+
 @app.route('/api/panel-hook/player-join', methods=['POST'])
 def api_panel_hook_player_join():
     
@@ -4808,6 +4983,11 @@ def api_panel_hook_player_join():
             'name': name,
             'ping': data.get('ping', 0),
             'ip': ip,
+            'socialClub': _safe_profile_text(data.get('socialClub', ''), 128),
+            'rgscId': _safe_profile_text(data.get('rgscId', ''), 128),
+            'serial': _safe_profile_text(data.get('serial', ''), 128),
+            'gameType': _safe_profile_text(data.get('gameType', ''), 64),
+            'packetLoss': _safe_int(data.get('packetLoss'), 0),
             'session': data.get('session', 0),
             'sessionActive': data.get('sessionActive', False),
             'joinTime': join_ts,
@@ -4822,6 +5002,7 @@ def api_panel_hook_player_join():
     panel_connector_last_heartbeat = time.time()
     socketio.emit('player_join', data)
     socketio.emit('players_update', _players_payload())
+    socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
     discord_runtime.request_status_refresh(force=False)
 
     if banned:
@@ -4848,6 +5029,7 @@ def api_panel_hook_player_disconnect():
     panel_connector_last_heartbeat = time.time()
     socketio.emit('player_disconnect', data)
     socketio.emit('players_update', _players_payload())
+    socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
     discord_runtime.request_status_refresh(force=False)
     return jsonify({'ok': True})
 
@@ -4887,6 +5069,7 @@ def api_panel_hook_players_sync():
     save_player_profiles(player_profiles)
 
     socketio.emit('players_update', _players_payload())
+    socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
     if _players_snapshot_signature(connected_players.values()) != prev_sig:
         discord_runtime.request_status_refresh(force=False)
     return jsonify({'ok': True})
@@ -4918,6 +5101,7 @@ def api_panel_hook_heartbeat():
     was_stale = (not panel_connector_last_heartbeat) or ((now_ts - panel_connector_last_heartbeat) > 90)
     panel_connector_last_heartbeat = now_ts
     socketio.emit('panel_heartbeat', data)
+    socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
     if was_stale:
         discord_runtime.request_status_refresh(force=True)
     return jsonify({'ok': True})
@@ -4984,8 +5168,15 @@ def api_players_profile(server_id):
             'player_id': _normalize_player_id(profile.get('player_id')),
             'join_date': profile.get('first_seen_at') or _now_iso(),
             'last_connection': profile.get('last_connection_at') or profile.get('first_seen_at') or _now_iso(),
+            'connections': max(0, _safe_int(profile.get('connections'), 0)),
             'playtime_seconds': playtime_seconds,
             'notes': _safe_profile_text(profile.get('notes', ''), 2000),
+            'last_ip': normalize_player_ip(profile.get('last_ip', '')),
+            'last_social_club': _safe_profile_text(profile.get('last_social_club', ''), 128),
+            'last_rgsc_id': _safe_profile_text(profile.get('last_rgsc_id', ''), 128),
+            'last_serial': _safe_profile_text(profile.get('last_serial', ''), 128),
+            'last_game_type': _safe_profile_text(profile.get('last_game_type', ''), 64),
+            'last_packet_loss': max(0, _safe_int(profile.get('last_packet_loss'), 0)),
             'id_whitelisted': bool(profile.get('id_whitelisted', False)),
             'identifiers': profile.get('identifiers') or {},
             'sanctions': {
@@ -5240,16 +5431,7 @@ def api_players_message():
 def api_status():
     
     sync_server_state_with_system()
-    return jsonify({
-        'running': server_state['running'],
-        'pid': server_state['pid'],
-        'uptime': int(time.time() - server_state['start_time']) if server_state['start_time'] else 0,
-        'auto_restart': server_state['auto_restart'],
-        'restart_count': server_state['restart_count'],
-        'cpu': server_state['cpu_usage'],
-        'memory': server_state['memory_usage'],
-        'attached': server_state['attached']
-    })
+    return jsonify(build_runtime_status_payload(include_history=True))
 
 @app.route('/api/start', methods=['POST'])
 @login_required
@@ -5442,6 +5624,7 @@ def handle_connect():
     sync_server_state_with_system()
     emit('console_history', {'lines': console_lines})
     emit('server_status', {'running': server_state['running']})
+    emit('stats_update', build_runtime_status_payload(include_history=False))
     emit('update_status', get_update_payload())
 
                                                    
@@ -5460,11 +5643,13 @@ if __name__ == '__main__':
     PANEL_PORT = args.port
     _persist_panel_port(PANEL_PORT)
 
+    storage.ensure_storage_files()
     add_console_line('=== RAGEADMIN STARTED ===')
     pin = ensure_setup_pin()
     if pin:
         _announce_setup_pin(pin)
     sync_server_state_with_system()
+    _append_runtime_sample(force=True, emit_socket=False)
 
     stats_thread = threading.Thread(target=update_stats, daemon=True)
     stats_thread.start()

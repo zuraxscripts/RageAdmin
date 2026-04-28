@@ -1,5 +1,4 @@
 import argparse
-import json
 import subprocess
 import sys
 import os
@@ -7,9 +6,10 @@ import signal
 import time
 from pathlib import Path
 
+import storage
+
 ROOT_DIR = Path(__file__).resolve().parent
 REQUIREMENTS_FILE = ROOT_DIR / "requirements.txt"
-PANEL_CONFIG_FILE = ROOT_DIR / "panel_config.json"
 DEFAULT_PANEL_PORT = 20000
 
 processes = []
@@ -34,13 +34,12 @@ def _resolve_default_panel_port():
         except argparse.ArgumentTypeError:
             pass
     try:
-        if PANEL_CONFIG_FILE.exists():
-            data = json.loads(PANEL_CONFIG_FILE.read_text(encoding="utf-8-sig"))
-            if isinstance(data, dict) and "panel_port" in data:
-                try:
-                    return _parse_port(data.get("panel_port"))
-                except argparse.ArgumentTypeError:
-                    pass
+        data = storage.load_panel_config()
+        if isinstance(data, dict) and "panel_port" in data:
+            try:
+                return _parse_port(data.get("panel_port"))
+            except argparse.ArgumentTypeError:
+                pass
     except Exception:
         pass
     return DEFAULT_PANEL_PORT

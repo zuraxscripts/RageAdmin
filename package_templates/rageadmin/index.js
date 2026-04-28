@@ -19,6 +19,8 @@ let state = {
     config: Object.assign({}, DEFAULT_CONFIG),
     lastConfigMtimeMs: 0,
     joinTimes: new Map(),
+    pendingConnections: new Map(),
+    playerMeta: new Map(),
     syncTimer: null,
     heartbeatTimer: null,
     configTimer: null,
@@ -48,6 +50,74 @@ function safeNumber(value, fallback = 0) {
 function safeText(value, fallback = '') {
     const text = String(value == null ? fallback : value).trim();
     return text || fallback;
+}
+
+function buildConnectionKeys(meta) {
+    const src = meta || {};
+    const keys = [];
+    const rgscId = safeText(src.rgscId || src.rgsc_id);
+    const serial = safeText(src.serial);
+    const socialClub = safeText(src.socialClub || src.social_club).toLowerCase();
+    const ip = safeText(src.ip).replace(/^::ffff:/i, '');
+
+    if (rgscId) keys.push(`rgsc:${rgscId.toLowerCase()}`);
+    if (serial) keys.push(`serial:${serial.toLowerCase()}`);
+    if (socialClub) keys.push(`social:${socialClub}`);
+    if (ip) keys.push(`ip:${ip}`);
+    return keys;
+}
+
+function pruneConnectionMeta() {
+    const now = Date.now();
+    state.pendingConnections.forEach((meta, key) => {
+        if (!meta || !meta.storedAt || (now - meta.storedAt) > 120000) {
+            state.pendingConnections.delete(key);
+        }
+    });
+}
+
+function rememberConnectionMeta(meta) {
+    pruneConnectionMeta();
+    const payload = Object.assign({}, meta || {});
+    payload.ip = safeText(payload.ip).replace(/^::ffff:/i, '');
+    payload.socialClub = safeText(payload.socialClub);
+    payload.rgscId = safeText(payload.rgscId);
+    payload.serial = safeText(payload.serial);
+    payload.gameType = safeText(payload.gameType);
+    payload.storedAt = Date.now();
+    payload.keys = buildConnectionKeys(payload);
+    payload.keys.forEach((key) => {
+        state.pendingConnections.set(key, payload);
+    });
+    return payload;
+}
+
+function attachMetaToPlayer(player) {
+    const serverId = getServerId(player);
+    if (state.playerMeta.has(serverId)) {
+        return state.playerMeta.get(serverId);
+    }
+
+    pruneConnectionMeta();
+    const probe = {
+        ip: safeText(player && player.ip).replace(/^::ffff:/i, ''),
+        socialClub: safeText(player && player.socialClub),
+        rgscId: safeText(player && player.rgscId),
+        serial: safeText(player && player.serial)
+    };
+    const keys = buildConnectionKeys(probe);
+    for (let i = 0; i < keys.length; i += 1) {
+        const meta = state.pendingConnections.get(keys[i]);
+        if (meta) {
+            state.playerMeta.set(serverId, meta);
+            (meta.keys || []).forEach((key) => state.pendingConnections.delete(key));
+            return meta;
+        }
+    }
+
+    const fallback = rememberConnectionMeta(probe);
+    state.playerMeta.set(serverId, fallback);
+    return fallback;
 }
 
 function loadConfig() {
@@ -166,23 +236,29 @@ function buildPlayerSnapshot(player) {
     const socialClub = safeText(player.socialClub);
     const rgscId = safeText(player.rgscId);
     const serial = safeText(player.serial);
-    const ip = safeText(player.ip);
+    const ip = safeText(player.ip).replace(/^::ffff:/i, '');
+    const packetLoss = safeNumber(player.packetLoss, 0);
+    const meta = attachMetaToPlayer(player);
+    const gameType = safeText((meta && meta.gameType) || player.gameType);
 
     return {
         serverId,
         name: safeText(player.name, 'Unknown'),
         ping: safeNumber(player.ping, 0),
+        packetLoss,
         ip,
         socialClub,
         rgscId,
         serial,
+        gameType,
         session: Math.max(0, now - joinTime),
         sessionActive: true,
         joinTime,
         identifiers: {
             social_club: socialClub,
             rgsc_id: rgscId,
-            serial
+            serial,
+            game_type: gameType
         }
     };
 }
@@ -232,9 +308,26 @@ function sendPlayerDisconnect(player, exitType, reason) {
         reason: safeText(reason || exitType, 'disconnect')
     };
     state.joinTimes.delete(serverId);
+    state.playerMeta.delete(serverId);
     requestJson('POST', '/api/panel-hook/player-disconnect', payload, (err) => {
         if (err) {
             logError(`player-disconnect sync failed: ${err.message}`);
+        }
+    });
+}
+
+function sendIncomingConnection(ip, serial, rgscName, rgscId, gameType) {
+    const payload = rememberConnectionMeta({
+        ip,
+        serial,
+        socialClub: rgscName,
+        rgscId,
+        gameType
+    });
+
+    requestJson('POST', '/api/panel-hook/incoming-connection', payload, (err) => {
+        if (err) {
+            logError(`incoming-connection sync failed: ${err.message}`);
         }
     });
 }
@@ -357,8 +450,14 @@ mp.events.add('packagesLoaded', () => {
     startIntervals();
 });
 
+mp.events.add('incomingConnection', (ip, serial, rgscName, rgscId, gameType) => {
+    sendIncomingConnection(ip, serial, rgscName, rgscId, gameType);
+    return false;
+});
+
 mp.events.add('playerJoin', (player) => {
     state.joinTimes.set(getServerId(player), Math.floor(Date.now() / 1000));
+    attachMetaToPlayer(player);
     sendPlayerJoin(player);
     setTimeout(syncPlayers, 250);
 });

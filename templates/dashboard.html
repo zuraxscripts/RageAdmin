@@ -376,8 +376,8 @@
       grid-template-columns: repeat(12, minmax(0,1fr));
       gap:14px;
     }
-    .dash-overview{ grid-column: span 5; }
-    .dash-console{ grid-column: span 7; }
+    .dash-overview{ grid-column: span 7; }
+    .dash-console{ grid-column: span 5; }
     .stat-grid{
       display:grid;
       grid-template-columns: repeat(2, minmax(0,1fr));
@@ -419,6 +419,51 @@
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap:10px;
+    }
+    .trend-grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:10px;
+    }
+    .trend-card{
+      padding:12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        radial-gradient(220px 100px at 0% 0%, rgba(var(--primary-rgb),.12), transparent 60%),
+        rgba(0,0,0,.24);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+    .trend-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+    }
+    .trend-label{
+      font-size:10px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .trend-title{
+      margin-top:4px;
+      font-size:14px;
+      font-weight:700;
+    }
+    .trend-meta{
+      font-size:11px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .trend-canvas{
+      display:block;
+      width:100%;
+      height:110px;
+      border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
     }
     .overview-item{
       display:flex;
@@ -1738,6 +1783,7 @@
       .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
       .table-wrap table{min-width:640px;}
       .resources-grid{grid-template-columns:1fr;}
+      .trend-grid{grid-template-columns:1fr;}
       .logs-filters{flex-direction:column;align-items:stretch;}
       .logs-filters .select-wrap{width:100%;}
       .logs-filters .select-wrap .inputx{width:100% !important;}
@@ -1756,6 +1802,7 @@
     }
     @media (max-width: 560px){
       .stat-grid{grid-template-columns: 1fr;}
+      .trend-grid{grid-template-columns:1fr;}
       .stat-value{font-size:22px;}
       .toastx{ width: min(360px, calc(100vw - 36px)); }
       .perm-grid{ grid-template-columns: 1fr; }
@@ -2032,13 +2079,45 @@
                   <div class="stat-value" id="playerCount">0</div>
                 </div>
               </div>
+              <div class="trend-grid">
+                <div class="trend-card">
+                  <div class="trend-head">
+                    <div>
+                      <div class="trend-label" data-i18n="trend_players_label">Trend</div>
+                      <div class="trend-title" data-i18n="trend_players_title">Players</div>
+                    </div>
+                    <div class="trend-meta" id="trendPlayersMeta">0 / 0</div>
+                  </div>
+                  <canvas class="trend-canvas" id="chartPlayers" height="110"></canvas>
+                </div>
+                <div class="trend-card">
+                  <div class="trend-head">
+                    <div>
+                      <div class="trend-label" data-i18n="trend_cpu_label">Trend</div>
+                      <div class="trend-title" data-i18n="trend_cpu_title">CPU Load</div>
+                    </div>
+                    <div class="trend-meta" id="trendCpuMeta">0.0%</div>
+                  </div>
+                  <canvas class="trend-canvas" id="chartCpu" height="110"></canvas>
+                </div>
+                <div class="trend-card">
+                  <div class="trend-head">
+                    <div>
+                      <div class="trend-label" data-i18n="trend_memory_label">Trend</div>
+                      <div class="trend-title" data-i18n="trend_memory_title">Memory</div>
+                    </div>
+                    <div class="trend-meta" id="trendMemoryMeta">0 MB</div>
+                  </div>
+                  <canvas class="trend-canvas" id="chartMemory" height="110"></canvas>
+                </div>
+              </div>
               <div class="divider-line"></div>
               <div class="overview-mini">
                 <div class="overview-item">
-                  <div class="overview-icon"><i class="fa-solid fa-microchip"></i></div>
+                  <div class="overview-icon"><i class="fa-solid fa-database"></i></div>
                   <div>
-                    <div class="overview-label" data-i18n="overview_pid">PID</div>
-                    <div class="overview-value" id="pid">-</div>
+                    <div class="overview-label" data-i18n="overview_saved_profiles">Saved Profiles</div>
+                    <div class="overview-value" id="savedProfilesCount">0</div>
                   </div>
                 </div>
                 <div class="overview-item">
@@ -2049,20 +2128,27 @@
                   </div>
                 </div>
                 <div class="overview-item">
-                  <div class="overview-icon"><i class="fa-solid fa-power-off"></i></div>
+                  <div class="overview-icon"><i class="fa-solid fa-cubes"></i></div>
                   <div>
-                    <div class="overview-label" data-i18n="overview_auto_restart">Auto Restart</div>
-                    <div class="overview-value">
-                      <span class="mini-badge" id="autoRestartBadge">-</span>
-                    </div>
+                    <div class="overview-label" data-i18n="overview_resources">Resources</div>
+                    <div class="overview-value" id="resourcesSummary">0 / 0</div>
                   </div>
                 </div>
                 <div class="overview-item">
                   <div class="overview-icon"><i class="fa-solid fa-link"></i></div>
                   <div>
-                    <div class="overview-label" data-i18n="overview_attached">Attached</div>
+                    <div class="overview-label" data-i18n="overview_bridge">Bridge</div>
                     <div class="overview-value">
-                      <span class="mini-badge" id="attachedBadge">-</span>
+                      <span class="mini-badge" id="bridgeBadge">-</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="overview-item">
+                  <div class="overview-icon"><i class="fa-solid fa-power-off"></i></div>
+                  <div>
+                    <div class="overview-label" data-i18n="overview_auto_restart">Auto Restart</div>
+                    <div class="overview-value">
+                      <span class="mini-badge" id="autoRestartBadge">-</span>
                     </div>
                   </div>
                 </div>
@@ -2278,7 +2364,7 @@
               </div>
 
               <div class="players-section-label">
-                <span><i class="fa-solid fa-database"></i> <span data-i18n="players_section_saved">Saved Players (Database)</span></span>
+                <span><i class="fa-solid fa-database"></i> <span data-i18n="players_section_saved">Saved Players (Profiles)</span></span>
                 <span id="playerCountSavedBadge" class="badgeX" style="font-size:11px;padding:3px 8px;">0</span>
               </div>
               <div class="table-wrap">
@@ -2748,6 +2834,14 @@
                     <span class="badgeX" id="ppBanCount">0 Bans</span>
                   </div>
                 </div>
+                <div class="player-profile-item">
+                  <div class="player-profile-k" data-i18n="players_profile_connections">Connections</div>
+                  <div class="player-profile-v" id="ppConnections">0</div>
+                </div>
+                <div class="player-profile-item">
+                  <div class="player-profile-k" data-i18n="players_profile_last_ip">Last IP</div>
+                  <div class="player-profile-v" id="ppLastIp">-</div>
+                </div>
               </div>
               <div class="form-group" style="margin-top:10px;">
                 <label class="form-label" data-i18n="players_profile_notes">Notes</label>
@@ -2868,6 +2962,8 @@
     let updatePoller = null;
     let statusPoller = null;
     let playersSignature = '';
+    let runtimeHistory = [];
+    let lastRuntimeStatus = null;
     let discordSaveInFlight = false;
 
     function defaultDiscordStatusEmbedTemplate(){
@@ -3272,12 +3368,8 @@
     socket.on('console_update', (data) => addConsoleLine(data.line));
     socket.on('console_history', (data) => updateConsole(data.lines));
     socket.on('server_status', (data) => updateStatusIndicator(!!data.running));
-    socket.on('stats_update', (data) => {
-      document.getElementById('uptime').textContent = formatUptime(data.uptime || 0);
-      document.getElementById('cpu').textContent = (data.cpu ?? 0).toFixed(1) + '%';
-      document.getElementById('memory').textContent = (data.memory ?? 0).toFixed(1) + ' MB';
-      updateStatusTimestamp();
-    });
+    socket.on('stats_update', (data) => updateDashboardStatus(data, { refreshTimestamp: true }));
+    socket.on('stats_point', (sample) => pushRuntimeSample(sample));
     socket.on('update_status', (data) => applyUpdateState(data));
 
     function stripAnsi(str) {
@@ -3508,6 +3600,182 @@
       el.classList.toggle('on', !!on);
     }
 
+    function setStatsHistory(samples){
+      runtimeHistory = (Array.isArray(samples) ? samples : [])
+        .filter(row => row && typeof row === 'object')
+        .slice(-120);
+      drawDashboardCharts();
+    }
+
+    function pushRuntimeSample(sample){
+      if(!sample || typeof sample !== 'object') return;
+      if(runtimeHistory.length > 0 && runtimeHistory[runtimeHistory.length - 1].ts === sample.ts){
+        runtimeHistory[runtimeHistory.length - 1] = sample;
+      } else {
+        runtimeHistory.push(sample);
+      }
+      if(runtimeHistory.length > 120){
+        runtimeHistory = runtimeHistory.slice(-120);
+      }
+      drawDashboardCharts();
+    }
+
+    function getCanvasContext(canvasId){
+      const canvas = document.getElementById(canvasId);
+      if(!canvas) return null;
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const rect = canvas.getBoundingClientRect();
+      const width = Math.max(120, Math.floor(rect.width || canvas.clientWidth || 120));
+      const height = Math.max(80, Math.floor(rect.height || canvas.clientHeight || 110));
+      if(canvas.width !== Math.floor(width * dpr) || canvas.height !== Math.floor(height * dpr)){
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, width, height };
+    }
+
+    function drawTrendCanvas(canvasId, values, opts = {}){
+      const canvasState = getCanvasContext(canvasId);
+      if(!canvasState) return;
+      const { ctx, width, height } = canvasState;
+      ctx.clearRect(0, 0, width, height);
+
+      const chartValues = (Array.isArray(values) ? values : []).map(v => Number(v || 0));
+      const color = opts.color || '#c6a13a';
+      const fill = opts.fill || 'rgba(198,161,58,.18)';
+      const maxValue = Math.max(Number(opts.maxValue || 0), ...chartValues, 1);
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      for(let i = 0; i < 4; i += 1){
+        const y = 8 + ((height - 16) / 3) * i;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      if(chartValues.length === 0){
+        ctx.fillStyle = 'rgba(160,160,170,0.8)';
+        ctx.font = '12px Segoe UI';
+        ctx.fillText(t('trend_waiting','Waiting for samples'), 10, Math.max(24, height / 2));
+        return;
+      }
+
+      const step = chartValues.length === 1 ? 0 : width / (chartValues.length - 1);
+      const points = chartValues.map((value, index) => {
+        const x = step * index;
+        const y = height - 10 - ((Math.max(0, value) / maxValue) * (height - 24));
+        return { x, y };
+      });
+
+      ctx.beginPath();
+      points.forEach((point, index) => {
+        if(index === 0) ctx.moveTo(point.x, point.y);
+        else ctx.lineTo(point.x, point.y);
+      });
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = color;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, height - 8);
+      points.forEach((point) => ctx.lineTo(point.x, point.y));
+      ctx.lineTo(points[points.length - 1].x, height - 8);
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+
+      const last = points[points.length - 1];
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(11,11,12,0.85)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    function drawDashboardCharts(){
+      const samples = runtimeHistory.slice(-60);
+      drawTrendCanvas('chartPlayers', samples.map(s => Number(s.players || 0)), {
+        color: '#d8c072',
+        fill: 'rgba(198,161,58,0.18)',
+        maxValue: Math.max(...samples.map(s => Number(s.max_players || s.players || 0)), 1)
+      });
+      drawTrendCanvas('chartCpu', samples.map(s => Number(s.cpu || 0)), {
+        color: '#f59e0b',
+        fill: 'rgba(245,158,11,0.14)',
+        maxValue: 100
+      });
+      drawTrendCanvas('chartMemory', samples.map(s => Number(s.memory || 0)), {
+        color: '#60a5fa',
+        fill: 'rgba(96,165,250,0.14)',
+        maxValue: Math.max(...samples.map(s => Number(s.memory || 0)), 1)
+      });
+    }
+
+    function updateDashboardStatus(data, opts = {}){
+      if(!data || typeof data !== 'object') return;
+      lastRuntimeStatus = Object.assign({}, lastRuntimeStatus || {}, data);
+
+      updateStatusIndicator(!!data.running);
+
+      document.getElementById('uptime').textContent = formatUptime(data.uptime || 0);
+      document.getElementById('cpu').textContent = (data.cpu ?? 0).toFixed(1) + '%';
+      document.getElementById('memory').textContent = (data.memory ?? 0).toFixed(1) + ' MB';
+
+      const restartEl = document.getElementById('restartCount');
+      if (restartEl) restartEl.textContent = (data.restart_count ?? 0);
+
+      const autoEl = document.getElementById('autoRestartBadge');
+      if (autoEl) setMiniBadge(autoEl, !!data.auto_restart, t('label_on','On'), t('label_off','Off'));
+
+      const bridgeEl = document.getElementById('bridgeBadge');
+      if (bridgeEl) setMiniBadge(bridgeEl, !!data.bridge_online, t('label_connected','Connected'), t('label_waiting','Waiting'));
+
+      const totalProfiles = Number(data.players_saved || 0);
+      const onlinePlayers = Number(data.players_online || 0);
+      const offlineProfiles = Math.max(0, totalProfiles - onlinePlayers);
+      setPlayerCounters({
+        total: totalProfiles,
+        online: onlinePlayers,
+        saved: offlineProfiles
+      });
+
+      const savedProfilesEl = document.getElementById('savedProfilesCount');
+      if(savedProfilesEl) savedProfilesEl.textContent = totalProfiles;
+
+      const resourcesSummaryEl = document.getElementById('resourcesSummary');
+      if(resourcesSummaryEl){
+        resourcesSummaryEl.textContent = `${Number(data.resources_running || 0)} / ${Number(data.resources_total || 0)}`;
+      }
+
+      const maxPlayers = Number(data.max_players || 0);
+      const trendPlayersMeta = document.getElementById('trendPlayersMeta');
+      if(trendPlayersMeta) trendPlayersMeta.textContent = `${onlinePlayers} / ${maxPlayers}`;
+      const trendCpuMeta = document.getElementById('trendCpuMeta');
+      if(trendCpuMeta) trendCpuMeta.textContent = `${(data.cpu ?? 0).toFixed(1)}%`;
+      const trendMemoryMeta = document.getElementById('trendMemoryMeta');
+      if(trendMemoryMeta) trendMemoryMeta.textContent = `${(data.memory ?? 0).toFixed(1)} MB`;
+
+      if(Array.isArray(data.history)){
+        setStatsHistory(data.history);
+      }
+
+      if(opts.refreshTimestamp){
+        updateStatusTimestamp();
+      }
+
+      if(data.attached){
+        document.getElementById('cmdHint').textContent = t('console_attached_hint');
+      } else {
+        document.getElementById('cmdHint').textContent = '';
+      }
+    }
+
     function updateStatusTimestamp(){
       const updatedEl = document.getElementById('statusUpdated');
       if (updatedEl) {
@@ -3522,26 +3790,13 @@
         if(res.status === 401) return (window.location.href = '/login');
         if(!res.ok) return;
         const data = await res.json();
-        updateStatusIndicator(!!data.running);
-        const pidEl = document.getElementById('pid');
-        if (pidEl) pidEl.textContent = data.pid ? String(data.pid) : '-';
-        const restartEl = document.getElementById('restartCount');
-        if (restartEl) restartEl.textContent = (data.restart_count ?? 0);
-        const autoEl = document.getElementById('autoRestartBadge');
-        if (autoEl) setMiniBadge(autoEl, !!data.auto_restart, t('label_on','On'), t('label_off','Off'));
-        const attachedEl = document.getElementById('attachedBadge');
-        if (attachedEl) setMiniBadge(attachedEl, !!data.attached, t('label_attached','Attached'), t('label_detached','Detached'));
-        updateStatusTimestamp();
-        document.getElementById('uptime').textContent = formatUptime(data.uptime || 0);
-        document.getElementById('cpu').textContent = (data.cpu ?? 0).toFixed(1) + '%';
-        document.getElementById('memory').textContent = (data.memory ?? 0).toFixed(1) + ' MB';
-        if(data.attached){
-          document.getElementById('cmdHint').textContent = t('console_attached_hint');
-        } else {
-          document.getElementById('cmdHint').textContent = '';
-        }
+        updateDashboardStatus(data, { refreshTimestamp: true });
       } catch(e) {}
     }
+
+    window.addEventListener('resize', () => {
+      drawDashboardCharts();
+    });
 
     function updateStatusIndicator(running){
       serverRunning = running;
@@ -5778,6 +6033,13 @@
       if(onlineBadge) onlineBadge.textContent = counts.online;
       const savedBadge = document.getElementById('playerCountSavedBadge');
       if(savedBadge) savedBadge.textContent = counts.saved;
+      const savedProfilesEl = document.getElementById('savedProfilesCount');
+      if(savedProfilesEl) savedProfilesEl.textContent = counts.total;
+      const trendPlayersMeta = document.getElementById('trendPlayersMeta');
+      if(trendPlayersMeta){
+        const maxPlayers = Number((lastRuntimeStatus && lastRuntimeStatus.max_players) || 0);
+        trendPlayersMeta.textContent = `${counts.online} / ${maxPlayers}`;
+      }
     }
 
     let activePlayerProfile = null;
@@ -5842,6 +6104,8 @@
       document.getElementById('ppPlayTime').textContent = formatUptime(profile.playtime_seconds || 0);
       document.getElementById('ppJoinDate').textContent = formatIsoDateTime(profile.join_date);
       document.getElementById('ppLastConnection').textContent = formatIsoDateTime(profile.last_connection);
+      document.getElementById('ppConnections').textContent = String(profile.connections || 0);
+      document.getElementById('ppLastIp').textContent = normalizePlayerIp(profile.last_ip || '-') || '-';
 
       const warns = (profile.sanctions && profile.sanctions.warns) || 0;
       const bans = (profile.sanctions && profile.sanctions.bans) || 0;

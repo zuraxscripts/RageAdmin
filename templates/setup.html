@@ -481,7 +481,7 @@
                 <div class="setup-steps">
                     <div class="step-pill active" id="stepPill1">1. PIN</div>
                     <div class="step-pill" id="stepPill2">2. Admin</div>
-                    <div class="step-pill" id="stepPill3">3. Database</div>
+                    <div class="step-pill" id="stepPill3">3. Storage</div>
                     <div class="step-pill" id="stepPill4">4. Setup</div>
                 </div>
 
@@ -538,53 +538,43 @@
                 </div>
 
                 <div class="setup-step" id="step3">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label"><i class="fa-solid fa-database"></i> Database Host</label>
-                            <input type="text" class="form-input" id="dbHost" placeholder="127.0.0.1" required autocomplete="off">
-                            <p class="form-hint">Database endpoint / IP</p>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label"><i class="fa-solid fa-network-wired"></i> Database Port</label>
-                            <input type="number" class="form-input" id="dbPort" placeholder="3306" value="3306" required autocomplete="off">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label"><i class="fa-solid fa-user"></i> Database Username</label>
-                            <input type="text" class="form-input" id="dbUser" placeholder="root" required autocomplete="off">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label"><i class="fa-solid fa-database"></i> Database Name</label>
-                            <input type="text" class="form-input" id="dbName" placeholder="ragemp" required autocomplete="off">
-                            <p class="form-hint">Database must already exist</p>
-                        </div>
-                    </div>
-
                     <div class="form-group">
-                        <label class="form-label"><i class="fa-solid fa-lock"></i> Database Password</label>
-                        <input type="password" class="form-input" id="dbPassword" placeholder="Database password" required autocomplete="off">
-                    </div>
-
-                    <div class="form-group">
-                        <div class="status-indicator" id="dbStatus">
+                        <div class="status-indicator ok" id="dbStatus">
                             <span class="status-dot"></span>
-                            <span id="dbStatusText">Not checked</span>
+                            <span id="dbStatusText">Standalone file database will be created in data/db.</span>
                         </div>
                     </div>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-label">Users</div>
+                            <div class="summary-value mono">data/db/users.json</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Players</div>
+                            <div class="summary-value mono">data/db/player_profiles.json</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Panel</div>
+                            <div class="summary-value mono">data/db/panel.json</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Stats</div>
+                            <div class="summary-value mono">data/db/stats_history.json</div>
+                        </div>
+                    </div>
+                    <p class="form-hint">Existing legacy JSON files are migrated automatically on first setup.</p>
 
                     <div class="step-actions">
                         <button type="button" class="btn-secondary" id="btnStep3Back"><i class="fa-solid fa-arrow-left"></i> Back</button>
-                        <button type="button" class="btn-submit" id="btnStep3Next"><i class="fa-solid fa-plug"></i> Test & Continue</button>
+                        <button type="button" class="btn-submit" id="btnStep3Next"><i class="fa-solid fa-arrow-right"></i> Continue</button>
                     </div>
                 </div>
 
                 <div class="setup-step" id="step4">
                     <div class="form-group">
-                        <div class="status-indicator" id="dbStatusSummary">
+                        <div class="status-indicator ok" id="dbStatusSummary">
                             <span class="status-dot"></span>
-                            <span id="dbStatusSummaryText">Waiting for DB test...</span>
+                            <span id="dbStatusSummaryText">Standalone file storage ready.</span>
                         </div>
                     </div>
 
@@ -604,24 +594,20 @@
                                     <div class="summary-value" id="summaryAdmin">-</div>
                                 </div>
                                 <div class="summary-item">
-                                    <div class="summary-label">DB Host</div>
-                                    <div class="summary-value mono" id="summaryDbHost">-</div>
+                                    <div class="summary-label">Storage</div>
+                                    <div class="summary-value mono" id="summaryStorageMode">data/db/*.json</div>
                                 </div>
                                 <div class="summary-item">
-                                    <div class="summary-label">DB Port</div>
-                                    <div class="summary-value mono" id="summaryDbPort">-</div>
+                                    <div class="summary-label">Users File</div>
+                                    <div class="summary-value mono" id="summaryUsersFile">data/db/users.json</div>
                                 </div>
                                 <div class="summary-item">
-                                    <div class="summary-label">DB User</div>
-                                    <div class="summary-value mono" id="summaryDbUser">-</div>
+                                    <div class="summary-label">Players File</div>
+                                    <div class="summary-value mono" id="summaryPlayersFile">data/db/player_profiles.json</div>
                                 </div>
                                 <div class="summary-item">
-                                    <div class="summary-label">DB Name</div>
-                                    <div class="summary-value mono" id="summaryDbName">-</div>
-                                </div>
-                                <div class="summary-item">
-                                    <div class="summary-label">DB Password</div>
-                                    <div class="summary-value mono" id="summaryDbPassword">******</div>
+                                    <div class="summary-label">Panel File</div>
+                                    <div class="summary-value mono" id="summaryPanelFile">data/db/panel.json</div>
                                 </div>
                             </div>
                         </div>
@@ -657,11 +643,6 @@
         const step3 = document.getElementById('step3');
         const step4 = document.getElementById('step4');
         const pinInputs = Array.from(document.querySelectorAll('.pin-input'));
-        const dbHost = document.getElementById('dbHost');
-        const dbPort = document.getElementById('dbPort');
-        const dbUser = document.getElementById('dbUser');
-        const dbPassword = document.getElementById('dbPassword');
-        const dbName = document.getElementById('dbName');
         const dbStatus = document.getElementById('dbStatus');
         const dbStatusText = document.getElementById('dbStatusText');
         const dbStatusSummary = document.getElementById('dbStatusSummary');
@@ -672,17 +653,15 @@
         const progressStep = document.getElementById('progressStep');
         const progressLog = document.getElementById('progressLog');
         const summaryAdmin = document.getElementById('summaryAdmin');
-        const summaryDbHost = document.getElementById('summaryDbHost');
-        const summaryDbPort = document.getElementById('summaryDbPort');
-        const summaryDbUser = document.getElementById('summaryDbUser');
-        const summaryDbName = document.getElementById('summaryDbName');
-        const summaryDbPassword = document.getElementById('summaryDbPassword');
+        const summaryStorageMode = document.getElementById('summaryStorageMode');
+        const summaryUsersFile = document.getElementById('summaryUsersFile');
+        const summaryPlayersFile = document.getElementById('summaryPlayersFile');
+        const summaryPanelFile = document.getElementById('summaryPanelFile');
         let pollTimer = null;
         let lastLogLength = 0;
         let setupPin = '';
         let setupUsername = '';
         let setupPassword = '';
-        let setupDb = null;
         let setupStarted = false;
 
         function t(key, fallback) {
@@ -706,7 +685,7 @@
 
         loadLocale();
         form.addEventListener('submit', (e) => e.preventDefault());
-        setDbStatus('', 'Not checked');
+        setDbStatus('ok', 'Standalone file storage ready');
 
         password.addEventListener('input', () => {
             const val = password.value;
@@ -762,7 +741,6 @@
             const secrets = [];
             if (setupPin) secrets.push(setupPin);
             if (setupPassword) secrets.push(setupPassword);
-            if (setupDb && setupDb.password) secrets.push(setupDb.password);
             secrets.forEach(secret => {
                 if (!secret) return;
                 const escaped = secret.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -826,11 +804,10 @@
 
         function updateSetupSummary() {
             if (summaryAdmin) summaryAdmin.textContent = setupUsername || '-';
-            if (summaryDbHost) summaryDbHost.textContent = (setupDb && setupDb.host) || '-';
-            if (summaryDbPort) summaryDbPort.textContent = (setupDb && setupDb.port) || '-';
-            if (summaryDbUser) summaryDbUser.textContent = (setupDb && setupDb.user) || '-';
-            if (summaryDbName) summaryDbName.textContent = (setupDb && setupDb.database) || '-';
-            if (summaryDbPassword) summaryDbPassword.textContent = maskValue(setupDb && setupDb.password ? setupDb.password : '');
+            if (summaryStorageMode) summaryStorageMode.textContent = 'data/db/*.json';
+            if (summaryUsersFile) summaryUsersFile.textContent = 'data/db/users.json';
+            if (summaryPlayersFile) summaryPlayersFile.textContent = 'data/db/player_profiles.json';
+            if (summaryPanelFile) summaryPanelFile.textContent = 'data/db/panel.json';
         }
 
         async function verifyPinAndContinue() {
@@ -887,53 +864,15 @@
 
         btnStep3Back.addEventListener('click', () => {
             btnStep3Next.disabled = false;
-            btnStep3Next.innerHTML = `<i class="fa-solid fa-plug"></i> Test & Continue`;
+            btnStep3Next.innerHTML = `<i class="fa-solid fa-arrow-right"></i> Continue`;
             setStep(2);
         });
 
         btnStep3Next.addEventListener('click', async () => {
-            const db = {
-                host: dbHost.value.trim(),
-                port: dbPort.value.trim(),
-                user: dbUser.value.trim(),
-                password: dbPassword.value,
-                database: dbName.value.trim()
-            };
-
-            if (!db.host || !db.port || !db.user || !db.password || !db.database) {
-                showAlert('Please fill in all database fields', 'error');
-                return;
-            }
-
-            setupDb = db;
             updateSetupSummary();
-            setDbStatus('info', 'Testing connection...');
+            setDbStatus('ok', 'Standalone file storage ready');
             btnStep3Next.disabled = true;
-            btnStep3Next.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Testing...`;
-
-            try {
-                const res = await fetch('/api/db-test', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(db)
-                });
-                const out = await res.json();
-                if (!out.success) {
-                    setDbStatus('bad', out.message || 'Connection failed');
-                    showAlert(out.message || 'Database connection failed', 'error');
-                    btnStep3Next.disabled = false;
-                    btnStep3Next.innerHTML = `<i class="fa-solid fa-plug"></i> Test & Continue`;
-                    return;
-                }
-            } catch (e) {
-                setDbStatus('bad', 'Connection failed');
-                showAlert('Database connection failed', 'error');
-                btnStep3Next.disabled = false;
-                btnStep3Next.innerHTML = `<i class="fa-solid fa-plug"></i> Test & Continue`;
-                return;
-            }
-
-            setDbStatus('ok', 'Connected');
+            btnStep3Next.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Preparing...`;
             setStep(4);
             startSetup();
         });
@@ -949,17 +888,15 @@
             setupStarted = true;
             progressLog.textContent = '';
             lastLogLength = 0;
-            if (setupDb) {
-                const snap = `Admin=${setupUsername || '-'} | DB ${setupDb.host || '-'}:${setupDb.port || '-'} / ${setupDb.user || '-'} / ${setupDb.database || '-'} / ${maskValue(setupDb.password || '')}`;
-                progressLog.textContent = maskSecrets(`Snapshot: ${snap}`);
-            }
+            const snap = `Admin=${setupUsername || '-'} | Storage=data/db/*.json | Users=data/db/users.json | Players=data/db/player_profiles.json | Panel=data/db/panel.json`;
+            progressLog.textContent = maskSecrets(`Snapshot: ${snap}`);
             showAlert('Setup started. Please wait...', 'success');
 
             try {
                 const response = await fetch('/api/setup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ pin: setupPin, username: setupUsername, password: setupPassword, db: setupDb })
+                    body: JSON.stringify({ pin: setupPin, username: setupUsername, password: setupPassword })
                 });
                 const data = await response.json();
                 if (data.success) {
