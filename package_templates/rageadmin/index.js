@@ -52,6 +52,15 @@ function safeText(value, fallback = '') {
     return text || fallback;
 }
 
+function computeNoticeDuration(message, requested, minimum = 10, maximum = 45) {
+    const text = safeText(message);
+    const lines = Math.max(1, text.split(/\r?\n/).length);
+    const estimated = 6 + Math.ceil(text.length / 22) + Math.max(0, lines - 1) * 2;
+    const requestedSeconds = safeNumber(requested, minimum);
+    const seconds = Math.max(minimum, estimated, requestedSeconds);
+    return Math.max(minimum, Math.min(maximum, seconds));
+}
+
 function buildConnectionKeys(meta) {
     const src = meta || {};
     const keys = [];
@@ -390,10 +399,11 @@ function emitAllClientEvent(eventName, payload) {
 
 function buildUiNotice(action, fallbackTitle, fallbackVariant) {
     const src = action || {};
+    const message = safeText(src.message || src.reason);
     return {
         title: safeText(src.title, fallbackTitle || 'RageAdmin'),
-        message: safeText(src.message || src.reason),
-        duration: Math.max(2, safeNumber(src.duration, 5)),
+        message,
+        duration: computeNoticeDuration(message, src.duration, 10, 45),
         variant: safeText(src.variant, fallbackVariant || 'message').toLowerCase()
     };
 }

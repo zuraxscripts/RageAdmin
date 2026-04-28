@@ -523,12 +523,23 @@ def _queue_pending_action(action):
     pending_actions.append(dict(action))
 
 
+def _compute_notice_duration(message, requested=None, minimum=10, maximum=45):
+    text = _safe_profile_text(message, 2000)
+    lines = max(1, text.count('\n') + 1)
+    estimated = 6 + ((len(text) + 21) // 22) + max(0, lines - 1) * 2
+    seconds = max(minimum, estimated)
+    if requested is not None:
+        seconds = max(seconds, _safe_int(requested, minimum))
+    return max(minimum, min(maximum, seconds))
+
+
 def _queue_restart_notice(message, duration=None, title='Server Restart'):
-    try:
-        base_duration = int(duration if duration is not None else config.get('restart_delay', 5))
-    except Exception:
-        base_duration = 5
-    base_duration = max(4, min(30, base_duration))
+    base_duration = _compute_notice_duration(
+        message,
+        requested=duration if duration is not None else config.get('restart_delay', 10),
+        minimum=10,
+        maximum=45
+    )
     _queue_pending_action({
         'type': 'broadcast',
         'title': _safe_profile_text(title, 64) or 'Server Restart',
@@ -5293,8 +5304,7 @@ def api_players_warn():
     data = request.json or {}
     server_id = data.get('serverId')
     reason = _safe_profile_text(data.get('reason', ''), 280) or 'Warning from admin'
-    duration = _safe_int(data.get('duration', 8), 8)
-    duration = max(3, min(20, duration))
+    duration = _compute_notice_duration(reason, requested=data.get('duration', 10), minimum=10, maximum=45)
 
     if server_id is None:
         return jsonify({'success': False, 'message': 'serverId required'})
@@ -5473,18 +5483,14 @@ def api_players_message():
     server_id = data.get('serverId')
     message = data.get('message', '').strip()
     broadcast = data.get('broadcast', False)
-    duration = data.get('duration', 5)
+    duration = data.get('duration', 10)
     title = _safe_profile_text(data.get('title', ''), 64)
     variant = _safe_profile_text(data.get('variant', ''), 24).lower() or ('announce' if broadcast else 'message')
 
-    try:
-        duration = int(duration)
-    except Exception:
-        duration = 5
-    duration = max(2, min(20, duration))
-
     if not message:
         return jsonify({'success': False, 'message': 'Message required'})
+
+    duration = _compute_notice_duration(message, requested=duration, minimum=10, maximum=45)
 
     if broadcast:
         _queue_pending_action({
