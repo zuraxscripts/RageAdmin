@@ -74,6 +74,7 @@
       display:flex;
       flex-direction:column;
       z-index:200;
+      overflow:hidden;
     }
 
     .hamburger{
@@ -235,6 +236,78 @@
       transform: translateY(0) scale(.98);
     }
 
+    .sidebar-runtime{
+      margin-top:12px;
+      padding:14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(220px 100px at 12% 0%, rgba(var(--primary-rgb),.14), transparent 60%),
+        rgba(0,0,0,.24);
+      box-shadow: 0 10px 28px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+    .sidebar-runtime .runtime-toolbar{
+      margin-bottom:12px;
+      gap:8px;
+    }
+    .sidebar-runtime .runtime-tool{
+      width:38px;
+      height:38px;
+      border-radius:11px;
+    }
+    .sidebar-runtime-name{
+      font-size:16px;
+      font-weight:750;
+      line-height:1.15;
+    }
+    .sidebar-runtime-meta{
+      margin-top:4px;
+      margin-bottom:10px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .sidebar-runtime .runtime-grid{
+      gap:8px;
+    }
+    .sidebar-runtime .runtime-row{
+      padding:0;
+      border:none;
+      border-radius:0;
+      background:transparent;
+    }
+    .sidebar-runtime .runtime-row-label{
+      font-size:12px;
+    }
+    .sidebar-runtime .runtime-row-value{
+      font-size:12px;
+    }
+    .sidebar-runtime .runtime-pill{
+      min-width:78px;
+      padding:4px 8px;
+      font-size:10px;
+    }
+    .sidebar-runtime-next{
+      margin-top:12px;
+      padding-top:12px;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .sidebar-runtime-next-label{
+      font-size:12px;
+      font-weight:700;
+      margin-bottom:4px;
+    }
+    .sidebar-runtime-next-value{
+      color:#d7dde7;
+      font-size:12px;
+      font-style:italic;
+      line-height:1.45;
+    }
+    .sidebar-runtime .btnx{
+      width:100%;
+      margin-top:12px;
+    }
+
     .nav{
       display:flex; flex-direction:column; gap:8px;
       margin-top:10px;
@@ -376,8 +449,7 @@
       grid-template-columns: repeat(12, minmax(0,1fr));
       gap:14px;
     }
-    .dash-overview{ grid-column: span 7; }
-    .dash-runtime{ grid-column: span 5; }
+    .dash-overview{ grid-column: span 12; }
     .dash-console{ grid-column: span 12; }
     .stat-grid{
       display:grid;
@@ -1895,7 +1967,7 @@
       .main{ padding-top:60px; }
       .stat{ grid-column: span 6; }
       .status-chip{min-width:auto;flex:1;margin-left:50px;}
-      .dash-overview,.dash-runtime,.dash-console{grid-column: span 12;}
+      .dash-overview,.dash-console{grid-column: span 12;}
       .topbar{flex-direction:column;align-items:stretch;}
       .topbar .actions{justify-content:flex-end;}
       .modal-content-custom{width:100% !important;max-height:95vh;}
@@ -1952,7 +2024,7 @@
       .file-actions .btnx.sm span.action-label{display:none;}
       .resource-actions .action-label{display:none;}
       .status-chip{margin-left:50px;}
-      .dash-overview,.dash-runtime,.dash-console{grid-column: span 12;}
+      .dash-overview,.dash-console{grid-column: span 12;}
     }
 
     @media (prefers-reduced-motion: reduce){
@@ -2119,6 +2191,56 @@
         <div class="nav-item" data-page="players"><i class="fa-solid fa-users"></i> <span data-i18n="nav_players">Players</span></div>
         <div class="nav-item" data-page="admin" id="adminNav" style="display:none;"><i class="fa-solid fa-shield"></i> <span data-i18n="nav_admin">Admin</span></div>
       </nav>
+
+      <section class="sidebar-runtime">
+        <div class="runtime-toolbar">
+          <button class="runtime-tool success" id="btnDashStart" title="Start">
+            <i class="fa-solid fa-play"></i>
+          </button>
+          <button class="runtime-tool danger" id="btnDashStop" title="Stop">
+            <i class="fa-solid fa-stop"></i>
+          </button>
+          <button class="runtime-tool primary" id="btnDashRestart" title="Restart">
+            <i class="fa-solid fa-rotate"></i>
+          </button>
+          <button class="runtime-tool warning" id="btnDashAnnounce" title="Announce">
+            <i class="fa-solid fa-bullhorn"></i>
+          </button>
+        </div>
+
+        <div class="sidebar-runtime-name" id="runtimeServerName">RageMP Server</div>
+        <div class="sidebar-runtime-meta" id="runtimeServerMeta" data-i18n="status_waiting">Waiting for status...</div>
+
+        <div class="runtime-grid">
+          <div class="runtime-row">
+            <span class="runtime-row-label" data-i18n="runtime_server_label">Server</span>
+            <span class="runtime-pill offline" id="runtimeServerBadge">OFFLINE</span>
+          </div>
+          <div class="runtime-row">
+            <span class="runtime-row-label" data-i18n="stat_uptime">Uptime</span>
+            <span class="runtime-row-value" id="runtimeUptime">0s</span>
+          </div>
+          <div class="runtime-row">
+            <span class="runtime-row-label" data-i18n="runtime_players_label">Players</span>
+            <span class="runtime-row-value" id="runtimePlayers">0 / 0</span>
+          </div>
+          <div class="runtime-row">
+            <span class="runtime-row-label" data-i18n="runtime_discord_label">Discord Bot</span>
+            <span class="runtime-pill neutral" id="runtimeDiscord">DISABLED</span>
+          </div>
+          <div class="runtime-row">
+            <span class="runtime-row-label" data-i18n="runtime_bridge_label">Bridge</span>
+            <span class="runtime-pill waiting" id="runtimeBridge">WAITING</span>
+          </div>
+        </div>
+
+        <div class="sidebar-runtime-next">
+          <div class="sidebar-runtime-next-label" data-i18n="runtime_next_restart_label">Next Restart</div>
+          <div class="sidebar-runtime-next-value" id="runtimeNextRestart">Nothing scheduled</div>
+        </div>
+
+        <button class="btnx" id="btnOpenSchedule"><i class="fa-solid fa-clock"></i> <span data-i18n="btn_open_schedule">Open Schedule</span></button>
+      </section>
 
       <div class="panel-version-card">
         <div class="panel-version-left">
@@ -2301,68 +2423,6 @@
                     <div class="overview-label" data-i18n="overview_last_update">Last Update</div>
                     <div class="overview-value" id="statusUpdated">-</div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="cardx dash-runtime">
-            <div class="cardx-header">
-              <div class="cardx-title"><i class="fa-solid fa-wave-square"></i> <span data-i18n="card_server_runtime">Server Runtime</span></div>
-            </div>
-            <div class="cardx-body">
-              <div class="runtime-panel">
-                <div class="runtime-toolbar">
-                  <button class="runtime-tool success" id="btnDashStart" title="Start">
-                    <i class="fa-solid fa-play"></i>
-                  </button>
-                  <button class="runtime-tool danger" id="btnDashStop" title="Stop">
-                    <i class="fa-solid fa-stop"></i>
-                  </button>
-                  <button class="runtime-tool primary" id="btnDashRestart" title="Restart">
-                    <i class="fa-solid fa-rotate"></i>
-                  </button>
-                  <button class="runtime-tool warning" id="btnDashAnnounce" title="Announce">
-                    <i class="fa-solid fa-bullhorn"></i>
-                  </button>
-                </div>
-
-                <div class="runtime-hero">
-                  <div class="runtime-eyebrow" data-i18n="runtime_panel_sync">Panel Sync</div>
-                  <div class="runtime-server-name" id="runtimeServerName">RageMP Server</div>
-                  <div class="runtime-server-meta" id="runtimeServerMeta" data-i18n="status_waiting">Waiting for status...</div>
-                </div>
-
-                <div class="runtime-grid">
-                  <div class="runtime-row">
-                    <span class="runtime-row-label" data-i18n="runtime_server_label">Server</span>
-                    <span class="runtime-pill offline" id="runtimeServerBadge">OFFLINE</span>
-                  </div>
-                  <div class="runtime-row">
-                    <span class="runtime-row-label" data-i18n="stat_uptime">Uptime</span>
-                    <span class="runtime-row-value" id="runtimeUptime">0s</span>
-                  </div>
-                  <div class="runtime-row">
-                    <span class="runtime-row-label" data-i18n="runtime_players_label">Players</span>
-                    <span class="runtime-row-value" id="runtimePlayers">0 / 0</span>
-                  </div>
-                  <div class="runtime-row">
-                    <span class="runtime-row-label" data-i18n="runtime_bridge_label">Bridge</span>
-                    <span class="runtime-pill waiting" id="runtimeBridge">WAITING</span>
-                  </div>
-                  <div class="runtime-row">
-                    <span class="runtime-row-label" data-i18n="runtime_discord_label">Discord Bot</span>
-                    <span class="runtime-pill neutral" id="runtimeDiscord">DISABLED</span>
-                  </div>
-                  <div class="runtime-row">
-                    <span class="runtime-row-label" data-i18n="runtime_next_restart_label">Next Restart</span>
-                    <span class="runtime-row-value" id="runtimeNextRestart">Nothing scheduled</span>
-                  </div>
-                </div>
-
-                <div class="runtime-footer">
-                  <div class="runtime-footer-copy" data-i18n="runtime_schedule_hint">Scheduled restarts are managed in Panel Configuration.</div>
-                  <button class="btnx" id="btnOpenSchedule"><i class="fa-solid fa-clock"></i> <span data-i18n="btn_open_schedule">Open Schedule</span></button>
                 </div>
               </div>
             </div>
