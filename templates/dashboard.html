@@ -2334,7 +2334,7 @@
           <div class="cardx-header">
             <div class="cardx-title"><i class="fa-solid fa-users"></i> <span data-i18n="card_players">Players</span> <span id="playerCountBadge" class="badgeX" style="font-size:12px;padding:4px 10px;">0</span></div>
             <div class="actions">
-              <button class="btnx" id="btnBroadcast"><i class="fa-solid fa-bullhorn"></i> <span data-i18n="btn_broadcast">Broadcast</span></button>
+              <button class="btnx" id="btnBroadcast"><i class="fa-solid fa-bullhorn"></i> <span data-i18n="btn_announce">Announce</span></button>
               <button class="btnx" id="btnRefreshPlayers"><i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="btn_refresh">Refresh</span></button>
             </div>
           </div>
@@ -6585,11 +6585,11 @@
 
     async function broadcastMessage() {
       const res = await openInputModal({
-        title: t('broadcast_title','Broadcast'),
+        title: t('announce_title','Server Announce'),
         submitText: t('btn_send','Send'),
         field1: {
-          label: t('broadcast_message_label','Message'),
-          placeholder: t('broadcast_prompt','Broadcast message to all players:'),
+          label: t('announce_message_label','Message'),
+          placeholder: t('announce_prompt','Send announcement to all players:'),
           required: true,
           multiline: true
         },
@@ -6604,8 +6604,8 @@
       if(!res) return;
       const msg = res.field1;
       const duration = parseInt(res.field2 || '5', 10) || 5;
-      const out = await apiPost('/api/players/message', { broadcast: true, message: msg, duration: duration });
-      if(out.success) toast('success', t('label_broadcast','Broadcast'), t('broadcast_sent','Message sent'));
+      const out = await apiPost('/api/players/message', { broadcast: true, message: msg, duration: duration, variant: 'announce', title: t('announce_title','Server Announce') });
+      if(out.success) toast('success', t('label_broadcast','Broadcast'), t('announce_sent','Announcement sent'));
       else toast('error', t('label_broadcast','Broadcast'), out.message || t('error_failed','Failed'));
     }
 

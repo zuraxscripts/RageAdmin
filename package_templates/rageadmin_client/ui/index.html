@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RageAdmin Monitor</title>
+    <style>
+        :root {
+            --bg: rgba(18, 18, 20, 0.9);
+            --bg-soft: rgba(26, 26, 31, 0.92);
+            --line: rgba(255, 255, 255, 0.1);
+            --text: #f3f4f6;
+            --muted: #a8adb7;
+            --gold: #d4af4a;
+            --green: #22c55e;
+            --red: #ef4444;
+            --yellow: #f59e0b;
+            --blue: #60a5fa;
+            --shadow: 0 22px 55px rgba(0, 0, 0, 0.38);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            pointer-events: none;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: transparent;
+            color: var(--text);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .monitor-root {
+            position: fixed;
+            inset: 0;
+        }
+
+        .monitor-card {
+            position: absolute;
+            top: 22px;
+            right: 22px;
+            width: 290px;
+            padding: 14px;
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            background:
+                radial-gradient(260px 110px at 12% 0%, rgba(212, 175, 74, 0.16), transparent 58%),
+                linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)),
+                var(--bg);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .monitor-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .monitor-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .monitor-label {
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .monitor-title {
+            font-size: 18px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .icon-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-pill {
+            width: 34px;
+            height: 34px;
+            border-radius: 11px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            display: grid;
+            place-items: center;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .monitor-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .monitor-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            font-size: 13px;
+        }
+
+        .row-name {
+            color: #d5d9e0;
+        }
+
+        .row-value {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 80px;
+            padding: 5px 9px;
+            border-radius: 9px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.05);
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .row-value.online { color: #08120c; background: rgba(34,197,94,0.94); border-color: rgba(34,197,94,1); }
+        .row-value.offline { color: #fff4f4; background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.48); }
+        .row-value.info { color: #f2f5f9; background: rgba(96,165,250,0.14); border-color: rgba(96,165,250,0.34); }
+        .row-value.neutral { color: #f2f5f9; }
+
+        .restart-panel {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .restart-title {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .restart-value {
+            color: #d7dde7;
+            font-style: italic;
+            opacity: 0.92;
+        }
+
+        .notice-stack {
+            position: absolute;
+            top: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(760px, calc(100vw - 60px));
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+
+        .notice {
+            position: relative;
+            overflow: hidden;
+            padding: 16px 18px 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background:
+                radial-gradient(320px 110px at 0% 0%, rgba(255,255,255,0.06), transparent 60%),
+                var(--bg-soft);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+            animation: noticeIn 220ms ease-out;
+        }
+
+        .notice::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 4px;
+            transform-origin: left center;
+            animation: shrink linear forwards;
+            animation-duration: var(--duration, 5s);
+            background: rgba(255,255,255,0.45);
+        }
+
+        .notice.message::after { background: rgba(96,165,250,0.94); }
+        .notice.announce::after { background: rgba(212,175,74,0.94); }
+        .notice.warn::after { background: rgba(245,158,11,0.94); }
+        .notice.restart::after { background: rgba(239,68,68,0.94); }
+
+        .notice-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 8px;
+        }
+
+        .notice-kind {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .notice-kind-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: currentColor;
+            box-shadow: 0 0 0 6px rgba(255,255,255,0.06);
+        }
+
+        .notice.message .notice-kind { color: var(--blue); }
+        .notice.announce .notice-kind { color: var(--gold); }
+        .notice.warn .notice-kind { color: var(--yellow); }
+        .notice.restart .notice-kind { color: var(--red); }
+
+        .notice-title {
+            font-size: 22px;
+            font-weight: 750;
+            line-height: 1.15;
+        }
+
+        .notice-duration {
+            font-size: 12px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .notice-message {
+            font-size: 15px;
+            line-height: 1.45;
+            color: #eef2f6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        @keyframes noticeIn {
+            from { opacity: 0; transform: translateY(-8px) scale(0.985); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes shrink {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="monitor-root">
+        <aside class="monitor-card">
+            <div class="monitor-top">
+                <div class="monitor-brand">
+                    <div class="monitor-label">RageAdmin Monitor</div>
+                    <div class="monitor-title" id="serverName">RageMP Server</div>
+                </div>
+                <div class="icon-row">
+                    <div class="icon-pill">◌</div>
+                    <div class="icon-pill">↺</div>
+                    <div class="icon-pill">◈</div>
+                </div>
+            </div>
+
+            <div class="monitor-grid">
+                <div class="monitor-row">
+                    <span class="row-name">Server</span>
+                    <span class="row-value online" id="serverStatus">ONLINE</span>
+                </div>
+                <div class="monitor-row">
+                    <span class="row-name">Uptime</span>
+                    <span class="row-value info" id="serverUptime">0s</span>
+                </div>
+                <div class="monitor-row">
+                    <span class="row-name">Players</span>
+                    <span class="row-value info" id="serverPlayers">0 / 0</span>
+                </div>
+                <div class="monitor-row">
+                    <span class="row-name">Discord Bot</span>
+                    <span class="row-value neutral" id="discordBot">DISABLED</span>
+                </div>
+            </div>
+
+            <div class="restart-panel">
+                <div class="restart-title">Next Restart</div>
+                <div class="restart-value" id="nextRestart">nothing scheduled</div>
+            </div>
+        </aside>
+
+        <section class="notice-stack" id="noticeStack"></section>
+    </div>
+
+    <script>
+        const state = {
+            connection: { connected: false },
+            monitor: {
+                serverName: 'RageMP Server',
+                status: 'offline',
+                playersOnline: 0,
+                playersMax: 0,
+                uptimeText: '0s',
+                discordBotEnabled: false,
+                nextRestart: 'Not scheduled'
+            }
+        };
+
+        function parsePayload(raw, fallback = {}) {
+            try {
+                if (typeof raw === 'string') {
+                    return JSON.parse(raw);
+                }
+                if (raw && typeof raw === 'object') {
+                    return raw;
+                }
+            } catch (err) {}
+            return fallback;
+        }
+
+        function normalizeText(value, fallback) {
+            const text = String(value == null ? fallback : value).trim();
+            return text || fallback || '';
+        }
+
+        function monitorValueClass(type) {
+            if (type === 'online') return 'row-value online';
+            if (type === 'offline') return 'row-value offline';
+            if (type === 'info') return 'row-value info';
+            return 'row-value neutral';
+        }
+
+        function renderMonitor() {
+            const monitor = state.monitor || {};
+            const online = normalizeText(monitor.status, 'offline').toLowerCase() === 'online';
+            document.getElementById('serverName').textContent = normalizeText(monitor.serverName, 'RageMP Server');
+
+            const statusEl = document.getElementById('serverStatus');
+            statusEl.className = monitorValueClass(online ? 'online' : 'offline');
+            statusEl.textContent = online ? 'ONLINE' : 'OFFLINE';
+
+            const uptimeEl = document.getElementById('serverUptime');
+            uptimeEl.className = monitorValueClass('info');
+            uptimeEl.textContent = normalizeText(monitor.uptimeText, '0s');
+
+            const playersEl = document.getElementById('serverPlayers');
+            playersEl.className = monitorValueClass('info');
+            playersEl.textContent = `${Number(monitor.playersOnline || 0)} / ${Number(monitor.playersMax || 0)}`;
+
+            const discordEl = document.getElementById('discordBot');
+            discordEl.className = monitorValueClass(monitor.discordBotEnabled ? 'online' : 'neutral');
+            discordEl.textContent = monitor.discordBotEnabled ? 'ENABLED' : 'DISABLED';
+
+            document.getElementById('nextRestart').textContent = normalizeText(monitor.nextRestart, 'nothing scheduled');
+        }
+
+        function noticeKindLabel(variant) {
+            const v = normalizeText(variant, 'message').toLowerCase();
+            if (v === 'announce') return 'SERVER ANNOUNCEMENT';
+            if (v === 'warn') return 'WARNING';
+            if (v === 'restart') return 'RESTART NOTICE';
+            return 'DIRECT MESSAGE';
+        }
+
+        function removeNotice(node) {
+            if (node && node.parentNode) {
+                node.parentNode.removeChild(node);
+            }
+        }
+
+        function pushNotice(rawPayload) {
+            const payload = parsePayload(rawPayload, {});
+            const variant = normalizeText(payload.variant, 'message').toLowerCase();
+            const duration = Math.max(2, Math.min(45, Number(payload.duration || 5)));
+            const title = normalizeText(payload.title, variant === 'announce' ? 'Server Announcement' : 'RageAdmin');
+            const message = normalizeText(payload.message, '');
+            if (!message) return;
+
+            const wrap = document.createElement('article');
+            wrap.className = `notice ${variant}`;
+            wrap.style.setProperty('--duration', `${duration}s`);
+            wrap.innerHTML = `
+                <div class="notice-head">
+                    <div>
+                        <div class="notice-kind"><span class="notice-kind-dot"></span>${noticeKindLabel(variant)}</div>
+                        <div class="notice-title">${title}</div>
+                    </div>
+                    <div class="notice-duration">${duration}s</div>
+                </div>
+                <div class="notice-message"></div>
+            `;
+            wrap.querySelector('.notice-message').textContent = message;
+
+            const stack = document.getElementById('noticeStack');
+            stack.appendChild(wrap);
+
+            window.setTimeout(() => removeNotice(wrap), duration * 1000 + 200);
+        }
+
+        function setConnection(rawPayload) {
+            state.connection = Object.assign({}, state.connection, parsePayload(rawPayload, {}));
+            renderMonitor();
+        }
+
+        function setMonitor(rawPayload) {
+            state.monitor = Object.assign({}, state.monitor, parsePayload(rawPayload, {}));
+            renderMonitor();
+        }
+
+        renderMonitor();
+
+        if (window.mp && mp.events && typeof mp.events.add === 'function') {
+            mp.events.add('rageadminSetConnection', setConnection);
+            mp.events.add('rageadminSetMonitor', setMonitor);
+            mp.events.add('rageadminPushNotice', pushNotice);
+        }
+    </script>
+</body>
+</html>

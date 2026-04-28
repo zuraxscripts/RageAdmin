@@ -227,6 +227,7 @@ RAGEMP_SERVER_EXECUTABLE = 'ragemp-server'
 RAGEMP_CONTENT_DIRS = ('packages', 'client_packages', 'maps', 'plugins')
 RAGEMP_BRIDGE_PACKAGE_NAME = 'rageadmin'
 RAGEMP_BRIDGE_TEMPLATE_DIR = ROOT_DIR / 'package_templates' / RAGEMP_BRIDGE_PACKAGE_NAME
+RAGEMP_BRIDGE_CLIENT_TEMPLATE_DIR = ROOT_DIR / 'package_templates' / f'{RAGEMP_BRIDGE_PACKAGE_NAME}_client'
 RAGEMP_STARTUP_TABLE_END_MARKERS = (
     '[info] loading nodejs packages',
     '[info] starting packages',
@@ -513,6 +514,28 @@ def load_player_profiles():
 
 def save_player_profiles(profiles):
     storage.save_player_profiles(profiles if isinstance(profiles, dict) else {})
+
+
+def _queue_pending_action(action):
+    global pending_actions
+    if not isinstance(action, dict):
+        return
+    pending_actions.append(dict(action))
+
+
+def _queue_restart_notice(message, duration=None, title='Server Restart'):
+    try:
+        base_duration = int(duration if duration is not None else config.get('restart_delay', 5))
+    except Exception:
+        base_duration = 5
+    base_duration = max(4, min(30, base_duration))
+    _queue_pending_action({
+        'type': 'broadcast',
+        'title': _safe_profile_text(title, 64) or 'Server Restart',
+        'message': _safe_profile_text(message, 280) or 'Server restart incoming',
+        'duration': base_duration,
+        'variant': 'restart'
+    })
 
 
 def _now_iso():
@@ -1457,6 +1480,30 @@ def _status_template_context():
         'nextScheduledRestart': _compute_next_scheduled_restart(panel_config.get('scheduled_restarts') or []),
         'uptime': _format_uptime_short(uptime_seconds),
         '_status_color': status_color
+    }
+
+
+def _build_txadmin_monitor_payload():
+    settings = parse_settings_xml() or {}
+    discord_cfg = _get_discord_config()
+    uptime_seconds = int(time.time() - server_state['start_time']) if server_state.get('start_time') else 0
+    max_players = 0
+    try:
+        max_players = max(0, int(settings.get('maxplayers') or 0))
+    except Exception:
+        max_players = 0
+
+    return {
+        'serverName': str(settings.get('name') or 'RageMP Server').strip() or 'RageMP Server',
+        'status': 'online' if server_state.get('running') else 'offline',
+        'playersOnline': len(connected_players),
+        'playersMax': max_players,
+        'uptimeSec': uptime_seconds,
+        'uptimeText': _format_uptime_short(uptime_seconds),
+        'discordBotEnabled': bool((discord_cfg or {}).get('enabled')),
+        'nextRestart': _compute_next_scheduled_restart(panel_config.get('scheduled_restarts') or []),
+        'autoRestart': bool(server_state.get('auto_restart')),
+        'panelName': str((panel_config or {}).get('panel_name') or 'RageAdmin').strip() or 'RageAdmin'
     }
 
 
@@ -2419,6 +2466,34 @@ def _get_ragemp_bridge_target_dir(server_dir=None):
     return base_dir.resolve() / 'packages' / RAGEMP_BRIDGE_PACKAGE_NAME
 
 
+def _get_ragemp_bridge_client_target_dir(server_dir=None):
+    base_dir = Path(server_dir) if server_dir is not None else Path(get_server_dir())
+    return base_dir.resolve() / 'client_packages' / RAGEMP_BRIDGE_PACKAGE_NAME
+
+
+def _ensure_ragemp_client_bootstrap(server_dir=None):
+    base_dir = Path(server_dir) if server_dir is not None else Path(get_server_dir())
+    client_root = base_dir.resolve() / 'client_packages'
+    client_root.mkdir(parents=True, exist_ok=True)
+    index_path = client_root / 'index.js'
+    require_line = f"require('./{RAGEMP_BRIDGE_PACKAGE_NAME}/index');"
+
+    if index_path.exists():
+        content = index_path.read_text(encoding='utf-8-sig')
+    else:
+        content = ''
+
+    if require_line in content or f"require('./{RAGEMP_BRIDGE_PACKAGE_NAME}');" in content:
+        return index_path
+
+    new_content = content.rstrip()
+    if new_content:
+        new_content += '\n'
+    new_content += f'{require_line}\n'
+    index_path.write_text(new_content, encoding='utf-8')
+    return index_path
+
+
 def _build_ragemp_bridge_config():
     host = get_panel_host()
     secret = str((panel_config or {}).get('panel_secret') or 'changeme').strip() or 'changeme'
@@ -2434,16 +2509,22 @@ def _build_ragemp_bridge_config():
 
 def _install_ragemp_bridge_package(server_dir=None):
     target_dir = _get_ragemp_bridge_target_dir(server_dir)
+    client_target_dir = _get_ragemp_bridge_client_target_dir(server_dir)
     target_dir.parent.mkdir(parents=True, exist_ok=True)
+    client_target_dir.parent.mkdir(parents=True, exist_ok=True)
     if not RAGEMP_BRIDGE_TEMPLATE_DIR.exists():
         raise RuntimeError(f'RageAdmin package template not found: {RAGEMP_BRIDGE_TEMPLATE_DIR}')
+    if not RAGEMP_BRIDGE_CLIENT_TEMPLATE_DIR.exists():
+        raise RuntimeError(f'RageAdmin client package template not found: {RAGEMP_BRIDGE_CLIENT_TEMPLATE_DIR}')
 
     shutil.copytree(RAGEMP_BRIDGE_TEMPLATE_DIR, target_dir, dirs_exist_ok=True)
+    shutil.copytree(RAGEMP_BRIDGE_CLIENT_TEMPLATE_DIR, client_target_dir, dirs_exist_ok=True)
     config_path = target_dir / 'config.json'
     config_path.write_text(
         json.dumps(_build_ragemp_bridge_config(), indent=4),
         encoding='utf-8'
     )
+    _ensure_ragemp_client_bootstrap(server_dir)
     return target_dir
 
 
@@ -2703,10 +2784,21 @@ def restart_server(username):
     server_state['restart_count'] += 1
     log_user_action(username, 'RESTART_SERVER', f'Count: {server_state["restart_count"]}')
     discord_runtime.send_warning(f'[RESTART] Server restart requested by {username}')
+    _queue_restart_notice(
+        f'Restart requested by {username}. Please prepare to reconnect.',
+        duration=config.get('restart_delay', 5),
+        title='Restart Incoming'
+    )
 
     def _do_restart():
+        try:
+            delay = int(config.get('restart_delay', 5))
+        except Exception:
+            delay = 5
+        delay = max(4, min(30, delay))
+        time.sleep(delay)
         stop_server(username)
-        time.sleep(config.get('restart_delay', 5))
+        time.sleep(1)
         start_server(username)
 
     threading.Thread(target=_do_restart, daemon=True).start()
@@ -5104,7 +5196,7 @@ def api_panel_hook_heartbeat():
     socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
     if was_stale:
         discord_runtime.request_status_refresh(force=True)
-    return jsonify({'ok': True})
+    return jsonify({'ok': True, 'monitor': _build_txadmin_monitor_payload()})
 
 
 @app.route('/api/panel-hook/pending-actions', methods=['GET'])
@@ -5396,12 +5488,13 @@ def api_players_bans_remove():
 @require_permission('can_send_commands')
 def api_players_message():
     
-    global pending_actions
     data = request.json or {}
     server_id = data.get('serverId')
     message = data.get('message', '').strip()
     broadcast = data.get('broadcast', False)
     duration = data.get('duration', 5)
+    title = _safe_profile_text(data.get('title', ''), 64)
+    variant = _safe_profile_text(data.get('variant', ''), 24).lower() or ('announce' if broadcast else 'message')
 
     try:
         duration = int(duration)
@@ -5413,11 +5506,25 @@ def api_players_message():
         return jsonify({'success': False, 'message': 'Message required'})
 
     if broadcast:
-        pending_actions.append({'type': 'broadcast', 'message': message, 'duration': duration})
+        _queue_pending_action({
+            'type': 'broadcast',
+            'title': title or 'Server Announcement',
+            'message': message,
+            'duration': duration,
+            'variant': variant
+        })
         log_user_action(session['username'], 'BROADCAST_MESSAGE', message)
         return jsonify({'success': True, 'message': 'Broadcast queued'})
     elif server_id is not None:
-        pending_actions.append({'type': 'message', 'serverId': server_id, 'message': message, 'duration': duration})
+        _queue_pending_action({
+            'type': 'message',
+            'serverId': server_id,
+            'title': title or 'Admin Message',
+            'message': message,
+            'duration': duration,
+            'variant': variant
+        })
+        log_user_action(session['username'], 'PLAYER_MESSAGE', f'{server_id}: {message}')
         return jsonify({'success': True, 'message': 'Message queued'})
     else:
         return jsonify({'success': False, 'message': 'serverId or broadcast required'})

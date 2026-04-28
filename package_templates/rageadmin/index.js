@@ -21,6 +21,7 @@ let state = {
     joinTimes: new Map(),
     pendingConnections: new Map(),
     playerMeta: new Map(),
+    monitor: null,
     syncTimer: null,
     heartbeatTimer: null,
     configTimer: null,
@@ -338,7 +339,9 @@ function syncPlayers() {
     requestJson('POST', '/api/panel-hook/players-sync', { players }, (err) => {
         if (err) {
             logError(`players-sync failed: ${err.message}`);
+            return;
         }
+        broadcastMonitorState(false);
     });
 }
 
@@ -348,9 +351,14 @@ function sendHeartbeat() {
         package: 'rageadmin',
         playerCount: mp.players.toArray().length,
         panelHost: state.config.panelHost
-    }, (err) => {
+    }, (err, response) => {
         if (err) {
             logError(`heartbeat failed: ${err.message}`);
+            broadcastMonitorState(true);
+            return;
+        }
+        if (response && response.monitor && typeof response.monitor === 'object') {
+            updateMonitorState(response.monitor, true);
         }
     });
 }
@@ -368,6 +376,75 @@ function sendToPlayer(player, message, kind) {
     try {
         player.notify(`${kind === 'warn' ? '~y~Warning~w~' : '~y~RageAdmin~w~'}: ${text}`);
     } catch (err) {}
+}
+
+function emitClientEvent(player, eventName, payload) {
+    if (!player || !eventName) {
+        return;
+    }
+    const serialized = JSON.stringify(payload || {});
+    try {
+        player.call(eventName, [serialized]);
+    } catch (err) {}
+}
+
+function emitAllClientEvent(eventName, payload) {
+    const serialized = JSON.stringify(payload || {});
+    try {
+        mp.players.call(eventName, [serialized]);
+    } catch (err) {}
+}
+
+function buildMonitorState(overrides) {
+    const base = Object.assign({}, state.monitor || {}, overrides || {});
+    base.playersOnline = mp.players.toArray().length;
+    return base;
+}
+
+function broadcastMonitorState(disconnected) {
+    const payload = buildMonitorState({ disconnected: !!disconnected });
+    if (!payload || Object.keys(payload).length === 0) {
+        return;
+    }
+    emitAllClientEvent('rageadmin:ui:monitor', payload);
+}
+
+function updateMonitorState(monitor, broadcastNow) {
+    if (!monitor || typeof monitor !== 'object') {
+        return;
+    }
+    state.monitor = buildMonitorState(monitor);
+    if (broadcastNow) {
+        broadcastMonitorState(false);
+    }
+}
+
+function sendMonitorToPlayer(player) {
+    if (!player || !state.monitor) {
+        return;
+    }
+    emitClientEvent(player, 'rageadmin:ui:monitor', buildMonitorState());
+}
+
+function buildUiNotice(action, fallbackTitle, fallbackVariant) {
+    const src = action || {};
+    return {
+        title: safeText(src.title, fallbackTitle || 'RageAdmin'),
+        message: safeText(src.message || src.reason),
+        duration: Math.max(2, safeNumber(src.duration, 5)),
+        variant: safeText(src.variant, fallbackVariant || 'message').toLowerCase()
+    };
+}
+
+function sendUiNotice(player, action, fallbackTitle, fallbackVariant) {
+    if (!player) {
+        return;
+    }
+    emitClientEvent(player, 'rageadmin:ui:notice', buildUiNotice(action, fallbackTitle, fallbackVariant));
+}
+
+function broadcastUiNotice(action, fallbackTitle, fallbackVariant) {
+    emitAllClientEvent('rageadmin:ui:notice', buildUiNotice(action, fallbackTitle, fallbackVariant));
 }
 
 function applyPendingActions() {
@@ -392,16 +469,19 @@ function applyPendingActions() {
             const message = safeText(action.message || action.reason);
 
             if (type === 'warn') {
+                sendUiNotice(target, action, 'Warning', 'warn');
                 sendToPlayer(target, message || 'Warning from admin', 'warn');
                 return;
             }
 
             if (type === 'message') {
+                sendUiNotice(target, action, 'Admin Message', 'message');
                 sendToPlayer(target, message, 'message');
                 return;
             }
 
             if (type === 'broadcast') {
+                broadcastUiNotice(action, 'Server Announcement', 'announce');
                 mp.players.toArray().forEach((player) => {
                     sendToPlayer(player, message, 'message');
                 });
@@ -413,9 +493,14 @@ function applyPendingActions() {
                     return;
                 }
                 if (message) {
+                    sendUiNotice(target, action, 'Kick Notice', 'warn');
                     sendToPlayer(target, message, 'warn');
                 }
-                target.kick(message || 'Kicked by admin');
+                setTimeout(() => {
+                    try {
+                        target.kick(message || 'Kicked by admin');
+                    } catch (err) {}
+                }, 900);
                 return;
             }
 
@@ -424,9 +509,14 @@ function applyPendingActions() {
                     return;
                 }
                 if (message) {
+                    sendUiNotice(target, action, 'Ban Notice', 'warn');
                     sendToPlayer(target, message, 'warn');
                 }
-                target.ban(message || 'Banned by admin');
+                setTimeout(() => {
+                    try {
+                        target.ban(message || 'Banned by admin');
+                    } catch (err) {}
+                }, 900);
             }
         });
     });
@@ -459,16 +549,20 @@ mp.events.add('playerJoin', (player) => {
     state.joinTimes.set(getServerId(player), Math.floor(Date.now() / 1000));
     attachMetaToPlayer(player);
     sendPlayerJoin(player);
+    sendMonitorToPlayer(player);
+    setTimeout(() => broadcastMonitorState(false), 300);
     setTimeout(syncPlayers, 250);
 });
 
 mp.events.add('playerReady', (player) => {
     if (player) {
         sendPlayerJoin(player);
+        sendMonitorToPlayer(player);
     }
 });
 
 mp.events.add('playerQuit', (player, exitType, reason) => {
     sendPlayerDisconnect(player, exitType, reason);
+    setTimeout(() => broadcastMonitorState(false), 300);
     setTimeout(syncPlayers, 250);
 });
