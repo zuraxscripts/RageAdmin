@@ -2922,7 +2922,7 @@
           <div class="sidebar-runtime-next-value" id="runtimeNextRestart">Nothing scheduled</div>
         </div>
 
-        <button class="btnx" id="btnOpenSchedule"><i class="fa-solid fa-clock"></i> <span data-i18n="btn_open_schedule">Open Schedule</span></button>
+        <button class="btnx warning" id="btnQuickRestart"><i class="fa-solid fa-bolt"></i> <span>Quick Restart</span></button>
       </section>
 
       <div class="panel-version-card">
@@ -4779,9 +4779,15 @@
       const totalProfiles = Number(data.players_saved || 0);
       const offlineProfiles = Math.max(0, totalProfiles - onlinePlayers);
       const restartTimes = Array.isArray(data.scheduled_restart_times) ? data.scheduled_restart_times : [];
-      const clientRestart = resolveClientRestartInfo(restartTimes, data.next_restart_clock, data.next_restart_in_minutes);
-      const nextRestartClock = String(clientRestart.nextClock || data.next_restart_clock || '').trim();
-      const nextRestart = formatRestartCountdown(clientRestart.minutesUntil);
+      const dailyRestartInfo = resolveClientRestartInfo(
+        restartTimes,
+        data.daily_next_restart_clock || data.next_restart_clock,
+        data.daily_next_restart_in_minutes ?? data.next_restart_in_minutes
+      );
+      const dailyRestartClock = String(dailyRestartInfo.nextClock || data.daily_next_restart_clock || data.next_restart_clock || '').trim();
+      const dailyRestart = formatRestartCountdown(dailyRestartInfo.minutesUntil);
+      const nextRestart = formatRestartCountdown(data.next_restart_in_minutes);
+      const nextRestartKind = String(data.next_restart_kind || '').trim().toLowerCase();
       const serverName = String(data.server_name || 'RageMP Server').trim() || 'RageMP Server';
       const bridgeOnline = !!data.bridge_online;
       const discordEnabled = !!data.discord_bot_enabled;
@@ -4843,12 +4849,16 @@
         discordEnabled ? t('label_enabled','Enabled') : t('label_disabled','Disabled')
       );
       const runtimeNextRestart = document.getElementById('runtimeNextRestart');
-      if(runtimeNextRestart) runtimeNextRestart.textContent = nextRestart;
+      if(runtimeNextRestart){
+        runtimeNextRestart.textContent = nextRestartKind === 'quick'
+          ? `Quick restart ${nextRestart}`
+          : nextRestart;
+      }
       const nextRestartCountdown = document.getElementById('nextRestartCountdown');
-      if(nextRestartCountdown) nextRestartCountdown.textContent = nextRestart;
+      if(nextRestartCountdown) nextRestartCountdown.textContent = dailyRestart;
       const nextRestartContext = document.getElementById('nextRestartContext');
-      if(nextRestartContext) nextRestartContext.textContent = formatRestartContext(nextRestartClock, restartTimes);
-      renderRestartSchedule(restartTimes, nextRestartClock);
+      if(nextRestartContext) nextRestartContext.textContent = formatRestartContext(dailyRestartClock, restartTimes);
+      renderRestartSchedule(restartTimes, dailyRestartClock);
 
       if(Array.isArray(data.history)){
         setStatsHistory(data.history);
@@ -4895,6 +4905,67 @@
       switchPage('settings');
       setSettingsCategory('general', true);
       focusScheduledRestartEditor();
+    }
+
+    function parseQuickRestartMinutes(rawValue){
+      const text = String(rawValue || '').trim().toLowerCase().replace(/^\+/, '').replace(/\s+/g, '');
+      if(!text) return NaN;
+      if(/^\d+$/.test(text)) return Number(text);
+      let match = text.match(/^(\d+)m$/);
+      if(match) return Number(match[1]);
+      match = text.match(/^(\d+)h$/);
+      if(match) return Number(match[1]) * 60;
+      match = text.match(/^(\d+)h(\d{1,2})m?$/);
+      if(match) return (Number(match[1]) * 60) + Number(match[2]);
+      match = text.match(/^(\d{1,2}):(\d{1,2})$/);
+      if(match) return (Number(match[1]) * 60) + Number(match[2]);
+      return NaN;
+    }
+
+    async function scheduleQuickRestart(){
+      if(!serverRunning){
+        toast('error', t('label_server','Server'), t('status_offline_desc','Start the server to go online.'));
+        return;
+      }
+
+      const activeQuick = !!(lastRuntimeStatus && lastRuntimeStatus.quick_restart_active);
+      if(activeQuick){
+        const currentQuick = formatRestartCountdown((lastRuntimeStatus && lastRuntimeStatus.quick_restart_in_minutes) ?? '');
+        const ok = await openConfirmModal({
+          title: 'Replace Quick Restart',
+          message: `A quick restart is already scheduled (${currentQuick}). Replace it?`,
+          confirmText: 'Replace',
+          confirmStyle: 'warning'
+        });
+        if(!ok) return;
+      }
+
+      const res = await openInputModal({
+        title: 'Quick Restart',
+        submitText: 'Schedule',
+        field1: {
+          label: 'Restart In',
+          placeholder: '+10, 15m, 1h, 1:30',
+          value: '10',
+          required: true,
+          error: 'Enter a valid delay.'
+        }
+      });
+      if(!res) return;
+
+      const minutes = parseQuickRestartMinutes(res.field1);
+      if(!Number.isInteger(minutes) || minutes < 1 || minutes > 1440){
+        toast('error', 'Quick Restart', 'Use something like +10, 15m, 1h or 1:30.');
+        return;
+      }
+
+      const out = await apiPost('/api/restart/quick', { minutes });
+      if(out && out.success){
+        toast('success', 'Quick Restart', out.message || `Restart scheduled in ${minutes} minutes.`);
+        fetchStatus(true);
+      } else {
+        toast('error', 'Quick Restart', (out && out.message) || t('error_failed','Failed'));
+      }
     }
 
     async function fetchStatus(force = false){
@@ -8022,7 +8093,7 @@
     bindClick('btnDashStop', stopServer);
     bindClick('btnDashRestart', restartServer);
     bindClick('btnDashAnnounce', broadcastMessage);
-    bindClick('btnOpenSchedule', openScheduledRestartPanel);
+    bindClick('btnQuickRestart', scheduleQuickRestart);
     bindClick('btnOpenScheduleSecondary', openScheduledRestartPanel);
     const btnRefreshStatus = document.getElementById('btnRefreshStatus');
     if(btnRefreshStatus) btnRefreshStatus.addEventListener('click', () => runWithLoading(btnRefreshStatus, () => fetchStatus(true)));

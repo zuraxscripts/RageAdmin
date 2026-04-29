@@ -138,6 +138,7 @@ server_state = {
     'start_time': None,
     'auto_restart': False,
     'restart_count': 0,
+    'restart_pending': False,
     'cpu_usage': 0,
     'memory_usage': 0,
     'attached': False
@@ -167,6 +168,29 @@ runtime_stats_history = storage.load_stats_history()
 runtime_stats_dirty = False
 runtime_stats_last_saved_at = 0.0
 runtime_stats_last_sample_at = 0.0
+QUICK_RESTART_ANNOUNCE_MINUTES = (30, 15, 10, 5, 4, 3, 2, 1)
+restart_schedule_lock = threading.Lock()
+
+
+def _empty_quick_restart_job():
+    return {
+        'active': False,
+        'target_ts': None,
+        'created_at': '',
+        'created_by': '',
+        'minutes': None
+    }
+
+
+def _new_restart_announce_state():
+    return {
+        'key': '',
+        'announced': set()
+    }
+
+
+quick_restart_job = _empty_quick_restart_job()
+restart_announce_state = _new_restart_announce_state()
 
 
 DEFAULT_DISCORD_STATUS_EMBED_TEMPLATE = {
@@ -712,13 +736,16 @@ def build_runtime_status_payload(include_history=False):
     now_ts = time.time()
     settings = parse_settings_xml() or {}
     discord_cfg = _get_discord_config() or {}
-    restart_info = _compute_next_scheduled_restart_info(panel_config.get('scheduled_restarts') or [])
+    daily_restart_info = _compute_next_scheduled_restart_info(_live_scheduled_restart_times())
+    quick_restart_info = _get_quick_restart_info(now_ts)
+    restart_info = _resolve_effective_restart_info(daily_info=daily_restart_info, quick_info=quick_restart_info, now_ts=now_ts)
     resources_running, resources_total = _current_resources_summary()
     payload = {
         'running': server_state['running'],
         'uptime': int(now_ts - server_state['start_time']) if server_state['start_time'] else 0,
         'auto_restart': server_state['auto_restart'],
         'restart_count': server_state['restart_count'],
+        'restart_pending': bool(server_state.get('restart_pending')),
         'cpu': server_state['cpu_usage'],
         'memory': server_state['memory_usage'],
         'attached': server_state['attached'],
@@ -732,7 +759,14 @@ def build_runtime_status_payload(include_history=False):
         'next_scheduled_restart': restart_info['display'],
         'next_restart_in_minutes': restart_info['minutes_until'],
         'next_restart_clock': restart_info['next_clock'],
-        'scheduled_restart_times': restart_info['times'],
+        'next_restart_kind': restart_info.get('source') or '',
+        'daily_next_restart_in_minutes': daily_restart_info.get('minutes_until'),
+        'daily_next_restart_clock': daily_restart_info.get('next_clock'),
+        'quick_restart_active': quick_restart_info.get('scheduled', False),
+        'quick_restart_in_minutes': quick_restart_info.get('minutes_until'),
+        'quick_restart_clock': quick_restart_info.get('next_clock'),
+        'quick_restart_created_by': quick_restart_info.get('created_by', ''),
+        'scheduled_restart_times': daily_restart_info['times'],
         'bridge_online': _bridge_online(now_ts),
         'bridge_last_heartbeat': panel_connector_last_heartbeat,
         'bridge_age_sec': round(max(0.0, now_ts - panel_connector_last_heartbeat), 1) if panel_connector_last_heartbeat else None
@@ -1515,14 +1549,32 @@ def _normalize_daily_restart_times(times):
     return [value for _, _, value in normalized]
 
 
+def _format_restart_relative(minutes_until):
+    if minutes_until <= 0:
+        return 'now'
+    remaining = int(minutes_until)
+    days, remaining = divmod(remaining, 1440)
+    hours, mins = divmod(remaining, 60)
+    parts = []
+    if days:
+        parts.append(f'{days}d')
+    if hours:
+        parts.append(f'{hours}h')
+    if mins or not parts:
+        parts.append(f'{mins}m')
+    return f'in {" ".join(parts)}'
+
+
 def _compute_next_scheduled_restart_info(times):
     now = datetime.now()
     normalized = _normalize_daily_restart_times(times)
     if not normalized:
         return {
             'scheduled': False,
+            'source': 'daily',
             'times': [],
             'next_at': None,
+            'next_ts': None,
             'next_clock': None,
             'minutes_until': None,
             'display': 'Not scheduled'
@@ -1539,25 +1591,14 @@ def _compute_next_scheduled_restart_info(times):
     nearest_dt, nearest_clock = min(candidates, key=lambda row: row[0])
     delta_seconds = max(0.0, (nearest_dt - now).total_seconds())
     minutes_until = int((delta_seconds + 59) // 60)
-    relative = 'now'
-    if minutes_until > 0:
-        remaining = minutes_until
-        days, remaining = divmod(remaining, 1440)
-        hours, mins = divmod(remaining, 60)
-        parts = []
-        if days:
-            parts.append(f'{days}d')
-        if hours:
-            parts.append(f'{hours}h')
-        if mins or not parts:
-            parts.append(f'{mins}m')
-        relative = f'in {" ".join(parts)}'
-    display = f'{nearest_clock} ({relative})'
+    display = f'{nearest_clock} ({_format_restart_relative(minutes_until)})'
 
     return {
         'scheduled': True,
+        'source': 'daily',
         'times': normalized,
         'next_at': nearest_dt.strftime('%Y-%m-%d %H:%M'),
+        'next_ts': int(nearest_dt.timestamp()),
         'next_clock': nearest_clock,
         'minutes_until': minutes_until,
         'display': display
@@ -1566,6 +1607,104 @@ def _compute_next_scheduled_restart_info(times):
 
 def _compute_next_scheduled_restart(times):
     return _compute_next_scheduled_restart_info(times).get('display', 'Not scheduled')
+
+
+def _reset_restart_announce_state():
+    global restart_announce_state
+    with restart_schedule_lock:
+        restart_announce_state = _new_restart_announce_state()
+
+
+def _clear_quick_restart_job():
+    global quick_restart_job, restart_announce_state
+    with restart_schedule_lock:
+        quick_restart_job = _empty_quick_restart_job()
+        restart_announce_state = _new_restart_announce_state()
+
+
+def _set_quick_restart_job(minutes, username='SYSTEM'):
+    global quick_restart_job, restart_announce_state
+    mins = max(1, min(1440, _safe_int(minutes, 10)))
+    now_ts = time.time()
+    with restart_schedule_lock:
+        quick_restart_job = {
+            'active': True,
+            'target_ts': now_ts + (mins * 60),
+            'created_at': _now_iso(),
+            'created_by': _safe_profile_text(username, 64) or 'SYSTEM',
+            'minutes': mins
+        }
+        restart_announce_state = _new_restart_announce_state()
+    return _get_quick_restart_info(now_ts)
+
+
+def _get_quick_restart_info(now_ts=None):
+    check_ts = now_ts if now_ts is not None else time.time()
+    with restart_schedule_lock:
+        snapshot = dict(quick_restart_job or {})
+
+    target_ts = snapshot.get('target_ts')
+    if not snapshot.get('active') or not target_ts:
+        return {
+            'scheduled': False,
+            'source': 'quick',
+            'times': [],
+            'next_at': None,
+            'next_ts': None,
+            'next_clock': None,
+            'minutes_until': None,
+            'display': 'Not scheduled',
+            'created_by': '',
+            'created_at': ''
+        }
+
+    target_ts = float(target_ts)
+    minutes_until = int(max(0.0, (target_ts - check_ts) + 59) // 60)
+    target_dt = datetime.fromtimestamp(target_ts)
+    next_clock = target_dt.strftime('%H:%M')
+    return {
+        'scheduled': True,
+        'source': 'quick',
+        'times': [],
+        'next_at': target_dt.strftime('%Y-%m-%d %H:%M'),
+        'next_ts': int(target_ts),
+        'next_clock': next_clock,
+        'minutes_until': minutes_until,
+        'display': f'{next_clock} ({_format_restart_relative(minutes_until)})',
+        'created_by': _safe_profile_text(snapshot.get('created_by'), 64),
+        'created_at': _safe_profile_text(snapshot.get('created_at'), 64)
+    }
+
+
+def _resolve_effective_restart_info(daily_info=None, quick_info=None, now_ts=None):
+    check_ts = now_ts if now_ts is not None else time.time()
+    daily = daily_info if isinstance(daily_info, dict) else _compute_next_scheduled_restart_info(_live_scheduled_restart_times())
+    quick = quick_info if isinstance(quick_info, dict) else _get_quick_restart_info(check_ts)
+    candidates = []
+    for info in (daily, quick):
+        if info.get('scheduled') and info.get('next_ts') is not None:
+            candidates.append(info)
+    if not candidates:
+        return {
+            'scheduled': False,
+            'source': '',
+            'times': daily.get('times', []) if isinstance(daily, dict) else [],
+            'next_at': None,
+            'next_ts': None,
+            'next_clock': None,
+            'minutes_until': None,
+            'display': 'Not scheduled'
+        }
+    return dict(min(candidates, key=lambda info: float(info.get('next_ts') or 0)))
+
+
+def _queue_restart_countdown_notice(minutes_remaining, source='daily', target_clock=''):
+    mins = max(1, _safe_int(minutes_remaining, 0))
+    noun = 'minute' if mins == 1 else 'minutes'
+    clock_suffix = f' ({target_clock})' if target_clock else ''
+    message = f'Server restart in {mins} {noun}{clock_suffix}.'
+    _queue_restart_notice(message, duration=12 if mins <= 5 else 10, title='Restart Countdown')
+    add_console_line(f'=== {source.upper()} RESTART IN {mins} {noun.upper()}{clock_suffix} ===', 'SYSTEM')
 
 
 def _resolve_status_state(status_cfg):
@@ -1591,7 +1730,10 @@ def _status_template_context():
         'connectedPlayersWithPing': _format_connected_players_block(max_lines=20, include_ping=True, include_id=False),
         'connectedPlayersWithId': _format_connected_players_block(max_lines=20, include_ping=False, include_id=True),
         'connectedPlayersDetailed': _format_connected_players_block(max_lines=20, include_ping=True, include_id=True),
-        'nextScheduledRestart': _compute_next_scheduled_restart(panel_config.get('scheduled_restarts') or []),
+        'nextScheduledRestart': _resolve_effective_restart_info(
+            daily_info=_compute_next_scheduled_restart_info(_live_scheduled_restart_times()),
+            quick_info=_get_quick_restart_info()
+        ).get('display', 'Not scheduled'),
         'uptime': _format_uptime_short(uptime_seconds),
         '_status_color': status_color
     }
@@ -1653,7 +1795,10 @@ def _status_refresh_signature():
         'serverClients': len(connected_players),
         'serverMaxClients': settings.get('maxplayers') or 0,
         'connectedPlayersSig': _players_snapshot_signature(connected_players.values()),
-        'nextScheduledRestart': _compute_next_scheduled_restart(panel_config.get('scheduled_restarts') or []),
+        'nextScheduledRestart': _resolve_effective_restart_info(
+            daily_info=_compute_next_scheduled_restart_info(_live_scheduled_restart_times()),
+            quick_info=_get_quick_restart_info()
+        ).get('display', 'Not scheduled'),
         'statusEmbedJson': str(discord_cfg.get('status_embed_json') or ''),
         'statusConfigJson': str(discord_cfg.get('status_config_json') or '')
     }
@@ -2775,8 +2920,10 @@ def start_server(username):
         server_state['running'] = True
         server_state['pid'] = server_process.pid
         server_state['start_time'] = time.time()
+        server_state['restart_pending'] = False
         server_state['attached'] = False
         panel_connector_last_heartbeat = 0.0
+        _reset_restart_announce_state()
 
                                                       
         settings = parse_settings_xml()
@@ -2844,12 +2991,14 @@ def stop_server(username):
         server_state['running'] = False
         server_state['pid'] = None
         server_state['start_time'] = None
+        server_state['restart_pending'] = False
         server_state['attached'] = False
         resource_states = {}
         _finalize_all_connected_sessions(reason='server-stop')
         connected_players = {}
         pending_actions = []
         panel_connector_last_heartbeat = 0.0
+        _clear_quick_restart_job()
 
         remove_pid()
 
@@ -2869,16 +3018,24 @@ def stop_server(username):
         return {'success': False, 'message': str(e)}
 
 def restart_server(username):
-    
-    add_console_line(f'=== RESTARTING SERVER BY {username.upper()} ===', username)
-    server_state['restart_count'] += 1
-    log_user_action(username, 'RESTART_SERVER', f'Count: {server_state["restart_count"]}')
-    discord_runtime.send_warning(f'[RESTART] Server restart requested by {username}')
-    _queue_restart_notice(
-        f'Restart requested by {username}. Please prepare to reconnect.',
-        duration=config.get('restart_delay', 5),
-        title='Restart Incoming'
-    )
+    if server_state.get('restart_pending'):
+        return {'success': False, 'message': 'Restart already in progress'}
+
+    server_state['restart_pending'] = True
+    try:
+        add_console_line(f'=== RESTARTING SERVER BY {username.upper()} ===', username)
+        server_state['restart_count'] += 1
+        log_user_action(username, 'RESTART_SERVER', f'Count: {server_state["restart_count"]}')
+        discord_runtime.send_warning(f'[RESTART] Server restart requested by {username}')
+        _queue_restart_notice(
+            f'Restart requested by {username}. Please prepare to reconnect.',
+            duration=config.get('restart_delay', 5),
+            title='Restart Incoming'
+        )
+    except Exception as e:
+        server_state['restart_pending'] = False
+        add_console_line(f'ERROR: Failed to initialize restart - {str(e)}', username)
+        return {'success': False, 'message': str(e)}
 
     def _do_restart():
         try:
@@ -2886,12 +3043,27 @@ def restart_server(username):
         except Exception:
             delay = 5
         delay = max(4, min(30, delay))
-        time.sleep(delay)
-        stop_server(username)
-        time.sleep(1)
-        start_server(username)
+        try:
+            time.sleep(delay)
+            stop_result = stop_server(username)
+            if not stop_result.get('success'):
+                add_console_line(f'ERROR: Restart stop failed - {stop_result.get("message", "Unknown error")}', username)
+                return
+            time.sleep(1)
+            start_result = start_server(username)
+            if not start_result.get('success'):
+                add_console_line(f'ERROR: Restart start failed - {start_result.get("message", "Unknown error")}', username)
+        except Exception as e:
+            add_console_line(f'ERROR: Restart sequence failed - {str(e)}', username)
+        finally:
+            server_state['restart_pending'] = False
 
-    threading.Thread(target=_do_restart, daemon=True).start()
+    try:
+        threading.Thread(target=_do_restart, daemon=True).start()
+    except Exception as e:
+        server_state['restart_pending'] = False
+        add_console_line(f'ERROR: Failed to start restart thread - {str(e)}', username)
+        return {'success': False, 'message': str(e)}
     return {'success': True, 'message': 'Restarting...'}
 
 def monitor_process():
@@ -2962,24 +3134,86 @@ def update_stats():
 
 _last_scheduled_restart_minute = None
 
+
+def _live_scheduled_restart_times():
+    global panel_config
+    try:
+        latest_cfg = storage.load_panel_config()
+        if isinstance(latest_cfg, dict):
+            latest_times = _normalize_daily_restart_times(latest_cfg.get('scheduled_restarts', []))
+            if panel_config.get('scheduled_restarts') != latest_times:
+                panel_config['scheduled_restarts'] = latest_times
+            return latest_times
+    except Exception:
+        pass
+    return _normalize_daily_restart_times(panel_config.get('scheduled_restarts', []))
+
 def scheduled_restart_thread():
     
-    global _last_scheduled_restart_minute
+    global _last_scheduled_restart_minute, restart_announce_state
     while True:
         try:
-            now = datetime.now()
-            current_hhmm = now.strftime('%H:%M')
-            current_minute = now.strftime('%Y-%m-%d %H:%M')
-            times = _normalize_daily_restart_times(panel_config.get('scheduled_restarts', []))
-            if current_hhmm in times and current_minute != _last_scheduled_restart_minute:
-                if server_state['running']:
-                    _last_scheduled_restart_minute = current_minute
-                    add_console_line(f'=== SCHEDULED RESTART ({current_hhmm}) ===')
-                    log_user_action('SYSTEM', 'SCHEDULED_RESTART', current_hhmm)
-                    discord_runtime.send_warning(f'[SCHEDULED] Scheduled restart triggered ({current_hhmm})')
-                    restart_server('SYSTEM')
-        except Exception:
-            pass
+            now_ts = time.time()
+            daily_info = _compute_next_scheduled_restart_info(_live_scheduled_restart_times())
+            quick_info = _get_quick_restart_info(now_ts)
+            restart_info = _resolve_effective_restart_info(daily_info=daily_info, quick_info=quick_info, now_ts=now_ts)
+
+            if not restart_info.get('scheduled'):
+                _reset_restart_announce_state()
+                time.sleep(1)
+                continue
+
+            restart_key = f"{restart_info.get('source') or 'restart'}:{restart_info.get('next_ts') or restart_info.get('next_at') or ''}"
+            with restart_schedule_lock:
+                if restart_announce_state.get('key') != restart_key:
+                    restart_announce_state = {
+                        'key': restart_key,
+                        'announced': set()
+                    }
+                announced = set(restart_announce_state.get('announced') or set())
+
+            minutes_until = restart_info.get('minutes_until')
+            if minutes_until is None:
+                time.sleep(1)
+                continue
+
+            if minutes_until > 0:
+                for marker in QUICK_RESTART_ANNOUNCE_MINUTES:
+                    if minutes_until == marker and marker not in announced:
+                        _queue_restart_countdown_notice(marker, restart_info.get('source') or 'daily', restart_info.get('next_clock') or '')
+                        announced.add(marker)
+                with restart_schedule_lock:
+                    restart_announce_state['announced'] = set(announced)
+            else:
+                current_hhmm = str(restart_info.get('next_clock') or datetime.now().strftime('%H:%M'))
+                _last_scheduled_restart_minute = datetime.now().strftime('%Y-%m-%d %H:%M')
+                if not server_state['running']:
+                    add_console_line(f'=== RESTART SKIPPED ({current_hhmm}) SERVER OFFLINE ===', 'SYSTEM')
+                    if restart_info.get('source') == 'quick':
+                        _clear_quick_restart_job()
+                    time.sleep(1)
+                    continue
+
+                source = restart_info.get('source') or 'daily'
+                label = 'QUICK RESTART' if source == 'quick' else 'SCHEDULED RESTART'
+                add_console_line(f'=== {label} ({current_hhmm}) ===', 'SYSTEM')
+                try:
+                    log_user_action('SYSTEM', label.replace(' ', '_'), current_hhmm)
+                except Exception as e:
+                    add_console_line(f'WARN: Failed to write restart log - {str(e)}', 'SYSTEM')
+                try:
+                    discord_runtime.send_warning(f'[{source.upper()}] Restart triggered ({current_hhmm})')
+                except Exception as e:
+                    add_console_line(f'WARN: Failed to send restart warning - {str(e)}', 'SYSTEM')
+
+                if source == 'quick':
+                    _clear_quick_restart_job()
+
+                result = restart_server('SYSTEM')
+                if not result.get('success'):
+                    add_console_line(f'ERROR: {label.title()} failed - {result.get("message", "Unknown error")}', 'SYSTEM')
+        except Exception as e:
+            add_console_line(f'ERROR: Scheduled restart thread failure - {str(e)}', 'SYSTEM')
         time.sleep(1)
 
                                                         
@@ -5649,6 +5883,35 @@ def api_stop():
 def api_restart():
     
     return jsonify(restart_server(session['username']))
+
+
+@app.route('/api/restart/quick', methods=['POST'])
+@login_required
+@require_permission('can_control_server')
+def api_restart_quick():
+    
+    data = request.json or {}
+    minutes = _safe_int(data.get('minutes'), 0)
+    if minutes <= 0:
+        return jsonify({'success': False, 'message': 'Minutes must be greater than 0'}), 400
+    if minutes > 1440:
+        return jsonify({'success': False, 'message': 'Minutes must be 1440 or less'}), 400
+
+    info = _set_quick_restart_job(minutes, session['username'])
+    target_clock = info.get('next_clock') or ''
+    add_console_line(f'=== QUICK RESTART SCHEDULED BY {session["username"].upper()} IN {minutes} MIN ({target_clock}) ===', session['username'])
+    log_user_action(session['username'], 'SCHEDULE_QUICK_RESTART', f'+{minutes} min -> {target_clock}')
+    try:
+        discord_runtime.send_warning(f'[QUICK] Restart scheduled by {session["username"]} in {minutes} min ({target_clock})')
+    except Exception:
+        pass
+
+    socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
+    return jsonify({
+        'success': True,
+        'message': f'Quick restart scheduled in {minutes} minutes',
+        'restart': info
+    })
 
 @app.route('/api/console')
 @login_required
