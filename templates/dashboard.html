@@ -2144,19 +2144,30 @@
         backdrop-filter: blur(14px);
       }
       .top-nav{
-        flex-wrap:nowrap;
-        overflow-x:auto;
-        overscroll-behavior-x:contain;
-        -webkit-overflow-scrolling:touch;
+        display:grid;
+        grid-template-columns:repeat(3, minmax(0, 1fr));
         gap:10px;
-        padding-bottom:2px;
-        scrollbar-width:none;
+        overflow:visible;
+        width:100%;
       }
-      .top-nav::-webkit-scrollbar{display:none;}
       .top-nav .nav-item{
-        flex:0 0 auto;
-        min-width:max-content;
-        justify-content:flex-start;
+        min-width:0;
+        min-height:74px;
+        padding:12px 10px;
+        justify-content:center;
+        align-items:center;
+        flex-direction:column;
+        gap:8px;
+        text-align:center;
+      }
+      .top-nav .nav-item i{
+        width:auto;
+        font-size:16px;
+      }
+      .top-nav .nav-item span{
+        min-width:0;
+        white-space:normal;
+        line-height:1.15;
       }
       .update-banner{
         flex-direction:column;
@@ -2184,18 +2195,22 @@
       .settings-workspace{grid-template-columns:1fr;}
       .settings-sidebar-card{position:static;}
       .settings-category-tabs{
-        display:flex;
-        flex-direction:row;
-        flex-wrap:nowrap;
-        overflow-x:auto;
+        display:grid;
+        grid-template-columns:repeat(3, minmax(0, 1fr));
         gap:10px;
-        padding-bottom:2px;
-        scrollbar-width:none;
       }
-      .settings-category-tabs::-webkit-scrollbar{display:none;}
       .settings-category-tab{
-        flex:0 0 240px;
-        min-width:240px;
+        min-width:0;
+        padding:12px 10px;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+      }
+      .settings-category-tab i{
+        margin-top:0;
+      }
+      .settings-category-tab-copy{
+        align-items:center;
       }
       .settings-col{ grid-column: span 12; }
       textarea.inputx.discord-json{
@@ -2222,14 +2237,28 @@
         margin-bottom:10px;
       }
       .top-nav{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
         gap:8px;
       }
       .top-nav .nav-item{
-        padding:10px 11px;
+        min-height:68px;
+        padding:10px 9px;
         border-radius:12px;
       }
       .top-nav .nav-item span{
         font-size:12px;
+      }
+      .btnx{
+        min-width:0;
+        white-space:normal;
+      }
+      .btnx i{
+        flex:0 0 auto;
+      }
+      .btnx span{
+        min-width:0;
+        line-height:1.15;
+        text-align:center;
       }
       .cardx{
         border-radius:16px;
@@ -2246,10 +2275,14 @@
       .topbar .actions{
         width:100%;
         justify-content:flex-start;
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+        gap:8px;
       }
       .cardx-header .actions .btnx,
       .topbar .actions .btnx{
-        flex:1 1 calc(50% - 6px);
+        width:100%;
+        min-height:46px;
       }
       .sidebar-runtime{
         padding:12px;
@@ -2321,6 +2354,7 @@
       .resource-actions,
       .file-actions{
         width:100%;
+        display:grid;
         justify-content:stretch;
       }
       .resource-actions .btnx,
@@ -2328,8 +2362,7 @@
         flex:1 1 calc(50% - 4px);
       }
       .settings-category-tab{
-        flex:0 0 82%;
-        min-width:260px;
+        min-width:0;
         padding:12px;
       }
       .settings-category-tab-desc{
@@ -2344,9 +2377,11 @@
       }
       .secret-actions{
         width:100%;
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0, 1fr));
       }
       .secret-actions .btnx{
-        flex:1 1 calc(50% - 4px);
+        width:100%;
       }
       .logs-filters{
         flex-direction:column;
@@ -2520,6 +2555,27 @@
       .perm-grid{ grid-template-columns: 1fr; }
       .file-actions .btnx.sm span.action-label,
       .resource-actions .action-label{display:none;}
+      .top-nav{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
+      .settings-category-tabs{
+        grid-template-columns:1fr;
+      }
+      .settings-category-tab{
+        flex-direction:row;
+        justify-content:flex-start;
+        text-align:left;
+      }
+      .settings-category-tab-copy{
+        align-items:flex-start;
+      }
+      .cardx-header .actions,
+      .topbar .actions,
+      .secret-actions,
+      .resource-actions,
+      .file-actions{
+        grid-template-columns:1fr;
+      }
       .toast-wrap{
         left:10px;
         right:10px;
