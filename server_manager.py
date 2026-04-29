@@ -1539,7 +1539,20 @@ def _compute_next_scheduled_restart_info(times):
     nearest_dt, nearest_clock = min(candidates, key=lambda row: row[0])
     delta_seconds = max(0.0, (nearest_dt - now).total_seconds())
     minutes_until = int((delta_seconds + 59) // 60)
-    display = f'{nearest_clock} ({minutes_until} min)' if minutes_until > 0 else f'{nearest_clock} (now)'
+    relative = 'now'
+    if minutes_until > 0:
+        remaining = minutes_until
+        days, remaining = divmod(remaining, 1440)
+        hours, mins = divmod(remaining, 60)
+        parts = []
+        if days:
+            parts.append(f'{days}d')
+        if hours:
+            parts.append(f'{hours}h')
+        if mins or not parts:
+            parts.append(f'{mins}m')
+        relative = f'in {" ".join(parts)}'
+    display = f'{nearest_clock} ({relative})'
 
     return {
         'scheduled': True,

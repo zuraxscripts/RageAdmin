@@ -1824,6 +1824,52 @@
     }
     .tag .tag-remove{cursor:pointer;opacity:.6;transition:opacity .12s;}
     .tag .tag-remove:hover{opacity:1;}
+    .schedule-editor-row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+    .schedule-editor-row .inputx{
+      flex:1 1 220px;
+      min-width:0;
+    }
+    .schedule-time-input{
+      max-width:170px;
+    }
+    .schedule-preset-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+    .schedule-preset-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:36px;
+      padding:8px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color:var(--text);
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .schedule-preset-btn:hover{
+      border-color: rgba(var(--primary-rgb),.45);
+      background: rgba(var(--primary-rgb),.14);
+      transform: translateY(-1px);
+    }
+    .schedule-preset-btn:active{
+      transform: translateY(0) scale(.98);
+    }
+    .schedule-helper-copy{
+      margin-top:8px;
+    }
 
     .logs-wrap{
       display:flex;
@@ -2293,6 +2339,19 @@
       .schedule-empty{
         flex:1 1 calc(50% - 4px);
       }
+      .schedule-editor-row{
+        flex-direction:column;
+        align-items:stretch;
+      }
+      .schedule-editor-row .inputx,
+      .schedule-time-input,
+      .schedule-editor-row .btnx{
+        width:100%;
+        max-width:none;
+      }
+      .schedule-preset-btn{
+        flex:1 1 calc(50% - 4px);
+      }
       .console{
         padding:10px;
       }
@@ -2522,6 +2581,9 @@
       }
       .schedule-chip,
       .schedule-empty{
+        flex-basis:100%;
+      }
+      .schedule-preset-btn{
         flex-basis:100%;
       }
       .selection-toolbar{
@@ -2758,8 +2820,6 @@
         <div class="nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-simple"></i> <span data-i18n="nav_dashboard">Dashboard</span></div>
         <div class="nav-item" data-page="console"><i class="fa-solid fa-terminal"></i> <span data-i18n="nav_console">Console</span></div>
         <div class="nav-item" data-page="files"><i class="fa-solid fa-folder-open"></i> <span data-i18n="nav_files">Files</span></div>
-        <div class="nav-item" data-page="resources" style="display:none;"><i class="fa-solid fa-puzzle-piece"></i> <span data-i18n="nav_resources">Resources</span></div>
-        <div class="nav-item" data-page="addons" style="display:none;"><i class="fa-solid fa-cubes"></i> <span data-i18n="nav_addons">Addons</span></div>
         <div class="nav-item" data-page="settings" style="display:none;"><i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Settings</span></div>
         <div class="nav-item" data-page="logs"><i class="fa-solid fa-file-lines"></i> <span data-i18n="nav_logs">Logs</span></div>
         <div class="nav-item" data-page="players"><i class="fa-solid fa-users"></i> <span data-i18n="nav_players">Players</span></div>
@@ -2859,8 +2919,6 @@
           <div class="nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-simple"></i> <span data-i18n="nav_dashboard">Dashboard</span></div>
           <div class="nav-item" data-page="console"><i class="fa-solid fa-terminal"></i> <span data-i18n="nav_console">Console</span></div>
           <div class="nav-item" data-page="files"><i class="fa-solid fa-folder-open"></i> <span data-i18n="nav_files">Files</span></div>
-          <div class="nav-item" data-page="resources" id="resourcesNav" style="display:none;"><i class="fa-solid fa-puzzle-piece"></i> <span data-i18n="nav_resources">Resources</span></div>
-          <div class="nav-item" data-page="addons" id="addonsNav" style="display:none;"><i class="fa-solid fa-cubes"></i> <span data-i18n="nav_addons">Addons</span></div>
           <div class="nav-item" data-page="settings" id="settingsNav" style="display:none;"><i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Settings</span></div>
           <div class="nav-item" data-page="logs"><i class="fa-solid fa-file-lines"></i> <span data-i18n="nav_logs">Logs</span></div>
           <div class="nav-item" data-page="players"><i class="fa-solid fa-users"></i> <span data-i18n="nav_players">Players</span></div>
@@ -2970,13 +3028,6 @@
                         <div>
                           <div class="overview-label" data-i18n="overview_restarts">Restarts</div>
                           <div class="overview-value" id="restartCount">0</div>
-                        </div>
-                      </div>
-                      <div class="overview-item">
-                        <div class="overview-icon"><i class="fa-solid fa-cubes"></i></div>
-                        <div>
-                          <div class="overview-label" data-i18n="overview_resources">Resources</div>
-                          <div class="overview-value" id="resourcesSummary">0 / 0</div>
                         </div>
                       </div>
                       <div class="overview-item">
@@ -3287,47 +3338,6 @@
       </section>
 
       
-      <section class="page-section" id="pageResources">
-        <div class="cardx" style="margin-bottom:14px;">
-          <div class="cardx-header">
-            <div class="cardx-title"><i class="fa-solid fa-puzzle-piece"></i> <span data-i18n="card_resources">Resources</span></div>
-            <button class="btnx" id="btnRefreshResources"><i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="btn_refresh">Refresh</span></button>
-          </div>
-          <div class="cardx-body">
-            <div class="resources-grid" id="resourcesList">
-              <div class="resources-empty" data-i18n="loading">Loading...</div>
-            </div>
-            <div class="form-hint" style="margin-top:10px;">
-              <span data-i18n="resources_hint_1">Packages enabled in the server config start automatically with the server.</span>
-              <span data-i18n="resources_hint_2">Use Start/Stop/Restart to manage them at runtime.</span>
-              <span data-i18n="resources_hint_3">The</span> <strong>RageAdmin package</strong> <span data-i18n="resources_hint_4">enables real-time communication between the server and this panel.</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      
-      <section class="page-section" id="pageAddons">
-        <div class="cardx" style="margin-bottom:14px;">
-          <div class="cardx-header">
-            <div class="cardx-title"><i class="fa-solid fa-cubes"></i> <span data-i18n="card_addons">Addons</span></div>
-            <button class="btnx" id="btnRefreshAddons"><i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="btn_refresh">Refresh</span></button>
-          </div>
-          <div class="cardx-body">
-            <div class="resources-grid" id="addonsList">
-              <div class="resources-empty" data-i18n="loading">Loading...</div>
-            </div>
-            <div class="form-hint" style="margin-top:10px;">
-              <span data-i18n="addons_hint_1">Optional addons or plugins may require a full server restart, depending on how they load.</span>
-              <span data-i18n="addons_hint_2">Use Start to load addons at runtime.</span>
-              <span data-i18n="addons_hint_3">Addons are loaded from</span> <strong>/addons/</strong>.
-              <span data-i18n="addons_hint_4">Stopping/restarting addons requires full server restart.</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      
       <section class="page-section" id="pageAdmin">
         <div class="cardx">
           <div class="cardx-header">
@@ -3499,7 +3509,6 @@
             <label class="checkbox"><input type="checkbox" id="perm_view_files" checked> <span data-i18n="admin_perm_view_files">View Files</span></label>
             <label class="checkbox"><input type="checkbox" id="perm_edit_files"> <span data-i18n="admin_perm_edit_files">Edit Files</span></label>
             <label class="checkbox"><input type="checkbox" id="perm_view_logs" checked> <span data-i18n="admin_perm_view_logs">View Logs</span></label>
-            <label class="checkbox"><input type="checkbox" id="perm_manage_resources"> <span data-i18n="admin_perm_manage_resources">Manage Resources</span></label>
             <label class="checkbox"><input type="checkbox" id="perm_view_settings"> <span data-i18n="admin_perm_view_settings">View Settings</span></label>
           </div>
         </div>
@@ -3624,7 +3633,6 @@
             <label class="checkbox"><input type="checkbox" id="edit_perm_view_files"> <span data-i18n="admin_perm_view_files">View Files</span></label>
             <label class="checkbox"><input type="checkbox" id="edit_perm_edit_files"> <span data-i18n="admin_perm_edit_files">Edit Files</span></label>
             <label class="checkbox"><input type="checkbox" id="edit_perm_view_logs"> <span data-i18n="admin_perm_view_logs">View Logs</span></label>
-            <label class="checkbox"><input type="checkbox" id="edit_perm_manage_resources"> <span data-i18n="admin_perm_manage_resources">Manage Resources</span></label>
             <label class="checkbox"><input type="checkbox" id="edit_perm_view_settings"> <span data-i18n="admin_perm_view_settings">View Settings</span></label>
           </div>
         </div>
@@ -4178,9 +4186,7 @@
       'settings': 'pageSettings',
       'logs': 'pageLogs',
       'players': 'pagePlayers',
-      'admin': 'pageAdmin',
-      'resources': 'pageResources',
-      'addons': 'pageAddons'
+      'admin': 'pageAdmin'
     };
 
     function setPageNavVisibility(pageId, visible){
@@ -4236,8 +4242,6 @@
         loadPanelConfig();
       }
       if(pageId === 'logs') loadLogsIndex();
-      if(pageId === 'resources') loadResources();
-      if(pageId === 'addons') loadAddons();
       if(pageId === 'players') { loadPlayers(); loadBans(); }
     }
 
@@ -4628,12 +4632,37 @@
       }
       const value = Number(minutes);
       if(!Number.isFinite(value) || value < 0) return t('runtime_not_scheduled','Nothing scheduled');
-      return `${value} min`;
+      const rounded = Math.max(0, Math.ceil(value));
+      if(rounded === 0) return t('label_now','Now');
+      let remaining = rounded;
+      const days = Math.floor(remaining / 1440);
+      remaining -= days * 1440;
+      const hours = Math.floor(remaining / 60);
+      remaining -= hours * 60;
+      const parts = [];
+      if(days) parts.push(`${days}d`);
+      if(hours) parts.push(`${hours}h`);
+      if(remaining || parts.length === 0) parts.push(`${remaining}m`);
+      return `in ${parts.join(' ')}`;
     }
 
     function formatRestartContext(clockValue, scheduleTimes){
-      if(clockValue){
-        return `Next daily slot at ${clockValue}.`;
+      const cleanClock = String(clockValue || '').trim();
+      if(cleanClock){
+        const match = cleanClock.match(/^(\d{2}):(\d{2})$/);
+        if(match){
+          const hour = Number(match[1]);
+          const minute = Number(match[2]);
+          const now = new Date();
+          const next = new Date(now);
+          next.setHours(hour, minute, 0, 0);
+          if(next.getTime() < now.getTime()) next.setDate(next.getDate() + 1);
+          const dayLabel = next.toDateString() === now.toDateString()
+            ? t('label_today','Today')
+            : t('label_tomorrow','Tomorrow');
+          return `${dayLabel} at ${cleanClock}.`;
+        }
+        return `Next daily slot at ${cleanClock}.`;
       }
       if(Array.isArray(scheduleTimes) && scheduleTimes.length){
         return `Runs every day at ${scheduleTimes.join(', ')}.`;
@@ -4696,11 +4725,6 @@
 
       const savedProfilesEl = document.getElementById('savedProfilesCount');
       if(savedProfilesEl) savedProfilesEl.textContent = totalProfiles;
-
-      const resourcesSummaryEl = document.getElementById('resourcesSummary');
-      if(resourcesSummaryEl){
-        resourcesSummaryEl.textContent = `${Number(data.resources_running || 0)} / ${Number(data.resources_total || 0)}`;
-      }
 
       const trendPlayersMeta = document.getElementById('trendPlayersMeta');
       if(trendPlayersMeta) trendPlayersMeta.textContent = `${onlinePlayers} / ${maxPlayers}`;
@@ -4772,7 +4796,12 @@
       if(group && input){
         group.scrollIntoView({ behavior: 'smooth', block: 'center' });
         input.focus();
-        input.select();
+        try {
+          if(typeof input.showPicker === 'function') input.showPicker();
+        } catch(e) {}
+        try {
+          if(typeof input.select === 'function') input.select();
+        } catch(e) {}
         return;
       }
       if(attempt < 20){
@@ -5786,12 +5815,21 @@
         <label class="form-label">${t('panel_scheduled_restarts','Scheduled Restarts')}</label>
         <div class="form-hint" style="margin-top:0;margin-bottom:8px;">${t('panel_scheduled_restarts_hint_daily','Restarts run every day at these HH:MM times.')}</div>
         <div class="tag-list" id="schedRestartTags">
-          ${times.map(t => `<span class="tag">${escapeHtml(t)} <i class="fa-solid fa-xmark tag-remove"></i></span>`).join('')}
+          ${times.map(t => `<span class="tag" data-time="${escapeHtml(t)}">${escapeHtml(t)} <i class="fa-solid fa-xmark tag-remove"></i></span>`).join('')}
         </div>
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <input class="inputx" id="newSchedInput" placeholder="${t('panel_scheduled_restarts_placeholder','HH:MM')}" style="flex:1;max-width:120px;" pattern="\\d{2}:\\d{2}" />
-          <button class="btnx primary" id="btnAddSchedRestart"><i class="fa-solid fa-plus"></i> ${t('btn_add','Add')}</button>
+        <div class="schedule-editor-row">
+          <input class="inputx schedule-time-input" id="newSchedInput" type="time" step="60" value="" />
+          <button class="btnx primary" id="btnAddSchedRestart" type="button"><i class="fa-solid fa-plus"></i> ${t('btn_add','Add')}</button>
+          <button class="btnx" id="btnClearSchedRestart" type="button"><i class="fa-solid fa-trash"></i> ${t('btn_clear','Clear')}</button>
         </div>
+        <div class="schedule-preset-list">
+          ${['00:00', '06:00', '12:00', '18:00', '22:00'].map(time => `<button class="schedule-preset-btn" data-sched-preset="${time}" type="button">${time}</button>`).join('')}
+        </div>
+        <div class="schedule-editor-row">
+          <input class="inputx" id="schedBulkInput" placeholder="${t('panel_scheduled_restarts_bulk_placeholder','Paste 06:00, 12:00, 18:00 or 6 12 1830')}" />
+          <button class="btnx" id="btnImportSchedRestart" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> ${t('panel_apply_times','Apply')}</button>
+        </div>
+        <div class="form-hint schedule-helper-copy">${t('panel_scheduled_restarts_helper','Quick tips: 6 = 06:00, 1830 = 18:30, and commas or new lines both work.')}</div>
       </div>`;
 
       html += `</div></div>`;
@@ -5816,16 +5854,49 @@
         });
       });
 
-      container.querySelectorAll('.tag-remove').forEach(btn => {
-        btn.addEventListener('click', () => btn.closest('.tag').remove());
-      });
+      const schedTagList = document.getElementById('schedRestartTags');
+      if(schedTagList){
+        schedTagList.addEventListener('click', (event) => {
+          const removeBtn = event.target.closest('.tag-remove');
+          if(!removeBtn) return;
+          const tag = removeBtn.closest('.tag');
+          if(tag){
+            tag.remove();
+            panelConfigDirty = true;
+          }
+        });
+      }
 
-      document.getElementById('btnAddSchedRestart').addEventListener('click', () => { addSchedRestart(); panelConfigDirty = true; });
+      document.getElementById('btnAddSchedRestart').addEventListener('click', () => {
+        if(addSchedRestart()) panelConfigDirty = true;
+      });
       document.getElementById('newSchedInput').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { addSchedRestart(); panelConfigDirty = true; }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if(addSchedRestart()) panelConfigDirty = true;
+        }
+      });
+      document.getElementById('btnClearSchedRestart').addEventListener('click', () => {
+        renderScheduledRestartTags([]);
+        panelConfigDirty = true;
+      });
+      document.getElementById('btnImportSchedRestart').addEventListener('click', () => {
+        if(importSchedRestarts()) panelConfigDirty = true;
+      });
+      document.getElementById('schedBulkInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if(importSchedRestarts()) panelConfigDirty = true;
+        }
+      });
+      container.querySelectorAll('[data-sched-preset]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if(addSchedRestart(btn.getAttribute('data-sched-preset'))) panelConfigDirty = true;
+        });
       });
 
       container.querySelectorAll('input, select').forEach(el => {
+        if(el.id === 'newSchedInput' || el.id === 'schedBulkInput') return;
         el.addEventListener('input', () => { panelConfigDirty = true; });
         el.addEventListener('change', () => { panelConfigDirty = true; });
       });
@@ -5834,30 +5905,97 @@
       });
     }
 
-    function addSchedRestart() {
-      const input = document.getElementById('newSchedInput');
-      const val = input.value.trim();
-      if (!/^\d{2}:\d{2}$/.test(val)) { toast('error', t('label_schedule','Schedule'), t('panel_schedule_format_error','Use HH:MM format (e.g. 03:00)')); return; }
-      const [hourText, minuteText] = val.split(':');
-      const hour = Number(hourText);
-      const minute = Number(minuteText);
-      if (!Number.isInteger(hour) || !Number.isInteger(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
-        toast('error', t('label_schedule','Schedule'), t('panel_schedule_format_error','Use HH:MM format (e.g. 03:00)'));
-        return;
+    function normalizeScheduleTimeValue(rawValue) {
+      let text = String(rawValue || '').trim().toLowerCase();
+      if(!text) return '';
+      text = text.replace(/\./g, ':').replace(/\s+/g, '');
+
+      let hour = null;
+      let minute = null;
+      const match = text.match(/^(\d{1,2})(?:[:h])(\d{1,2})$/);
+      if(match){
+        hour = Number(match[1]);
+        minute = Number(match[2]);
+      } else if(/^\d{1,2}$/.test(text)){
+        hour = Number(text);
+        minute = 0;
+      } else if(/^\d{3,4}$/.test(text)){
+        if(text.length === 3){
+          hour = Number(text.slice(0, 1));
+          minute = Number(text.slice(1));
+        } else {
+          hour = Number(text.slice(0, 2));
+          minute = Number(text.slice(2));
+        }
+      } else {
+        return '';
       }
-      const normalized = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+
+      if(!Number.isInteger(hour) || !Number.isInteger(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59){
+        return '';
+      }
+      return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    }
+
+    function parseScheduleTimesFromText(text) {
+      return Array.from(new Set(
+        String(text || '')
+          .split(/[\s,;\n\r]+/)
+          .map(normalizeScheduleTimeValue)
+          .filter(Boolean)
+      )).sort();
+    }
+
+    function collectScheduledRestartTimes() {
       const tagList = document.getElementById('schedRestartTags');
-      const exists = Array.from(tagList.querySelectorAll('.tag')).some(tag => tag.textContent.trim() === normalized);
-      if (exists) {
-        input.value = '';
-        return;
+      if(!tagList) return [];
+      return Array.from(tagList.querySelectorAll('.tag[data-time]'))
+        .map(tag => String(tag.getAttribute('data-time') || '').trim())
+        .filter(Boolean)
+        .sort();
+    }
+
+    function renderScheduledRestartTags(times) {
+      const tagList = document.getElementById('schedRestartTags');
+      if(!tagList) return;
+      const values = Array.from(new Set(
+        (Array.isArray(times) ? times : [])
+          .map(normalizeScheduleTimeValue)
+          .filter(Boolean)
+      )).sort();
+      tagList.innerHTML = values.map(time =>
+        `<span class="tag" data-time="${escapeHtml(time)}">${escapeHtml(time)} <i class="fa-solid fa-xmark tag-remove"></i></span>`
+      ).join('');
+    }
+
+    function addSchedRestart(rawValue) {
+      const input = document.getElementById('newSchedInput');
+      const normalized = normalizeScheduleTimeValue(rawValue !== undefined ? rawValue : (input ? input.value : ''));
+      if(!normalized){
+        toast('error', t('label_schedule','Schedule'), t('panel_schedule_format_error','Use HH:MM format (e.g. 03:00)'));
+        return false;
       }
-      const tag = document.createElement('span');
-      tag.className = 'tag';
-      tag.innerHTML = `${escapeHtml(normalized)} <i class="fa-solid fa-xmark tag-remove"></i>`;
-      tag.querySelector('.tag-remove').addEventListener('click', () => tag.remove());
-      tagList.appendChild(tag);
-      input.value = '';
+      const next = collectScheduledRestartTimes();
+      if(next.includes(normalized)){
+        if(input) input.value = '';
+        return false;
+      }
+      next.push(normalized);
+      renderScheduledRestartTags(next);
+      if(input) input.value = '';
+      return true;
+    }
+
+    function importSchedRestarts() {
+      const input = document.getElementById('schedBulkInput');
+      const values = parseScheduleTimesFromText(input ? input.value : '');
+      if(!values.length){
+        toast('error', t('label_schedule','Schedule'), t('panel_schedule_format_error','Use HH:MM format (e.g. 03:00)'));
+        return false;
+      }
+      renderScheduledRestartTags(collectScheduledRestartTimes().concat(values));
+      if(input) input.value = '';
+      return true;
     }
 
     async function savePanelConfig() {
@@ -5879,11 +6017,7 @@
         data.panel_secret = secretVal;
         data.admin_password = secretState.panel.password;
       }
-      document.querySelectorAll('#schedRestartTags .tag').forEach(tag => {
-        const text = tag.textContent.trim().replace(/\s*$/, '');
-        if (/^\d{2}:\d{2}$/.test(text)) data.scheduled_restarts.push(text);
-      });
-      data.scheduled_restarts = Array.from(new Set(data.scheduled_restarts)).sort();
+      data.scheduled_restarts = collectScheduledRestartTimes();
 
       const out = await apiPost('/api/panel-config', data);
       if (out.success) {
@@ -6480,7 +6614,6 @@
         can_edit_files: document.getElementById('perm_edit_files').checked,
         can_view_logs: document.getElementById('perm_view_logs').checked,
         can_view_players: true,
-        can_manage_resources: document.getElementById('perm_manage_resources').checked,
         can_view_settings: document.getElementById('perm_view_settings').checked
       };
 
@@ -6546,8 +6679,6 @@
           files: isAdmin ? true : perms.can_view_files !== false,
           logs: isAdmin ? true : perms.can_view_logs !== false,
           players: isAdmin ? true : perms.can_view_players !== false,
-          resources: isAdmin ? true : !!perms.can_manage_resources,
-          addons: isAdmin ? true : !!perms.can_manage_resources,
           settings: isAdmin ? true : !!perms.can_view_settings,
           admin: isAdmin
         };
@@ -7686,7 +7817,6 @@
       document.getElementById('edit_perm_view_files').checked = !!perms.can_view_files;
       document.getElementById('edit_perm_edit_files').checked = !!perms.can_edit_files;
       document.getElementById('edit_perm_view_logs').checked = !!perms.can_view_logs;
-      document.getElementById('edit_perm_manage_resources').checked = !!perms.can_manage_resources;
       document.getElementById('edit_perm_view_settings').checked = !!perms.can_view_settings;
       document.getElementById('editUserModal').classList.add('active');
     }
@@ -7702,7 +7832,6 @@
         can_edit_files: document.getElementById('edit_perm_edit_files').checked,
         can_view_logs: document.getElementById('edit_perm_view_logs').checked,
         can_view_players: true,
-        can_manage_resources: document.getElementById('edit_perm_manage_resources').checked,
         can_view_settings: document.getElementById('edit_perm_view_settings').checked
       };
       const out = await apiPut(`/api/users/${encodeURIComponent(editingUsername)}`, { role, permissions });
@@ -7878,11 +8007,6 @@
     }
 
     document.getElementById('btnCopyPassword').addEventListener('click', copyPassword);
-
-    const btnRefreshResources = document.getElementById('btnRefreshResources');
-    btnRefreshResources.addEventListener('click', () => runWithLoading(btnRefreshResources, loadResources));
-    const btnRefreshAddons = document.getElementById('btnRefreshAddons');
-    btnRefreshAddons.addEventListener('click', () => runWithLoading(btnRefreshAddons, loadAddons));
 
     const btnRefreshPlayers = document.getElementById('btnRefreshPlayers');
     btnRefreshPlayers.addEventListener('click', () => runWithLoading(btnRefreshPlayers, loadPlayers));
