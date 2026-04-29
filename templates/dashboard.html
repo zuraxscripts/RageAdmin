@@ -481,6 +481,30 @@
     }
     .dash-overview{ grid-column: span 12; }
     .dash-console{ grid-column: span 12; }
+    .dashboard-overview-layout{
+      display:grid;
+      grid-template-columns: minmax(0, 1.9fr) minmax(300px, .95fr);
+      gap:14px;
+      align-items:start;
+    }
+    .dashboard-overview-main{
+      min-width:0;
+    }
+    .dashboard-overview-side{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-width:0;
+    }
+    .dashboard-side-card{
+      padding:14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        radial-gradient(220px 100px at 0% 0%, rgba(var(--primary-rgb),.14), transparent 60%),
+        rgba(0,0,0,.22);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
     .stat-grid{
       display:grid;
       grid-template-columns: repeat(2, minmax(0,1fr));
@@ -497,7 +521,7 @@
       box-shadow: 0 0 0 1px rgba(255,255,255,.03) inset;
       transition: transform .12s ease, border-color .12s ease, background .12s ease;
       overflow:hidden;
-      min-height:108px;
+      min-height:98px;
     }
     .stat-tile:hover{ transform: translateY(-2px); border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.04); }
     .stat-top{ display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px; }
@@ -518,13 +542,16 @@
     }
 
     .overview-mini{
-      margin-top:14px;
+      margin-top:0;
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap:10px;
     }
+    .dashboard-overview-side .overview-mini{
+      grid-template-columns:1fr;
+    }
     .trend-grid{
-      margin-top:14px;
+      margin-top:12px;
       display:grid;
       grid-template-columns: repeat(3, minmax(0,1fr));
       gap:10px;
@@ -564,7 +591,7 @@
     .trend-canvas{
       display:block;
       width:100%;
-      height:110px;
+      height:96px;
       border-radius:12px;
       background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
     }
@@ -613,6 +640,53 @@
       color:#c7d2fe;
       border-color: rgba(var(--primary-rgb),.45);
       background: rgba(var(--primary-rgb),.18);
+    }
+    .schedule-chip-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:14px;
+    }
+    .schedule-chip,
+    .schedule-empty{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:34px;
+      padding:6px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      font-size:12px;
+      font-weight:700;
+      color:#f3f4f6;
+    }
+    .schedule-chip.active{
+      border-color: rgba(var(--primary-rgb),.55);
+      background: rgba(var(--primary-rgb),.22);
+      color:#fff6d1;
+      box-shadow: 0 10px 24px rgba(var(--primary-rgb),.12);
+    }
+    .schedule-empty{
+      color:var(--muted);
+      font-weight:600;
+    }
+    .restart-countdown{
+      margin-top:8px;
+      font-size:28px;
+      font-weight:800;
+      line-height:1.05;
+      letter-spacing:.02em;
+    }
+    .restart-context{
+      margin-top:6px;
+      font-size:12px;
+      line-height:1.5;
+      color:var(--muted);
+    }
+    .dashboard-side-card .btnx{
+      width:100%;
+      margin-top:14px;
     }
 
     .runtime-panel{
@@ -1459,6 +1533,19 @@
       grid-template-columns: repeat(12, minmax(0, 1fr));
       gap:14px;
     }
+    .settings-workspace{
+      display:grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap:14px;
+      align-items:start;
+    }
+    .settings-sidebar-card{
+      position:sticky;
+      top:18px;
+    }
+    .settings-content-stack{
+      min-width:0;
+    }
     .settings-col{
       grid-column: span 6;
       display:flex;
@@ -1488,19 +1575,47 @@
     }
     .settings-category-tabs{
       display:flex;
-      flex-wrap:wrap;
-      gap:8px;
+      flex-direction:column;
+      gap:10px;
     }
     .settings-category-tab{
+      width:100%;
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
       border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.04);
       color: var(--text);
-      border-radius:12px;
-      padding:8px 12px;
+      border-radius:16px;
+      padding:14px;
       font-size:13px;
       font-weight:600;
       cursor:pointer;
+      text-align:left;
       transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .settings-category-tab i{
+      width:18px;
+      margin-top:2px;
+      color:rgba(var(--primary-rgb),.92);
+      flex:0 0 auto;
+    }
+    .settings-category-tab-copy{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:0;
+    }
+    .settings-category-tab-title{
+      font-size:13px;
+      font-weight:700;
+      color:var(--text);
+    }
+    .settings-category-tab-desc{
+      font-size:12px;
+      line-height:1.45;
+      color:var(--muted);
+      font-weight:500;
     }
     .settings-category-tab:hover{
       border-color: rgba(var(--primary-rgb),.38);
@@ -1997,8 +2112,15 @@
       .main{ padding-top:60px; }
       .stat{ grid-column: span 6; }
       .dash-overview,.dash-console{grid-column: span 12;}
+      .dashboard-overview-layout{grid-template-columns:1fr;}
       .topbar{padding:12px 12px 12px 62px;}
       .modal-content-custom{width:100% !important;max-height:95vh;}
+      .settings-workspace{grid-template-columns:1fr;}
+      .settings-sidebar-card{position:static;}
+      .settings-category-tabs{
+        display:grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
       .settings-col{ grid-column: span 12; }
       textarea.inputx.discord-json{
         min-height:340px;
@@ -2029,6 +2151,7 @@
       .table-wrap table{min-width:640px;}
       .resources-grid{grid-template-columns:1fr;}
       .trend-grid{grid-template-columns:1fr;}
+      .settings-category-tabs{grid-template-columns:1fr;}
       .logs-filters{flex-direction:column;align-items:stretch;}
       .logs-filters .select-wrap{width:100%;}
       .logs-filters .select-wrap .inputx{width:100% !important;}
@@ -2334,129 +2457,132 @@
               <button class="btnx" id="btnRefreshStatus"><i class="fa-solid fa-arrows-rotate"></i> <span data-i18n="btn_refresh">Refresh</span></button>
             </div>
             <div class="cardx-body">
-              <div class="stat-grid">
-                <div class="stat-tile accent-uptime">
-                  <div class="stat-top">
-                    <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
-                    <span data-i18n="stat_uptime">Uptime</span>
-                  </div>
-                  <div class="stat-value" id="uptime">0s</div>
-                </div>
-                <div class="stat-tile accent-cpu">
-                  <div class="stat-top">
-                    <div class="stat-icon"><i class="fa-solid fa-microchip"></i></div>
-                    <span data-i18n="stat_cpu">CPU</span>
-                  </div>
-                  <div class="stat-value" id="cpu">0%</div>
-                </div>
-                <div class="stat-tile accent-mem">
-                  <div class="stat-top">
-                    <div class="stat-icon"><i class="fa-solid fa-memory"></i></div>
-                    <span data-i18n="stat_memory">Memory</span>
-                  </div>
-                  <div class="stat-value" id="memory">0 MB</div>
-                </div>
-                <div class="stat-tile accent-players">
-                  <div class="stat-top">
-                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-                    <span data-i18n="stat_players">Players</span>
-                  </div>
-                  <div class="stat-value" id="playerCount">0</div>
-                </div>
-              </div>
-              <div class="trend-grid">
-                <div class="trend-card">
-                  <div class="trend-head">
-                    <div>
-                      <div class="trend-label" data-i18n="trend_players_label">Trend</div>
-                      <div class="trend-title" data-i18n="trend_players_title">Players</div>
+              <div class="dashboard-overview-layout">
+                <div class="dashboard-overview-main">
+                  <div class="stat-grid">
+                    <div class="stat-tile accent-uptime">
+                      <div class="stat-top">
+                        <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+                        <span data-i18n="stat_uptime">Uptime</span>
+                      </div>
+                      <div class="stat-value" id="uptime">0s</div>
                     </div>
-                    <div class="trend-meta" id="trendPlayersMeta">0 / 0</div>
-                  </div>
-                  <canvas class="trend-canvas" id="chartPlayers" height="110"></canvas>
-                </div>
-                <div class="trend-card">
-                  <div class="trend-head">
-                    <div>
-                      <div class="trend-label" data-i18n="trend_cpu_label">Trend</div>
-                      <div class="trend-title" data-i18n="trend_cpu_title">CPU Load</div>
+                    <div class="stat-tile accent-cpu">
+                      <div class="stat-top">
+                        <div class="stat-icon"><i class="fa-solid fa-microchip"></i></div>
+                        <span data-i18n="stat_cpu">CPU</span>
+                      </div>
+                      <div class="stat-value" id="cpu">0%</div>
                     </div>
-                    <div class="trend-meta" id="trendCpuMeta">0.0%</div>
-                  </div>
-                  <canvas class="trend-canvas" id="chartCpu" height="110"></canvas>
-                </div>
-                <div class="trend-card">
-                  <div class="trend-head">
-                    <div>
-                      <div class="trend-label" data-i18n="trend_memory_label">Trend</div>
-                      <div class="trend-title" data-i18n="trend_memory_title">Memory</div>
+                    <div class="stat-tile accent-mem">
+                      <div class="stat-top">
+                        <div class="stat-icon"><i class="fa-solid fa-memory"></i></div>
+                        <span data-i18n="stat_memory">Memory</span>
+                      </div>
+                      <div class="stat-value" id="memory">0 MB</div>
                     </div>
-                    <div class="trend-meta" id="trendMemoryMeta">0 MB</div>
+                    <div class="stat-tile accent-players">
+                      <div class="stat-top">
+                        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                        <span data-i18n="stat_players">Players</span>
+                      </div>
+                      <div class="stat-value" id="playerCount">0</div>
+                    </div>
                   </div>
-                  <canvas class="trend-canvas" id="chartMemory" height="110"></canvas>
-                </div>
-              </div>
-              <div class="divider-line"></div>
-              <div class="overview-mini">
-                <div class="overview-item">
-                  <div class="overview-icon"><i class="fa-solid fa-database"></i></div>
-                  <div>
-                    <div class="overview-label" data-i18n="overview_saved_profiles">Saved Profiles</div>
-                    <div class="overview-value" id="savedProfilesCount">0</div>
-                  </div>
-                </div>
-                <div class="overview-item">
-                  <div class="overview-icon"><i class="fa-solid fa-rotate"></i></div>
-                  <div>
-                    <div class="overview-label" data-i18n="overview_restarts">Restarts</div>
-                    <div class="overview-value" id="restartCount">0</div>
-                  </div>
-                </div>
-                <div class="overview-item">
-                  <div class="overview-icon"><i class="fa-solid fa-cubes"></i></div>
-                  <div>
-                    <div class="overview-label" data-i18n="overview_resources">Resources</div>
-                    <div class="overview-value" id="resourcesSummary">0 / 0</div>
-                  </div>
-                </div>
-                <div class="overview-item">
-                  <div class="overview-icon"><i class="fa-solid fa-link"></i></div>
-                  <div>
-                    <div class="overview-label" data-i18n="overview_bridge">Bridge</div>
-                    <div class="overview-value">
-                      <span class="mini-badge" id="bridgeBadge">-</span>
+                  <div class="trend-grid">
+                    <div class="trend-card">
+                      <div class="trend-head">
+                        <div>
+                          <div class="trend-label" data-i18n="trend_players_label">Trend</div>
+                          <div class="trend-title" data-i18n="trend_players_title">Players</div>
+                        </div>
+                        <div class="trend-meta" id="trendPlayersMeta">0 / 0</div>
+                      </div>
+                      <canvas class="trend-canvas" id="chartPlayers" height="110"></canvas>
+                    </div>
+                    <div class="trend-card">
+                      <div class="trend-head">
+                        <div>
+                          <div class="trend-label" data-i18n="trend_cpu_label">Trend</div>
+                          <div class="trend-title" data-i18n="trend_cpu_title">CPU Load</div>
+                        </div>
+                        <div class="trend-meta" id="trendCpuMeta">0.0%</div>
+                      </div>
+                      <canvas class="trend-canvas" id="chartCpu" height="110"></canvas>
+                    </div>
+                    <div class="trend-card">
+                      <div class="trend-head">
+                        <div>
+                          <div class="trend-label" data-i18n="trend_memory_label">Trend</div>
+                          <div class="trend-title" data-i18n="trend_memory_title">Memory</div>
+                        </div>
+                        <div class="trend-meta" id="trendMemoryMeta">0 MB</div>
+                      </div>
+                      <canvas class="trend-canvas" id="chartMemory" height="110"></canvas>
                     </div>
                   </div>
                 </div>
-                <div class="overview-item">
-                  <div class="overview-icon"><i class="fa-solid fa-power-off"></i></div>
-                  <div>
-                    <div class="overview-label" data-i18n="overview_auto_restart">Auto Restart</div>
-                    <div class="overview-value">
-                      <span class="mini-badge" id="autoRestartBadge">-</span>
+                <div class="dashboard-overview-side">
+                  <div class="dashboard-side-card">
+                    <div class="overview-mini">
+                      <div class="overview-item">
+                        <div class="overview-icon"><i class="fa-solid fa-database"></i></div>
+                        <div>
+                          <div class="overview-label" data-i18n="overview_saved_profiles">Saved Profiles</div>
+                          <div class="overview-value" id="savedProfilesCount">0</div>
+                        </div>
+                      </div>
+                      <div class="overview-item">
+                        <div class="overview-icon"><i class="fa-solid fa-rotate"></i></div>
+                        <div>
+                          <div class="overview-label" data-i18n="overview_restarts">Restarts</div>
+                          <div class="overview-value" id="restartCount">0</div>
+                        </div>
+                      </div>
+                      <div class="overview-item">
+                        <div class="overview-icon"><i class="fa-solid fa-cubes"></i></div>
+                        <div>
+                          <div class="overview-label" data-i18n="overview_resources">Resources</div>
+                          <div class="overview-value" id="resourcesSummary">0 / 0</div>
+                        </div>
+                      </div>
+                      <div class="overview-item">
+                        <div class="overview-icon"><i class="fa-solid fa-link"></i></div>
+                        <div>
+                          <div class="overview-label" data-i18n="overview_bridge">Bridge</div>
+                          <div class="overview-value">
+                            <span class="mini-badge" id="bridgeBadge">-</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="overview-item">
+                        <div class="overview-icon"><i class="fa-solid fa-power-off"></i></div>
+                        <div>
+                          <div class="overview-label" data-i18n="overview_auto_restart">Auto Restart</div>
+                          <div class="overview-value">
+                            <span class="mini-badge" id="autoRestartBadge">-</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="overview-item">
+                        <div class="overview-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                        <div>
+                          <div class="overview-label" data-i18n="overview_last_update">Last Update</div>
+                          <div class="overview-value" id="statusUpdated">-</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="overview-item">
-                  <div class="overview-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                  <div>
-                    <div class="overview-label" data-i18n="overview_last_update">Last Update</div>
-                    <div class="overview-value" id="statusUpdated">-</div>
+                  <div class="dashboard-side-card">
+                    <div class="overview-label">Daily Restarts</div>
+                    <div class="restart-countdown" id="nextRestartCountdown">Not scheduled</div>
+                    <div class="restart-context" id="nextRestartContext">No restart times configured.</div>
+                    <div class="schedule-chip-list" id="restartScheduleList">
+                      <span class="schedule-empty">No times</span>
+                    </div>
+                    <button class="btnx" id="btnOpenScheduleSecondary"><i class="fa-solid fa-clock"></i> <span data-i18n="btn_open_schedule">Open Schedule</span></button>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="cardx dash-console">
-            <div class="cardx-header">
-              <div class="cardx-title"><i class="fa-solid fa-terminal"></i> <span data-i18n="card_live_console">Live Console</span></div>
-              <button class="btnx" id="btnClearDashConsole"><i class="fa-solid fa-broom"></i> <span data-i18n="btn_clear">Clear</span></button>
-            </div>
-            <div class="cardx-body">
-              <div class="console-wrapper">
-                <div class="console" id="dashboardConsole"></div>
-                <div class="console-new-msgs" id="dashNewMsgs"><span data-i18n="console_new_messages">New messages below</span> <i class="fa-solid fa-arrow-down"></i></div>
               </div>
             </div>
           </div>
@@ -2528,55 +2654,77 @@
 
       
       <section class="page-section" id="pageSettings">
-        <div class="cardx" style="margin-bottom:14px;">
-          <div class="cardx-header">
-            <div class="cardx-title"><i class="fa-solid fa-sliders"></i> <span data-i18n="label_settings">Settings</span></div>
-          </div>
-          <div class="cardx-body">
-            <div class="settings-category-tabs" id="settingsCategoryTabs">
-              <button class="settings-category-tab active" data-settings-cat="general"><span data-i18n="settings_tab_general">General</span></button>
-              <button class="settings-category-tab" data-settings-cat="ragemp"><span data-i18n="settings_tab_hmpserver">RageMP</span></button>
-              <button class="settings-category-tab" data-settings-cat="discord"><span data-i18n="settings_tab_discord">Discord</span></button>
-            </div>
-          </div>
-        </div>
-
-        <div class="settings-category-panel active" id="settingsCategoryGeneral">
-          <div class="cardx" style="margin-bottom:14px;">
+        <div class="settings-workspace">
+          <div class="cardx settings-sidebar-card">
             <div class="cardx-header">
-              <div class="cardx-title"><i class="fa-solid fa-sliders"></i> <span data-i18n="card_panel_config">Panel Configuration</span></div>
-              <button class="btnx primary prominent" id="btnSavePanelConfig"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save">Save</span></button>
+              <div class="cardx-title"><i class="fa-solid fa-sliders"></i> <span data-i18n="label_settings">Settings</span></div>
             </div>
-            <div class="cardx-body" id="panelConfigForm">
-              <div id="panelConfigLoading" style="color:var(--muted);text-align:center;padding:20px;" data-i18n="loading_panel_config">Loading panel config...</div>
+            <div class="cardx-body">
+              <div class="settings-category-tabs" id="settingsCategoryTabs">
+                <button class="settings-category-tab active" data-settings-cat="general">
+                  <i class="fa-solid fa-shield-halved"></i>
+                  <span class="settings-category-tab-copy">
+                    <span class="settings-category-tab-title" data-i18n="settings_tab_general">General</span>
+                    <span class="settings-category-tab-desc">Locale, panel secret and daily restart schedule.</span>
+                  </span>
+                </button>
+                <button class="settings-category-tab" data-settings-cat="ragemp">
+                  <i class="fa-solid fa-server"></i>
+                  <span class="settings-category-tab-copy">
+                    <span class="settings-category-tab-title" data-i18n="settings_tab_hmpserver">RageMP</span>
+                    <span class="settings-category-tab-desc">Server identity, runtime options and bridge toggles.</span>
+                  </span>
+                </button>
+                <button class="settings-category-tab" data-settings-cat="discord">
+                  <i class="fa-brands fa-discord"></i>
+                  <span class="settings-category-tab-copy">
+                    <span class="settings-category-tab-title" data-i18n="settings_tab_discord">Discord</span>
+                    <span class="settings-category-tab-desc">Bot token, guild setup and live status messages.</span>
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="settings-category-panel" id="settingsCategoryragemp">
-          <div class="cardx" style="margin-bottom:14px;">
-            <div class="cardx-header">
-              <div class="cardx-title"><i class="fa-solid fa-gear"></i> <span data-i18n="card_server_settings">Server Settings</span></div>
-              <button class="btnx primary prominent" id="btnSaveSettings"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save">Save</span></button>
+          <div class="settings-content-stack">
+            <div class="settings-category-panel active" id="settingsCategoryGeneral">
+              <div class="cardx" style="margin-bottom:14px;">
+                <div class="cardx-header">
+                  <div class="cardx-title"><i class="fa-solid fa-sliders"></i> <span data-i18n="card_panel_config">Panel Configuration</span></div>
+                  <button class="btnx primary prominent" id="btnSavePanelConfig"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save">Save</span></button>
+                </div>
+                <div class="cardx-body" id="panelConfigForm">
+                  <div id="panelConfigLoading" style="color:var(--muted);text-align:center;padding:20px;" data-i18n="loading_panel_config">Loading panel config...</div>
+                </div>
+              </div>
             </div>
-            <div class="cardx-body" id="settingsForm">
-              <div id="settingsLoading" style="color:var(--muted);text-align:center;padding:20px;" data-i18n="loading_settings">Loading settings...</div>
-            </div>
-          </div>
-        </div>
 
-        <div class="settings-category-panel" id="settingsCategoryDiscord">
-          <div class="cardx">
-            <div class="cardx-header">
-              <div class="cardx-title"><i class="fa-brands fa-discord"></i> <span data-i18n="discord_settings_title">Discord Settings</span></div>
-              <button class="btnx primary prominent" id="btnSaveDiscordConfig"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="discord_save_settings">Save Discord Settings</span></button>
+            <div class="settings-category-panel" id="settingsCategoryragemp">
+              <div class="cardx" style="margin-bottom:14px;">
+                <div class="cardx-header">
+                  <div class="cardx-title"><i class="fa-solid fa-gear"></i> <span data-i18n="card_server_settings">Server Settings</span></div>
+                  <button class="btnx primary prominent" id="btnSaveSettings"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save">Save</span></button>
+                </div>
+                <div class="cardx-body" id="settingsForm">
+                  <div id="settingsLoading" style="color:var(--muted);text-align:center;padding:20px;" data-i18n="loading_settings">Loading settings...</div>
+                </div>
+              </div>
             </div>
-            <div class="cardx-body" id="discordConfigForm">
-              <div class="settings-layout">
-                <div class="settings-col settings-col-wide">
-                  <div class="settings-section">
-                    <div class="settings-section-body">
-                      <div id="discordConfigLoading" style="color:var(--muted);text-align:center;padding:20px;" data-i18n="loading_discord_config">Loading discord config...</div>
+
+            <div class="settings-category-panel" id="settingsCategoryDiscord">
+              <div class="cardx">
+                <div class="cardx-header">
+                  <div class="cardx-title"><i class="fa-brands fa-discord"></i> <span data-i18n="discord_settings_title">Discord Settings</span></div>
+                  <button class="btnx primary prominent" id="btnSaveDiscordConfig"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="discord_save_settings">Save Discord Settings</span></button>
+                </div>
+                <div class="cardx-body" id="discordConfigForm">
+                  <div class="settings-layout">
+                    <div class="settings-col settings-col-wide">
+                      <div class="settings-section">
+                        <div class="settings-section-body">
+                          <div id="discordConfigLoading" style="color:var(--muted);text-align:center;padding:20px;" data-i18n="loading_discord_config">Loading discord config...</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -3791,46 +3939,54 @@
       const mainIndicator = document.getElementById('mainNewMsgs');
       const dashIndicator = document.getElementById('dashNewMsgs');
 
-      main.addEventListener('scroll', () => {
-        if(isAtBottom(main)){
+      if(main && mainIndicator){
+        main.addEventListener('scroll', () => {
+          if(isAtBottom(main)){
+            mainUserScrolledUp = false;
+            mainIndicator.classList.remove('visible');
+          } else {
+            mainUserScrolledUp = true;
+          }
+        });
+
+        mainIndicator.addEventListener('click', () => {
+          main.scrollTop = main.scrollHeight;
           mainUserScrolledUp = false;
           mainIndicator.classList.remove('visible');
-        } else {
-          mainUserScrolledUp = true;
-        }
-      });
-      dash.addEventListener('scroll', () => {
-        if(isAtBottom(dash)){
+        });
+      }
+
+      if(dash && dashIndicator){
+        dash.addEventListener('scroll', () => {
+          if(isAtBottom(dash)){
+            dashUserScrolledUp = false;
+            dashIndicator.classList.remove('visible');
+          } else {
+            dashUserScrolledUp = true;
+          }
+        });
+
+        dashIndicator.addEventListener('click', () => {
+          dash.scrollTop = dash.scrollHeight;
           dashUserScrolledUp = false;
           dashIndicator.classList.remove('visible');
-        } else {
-          dashUserScrolledUp = true;
-        }
-      });
-
-      mainIndicator.addEventListener('click', () => {
-        main.scrollTop = main.scrollHeight;
-        mainUserScrolledUp = false;
-        mainIndicator.classList.remove('visible');
-      });
-      dashIndicator.addEventListener('click', () => {
-        dash.scrollTop = dash.scrollHeight;
-        dashUserScrolledUp = false;
-        dashIndicator.classList.remove('visible');
-      });
+        });
+      }
     })();
 
     function updateConsole(lines){
       const main = document.getElementById('mainConsole');
       const dash = document.getElementById('dashboardConsole');
       main.innerHTML = '';
-      dash.innerHTML = '';
+      if(dash) dash.innerHTML = '';
       (lines || []).forEach(line => {
         const a = buildConsoleLine(line, false);
         main.appendChild(a);
 
-        const b = buildConsoleLine(line, false);
-        dash.appendChild(b);
+        if(dash){
+          const b = buildConsoleLine(line, false);
+          dash.appendChild(b);
+        }
       });
       scrollConsoleToBottom(true);
     }
@@ -3841,22 +3997,29 @@
       const m = buildConsoleLine(line, true);
       main.appendChild(m);
 
-      const d = buildConsoleLine(line, true);
-      dash.appendChild(d);
+      let d = null;
+      if(dash){
+        d = buildConsoleLine(line, true);
+        dash.appendChild(d);
+      }
 
-      setTimeout(()=> { m.classList.remove('line-enter'); d.classList.remove('line-enter'); }, 250);
+      setTimeout(()=> {
+        m.classList.remove('line-enter');
+        if(d) d.classList.remove('line-enter');
+      }, 250);
       trimConsole(main, 1200);
-      trimConsole(dash, 300);
+      if(dash) trimConsole(dash, 300);
 
       if(!mainUserScrolledUp) {
         main.scrollTop = main.scrollHeight;
       } else {
         document.getElementById('mainNewMsgs').classList.add('visible');
       }
-      if(!dashUserScrolledUp) {
+      if(dash && !dashUserScrolledUp) {
         dash.scrollTop = dash.scrollHeight;
-      } else {
-        document.getElementById('dashNewMsgs').classList.add('visible');
+      } else if(dash) {
+        const dashIndicator = document.getElementById('dashNewMsgs');
+        if(dashIndicator) dashIndicator.classList.add('visible');
       }
     }
 
@@ -3872,10 +4035,11 @@
         mainUserScrolledUp = false;
         document.getElementById('mainNewMsgs').classList.remove('visible');
       }
-      if(force || !dashUserScrolledUp){
-        if(dash) dash.scrollTop = dash.scrollHeight;
+      if(dash && (force || !dashUserScrolledUp)){
+        dash.scrollTop = dash.scrollHeight;
         dashUserScrolledUp = false;
-        document.getElementById('dashNewMsgs').classList.remove('visible');
+        const dashIndicator = document.getElementById('dashNewMsgs');
+        if(dashIndicator) dashIndicator.classList.remove('visible');
       }
     }
 
@@ -4008,6 +4172,39 @@
       });
     }
 
+    function formatRestartCountdown(minutes){
+      if(minutes === null || minutes === undefined || minutes === '') {
+        return t('runtime_not_scheduled','Nothing scheduled');
+      }
+      const value = Number(minutes);
+      if(!Number.isFinite(value) || value < 0) return t('runtime_not_scheduled','Nothing scheduled');
+      return `${value} min`;
+    }
+
+    function formatRestartContext(clockValue, scheduleTimes){
+      if(clockValue){
+        return `Next daily slot at ${clockValue}.`;
+      }
+      if(Array.isArray(scheduleTimes) && scheduleTimes.length){
+        return `Runs every day at ${scheduleTimes.join(', ')}.`;
+      }
+      return 'No restart times configured.';
+    }
+
+    function renderRestartSchedule(times, activeClock){
+      const wrap = document.getElementById('restartScheduleList');
+      if(!wrap) return;
+      const values = Array.isArray(times) ? times.filter(Boolean) : [];
+      if(values.length === 0){
+        wrap.innerHTML = `<span class="schedule-empty">${t('runtime_not_scheduled','Nothing scheduled')}</span>`;
+        return;
+      }
+      wrap.innerHTML = values.map(time => {
+        const active = time === activeClock ? ' active' : '';
+        return `<span class="schedule-chip${active}">${escapeHtml(time)}</span>`;
+      }).join('');
+    }
+
     function updateDashboardStatus(data, opts = {}){
       if(!data || typeof data !== 'object') return;
       lastRuntimeStatus = Object.assign({}, lastRuntimeStatus || {}, data);
@@ -4021,10 +4218,13 @@
       const maxPlayers = Number(data.max_players || 0);
       const totalProfiles = Number(data.players_saved || 0);
       const offlineProfiles = Math.max(0, totalProfiles - onlinePlayers);
-      const nextRestart = String(data.next_scheduled_restart || '').trim() || t('runtime_not_scheduled','Nothing scheduled');
+      const nextRestart = formatRestartCountdown(data.next_restart_in_minutes);
+      const nextRestartClock = String(data.next_restart_clock || '').trim();
+      const restartTimes = Array.isArray(data.scheduled_restart_times) ? data.scheduled_restart_times : [];
       const serverName = String(data.server_name || 'RageMP Server').trim() || 'RageMP Server';
       const bridgeOnline = !!data.bridge_online;
       const discordEnabled = !!data.discord_bot_enabled;
+      const bridgeAgeSec = Number(data.bridge_age_sec);
 
       document.getElementById('uptime').textContent = uptimeText;
       document.getElementById('cpu').textContent = cpuText;
@@ -4080,7 +4280,9 @@
       setRuntimePill(
         document.getElementById('runtimeBridge'),
         bridgeOnline ? 'online' : 'waiting',
-        bridgeOnline ? t('label_connected','Connected') : t('label_waiting','Waiting')
+        bridgeOnline
+          ? `${t('label_connected','Connected')}${Number.isFinite(bridgeAgeSec) ? ` ${Math.max(0, Math.round(bridgeAgeSec))}s` : ''}`
+          : t('label_waiting','Waiting')
       );
       setRuntimePill(
         document.getElementById('runtimeDiscord'),
@@ -4089,6 +4291,11 @@
       );
       const runtimeNextRestart = document.getElementById('runtimeNextRestart');
       if(runtimeNextRestart) runtimeNextRestart.textContent = nextRestart;
+      const nextRestartCountdown = document.getElementById('nextRestartCountdown');
+      if(nextRestartCountdown) nextRestartCountdown.textContent = nextRestart;
+      const nextRestartContext = document.getElementById('nextRestartContext');
+      if(nextRestartContext) nextRestartContext.textContent = formatRestartContext(nextRestartClock, restartTimes);
+      renderRestartSchedule(restartTimes, nextRestartClock);
 
       if(Array.isArray(data.history)){
         setStatsHistory(data.history);
@@ -4899,9 +5106,14 @@
         <div class="settings-section-title">${t('settings_section_runtime','Runtime & Security')}</div>
         <div class="settings-section-body">`;
 
+      const csharpValue = String(data['csharp'] || 'disabled').trim();
+      const csharpEnabled = csharpValue && csharpValue.toLowerCase() !== 'disabled';
       html += `<div class="form-group">
         <label class="form-label">${t('settings_csharp','C# Bridge')}</label>
-        <input class="inputx" id="set_csharp" value="${escapeHtml(data['csharp'] || 'disabled')}" />
+        <select class="inputx" id="set_csharp">
+          <option value="disabled" ${csharpEnabled ? '' : 'selected'}>${t('label_disabled','Disabled')}</option>
+          <option value="enabled" ${csharpEnabled ? 'selected' : ''}>${t('label_enabled','Enabled')}</option>
+        </select>
         <div class="form-hint">${t('settings_csharp_hint','Use disabled unless you explicitly run the C# bridge plugin.')}</div>
       </div>`;
 
@@ -4988,6 +5200,8 @@
     }
 
     async function saveSettings() {
+      const csharpMode = document.getElementById('set_csharp').value || 'disabled';
+      const existingCsharp = String((settingsData && settingsData.csharp) || '').trim();
       const data = {
         name: document.getElementById('set_name').value,
         gamemode: document.getElementById('set_gamemode').value,
@@ -5000,7 +5214,9 @@
         'stream-distance': parseFloat(document.getElementById('set_stream_distance').value) || 500.0,
         'sync-rate': parseInt(document.getElementById('set_sync_rate').value) || 40,
         'enable-nodejs': document.getElementById('set_enable_nodejs').classList.contains('on'),
-        csharp: document.getElementById('set_csharp').value || 'disabled',
+        csharp: csharpMode === 'disabled'
+          ? 'disabled'
+          : (existingCsharp && existingCsharp.toLowerCase() !== 'disabled' ? existingCsharp : 'enabled'),
         'voice-chat': document.getElementById('set_voice_chat').classList.contains('on'),
         'allow-cef-debugging': document.getElementById('set_allow_cef_debugging').classList.contains('on'),
         'enable-http-security': document.getElementById('set_enable_http_security').classList.contains('on'),
@@ -5073,12 +5289,6 @@
         <div class="settings-section-body">`;
 
       html += `<div class="form-group">
-        <label class="form-label">${t('panel_name','Panel Name')}</label>
-        <input class="inputx" id="pc_panel_name" value="${escapeHtml(data.panel_name || t('brand_name','RageAdmin'))}" />
-        <div class="form-hint">${t('panel_name_hint')}</div>
-      </div>`;
-
-      html += `<div class="form-group">
         <label class="form-label">${t('panel_locale','Language')}</label>
         <select class="inputx" id="pc_locale">
           <option value="en" ${data.locale === 'en' ? 'selected' : ''}>${t('language_english','English')}</option>
@@ -5127,7 +5337,7 @@
       const times = data.scheduled_restarts || [];
       html += `<div class="form-group" id="panelScheduledRestartsGroup">
         <label class="form-label">${t('panel_scheduled_restarts','Scheduled Restarts')}</label>
-        <div class="form-hint" style="margin-top:0;margin-bottom:8px;">${t('panel_scheduled_restarts_hint')}</div>
+        <div class="form-hint" style="margin-top:0;margin-bottom:8px;">${t('panel_scheduled_restarts_hint_daily','Restarts run every day at these HH:MM times.')}</div>
         <div class="tag-list" id="schedRestartTags">
           ${times.map(t => `<span class="tag">${escapeHtml(t)} <i class="fa-solid fa-xmark tag-remove"></i></span>`).join('')}
         </div>
@@ -5181,10 +5391,23 @@
       const input = document.getElementById('newSchedInput');
       const val = input.value.trim();
       if (!/^\d{2}:\d{2}$/.test(val)) { toast('error', t('label_schedule','Schedule'), t('panel_schedule_format_error','Use HH:MM format (e.g. 03:00)')); return; }
+      const [hourText, minuteText] = val.split(':');
+      const hour = Number(hourText);
+      const minute = Number(minuteText);
+      if (!Number.isInteger(hour) || !Number.isInteger(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+        toast('error', t('label_schedule','Schedule'), t('panel_schedule_format_error','Use HH:MM format (e.g. 03:00)'));
+        return;
+      }
+      const normalized = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
       const tagList = document.getElementById('schedRestartTags');
+      const exists = Array.from(tagList.querySelectorAll('.tag')).some(tag => tag.textContent.trim() === normalized);
+      if (exists) {
+        input.value = '';
+        return;
+      }
       const tag = document.createElement('span');
       tag.className = 'tag';
-      tag.innerHTML = `${escapeHtml(val)} <i class="fa-solid fa-xmark tag-remove"></i>`;
+      tag.innerHTML = `${escapeHtml(normalized)} <i class="fa-solid fa-xmark tag-remove"></i>`;
       tag.querySelector('.tag-remove').addEventListener('click', () => tag.remove());
       tagList.appendChild(tag);
       input.value = '';
@@ -5192,7 +5415,6 @@
 
     async function savePanelConfig() {
       const data = {
-        panel_name: document.getElementById('pc_panel_name').value,
         locale: document.getElementById('pc_locale').value,
         auto_start: document.getElementById('pc_auto_start').classList.contains('on'),
         scheduled_restarts: []
@@ -5214,14 +5436,13 @@
         const text = tag.textContent.trim().replace(/\s*$/, '');
         if (/^\d{2}:\d{2}$/.test(text)) data.scheduled_restarts.push(text);
       });
+      data.scheduled_restarts = Array.from(new Set(data.scheduled_restarts)).sort();
 
       const out = await apiPost('/api/panel-config', data);
       if (out.success) {
         panelConfigDirty = false;
         toast('success', t('label_panel_config','Panel Config'), t('panel_config_saved'));
-        document.getElementById('brandName').textContent = data.panel_name;
         if(panelConfigSnapshot){
-          panelConfigSnapshot.panel_name = data.panel_name;
           panelConfigSnapshot.locale = data.locale;
           panelConfigSnapshot.auto_start = data.auto_start;
           panelConfigSnapshot.scheduled_restarts = data.scheduled_restarts.slice();
@@ -7142,10 +7363,17 @@
     bindClick('btnDashRestart', restartServer);
     bindClick('btnDashAnnounce', broadcastMessage);
     bindClick('btnOpenSchedule', openScheduledRestartPanel);
+    bindClick('btnOpenScheduleSecondary', openScheduledRestartPanel);
     const btnRefreshStatus = document.getElementById('btnRefreshStatus');
     if(btnRefreshStatus) btnRefreshStatus.addEventListener('click', () => runWithLoading(btnRefreshStatus, () => fetchStatus(true)));
 
-    document.getElementById('btnClearDashConsole').addEventListener('click', ()=> document.getElementById('dashboardConsole').innerHTML = '');
+    const btnClearDashConsole = document.getElementById('btnClearDashConsole');
+    if(btnClearDashConsole){
+      btnClearDashConsole.addEventListener('click', ()=> {
+        const dashConsole = document.getElementById('dashboardConsole');
+        if(dashConsole) dashConsole.innerHTML = '';
+      });
+    }
     document.getElementById('btnClearConsole').addEventListener('click', ()=> document.getElementById('mainConsole').innerHTML = '');
     document.getElementById('btnScrollBottom').addEventListener('click', scrollConsoleToBottom);
 
@@ -7381,7 +7609,9 @@
       applyCmdPerms();
       await fetchStatus(true);
       if(!statusPoller){
-        statusPoller = setInterval(() => fetchStatus(true), 5000);
+        statusPoller = setInterval(() => {
+          if(!wsOnline) fetchStatus(true);
+        }, 1000);
       }
       await fetchUpdateStatus();
 

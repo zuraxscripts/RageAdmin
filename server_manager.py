@@ -604,7 +604,7 @@ def _count_saved_player_profiles():
 
 def _bridge_online(now_ts=None):
     check_ts = now_ts if now_ts is not None else time.time()
-    return bool(panel_connector_last_heartbeat and (check_ts - panel_connector_last_heartbeat) <= 45)
+    return bool(panel_connector_last_heartbeat and (check_ts - panel_connector_last_heartbeat) <= 3)
 
 
 def _current_max_players():
@@ -615,8 +615,49 @@ def _current_max_players():
         return 0
 
 
+def _list_resource_directories():
+    try:
+        resources_dir = os.path.join(get_server_dir(), 'resources')
+        if not os.path.isdir(resources_dir):
+            return []
+        return sorted(
+            name for name in os.listdir(resources_dir)
+            if os.path.isdir(os.path.join(resources_dir, name))
+        )
+    except Exception:
+        return []
+
+
+def _current_resources_summary():
+    resource_names = _list_resource_directories()
+    if not resource_names:
+        return 0, 0
+
+    try:
+        settings = parse_settings_xml() or {}
+        configured_resources = set(settings.get('resources', []) or [])
+    except Exception:
+        configured_resources = set()
+
+    running = 0
+    for name in resource_names:
+        state = resource_states.get(name)
+        if state == 'started':
+            running += 1
+        elif state is None and server_state.get('running') and name in configured_resources:
+            running += 1
+
+    return running, len(resource_names)
+
+
 def _current_resources_running():
-    return sum(1 for state in resource_states.values() if state == 'started')
+    running, _ = _current_resources_summary()
+    return running
+
+
+def _current_resources_total():
+    _, total = _current_resources_summary()
+    return total
 
 
 def _build_runtime_sample(now_ts=None):
@@ -671,6 +712,8 @@ def build_runtime_status_payload(include_history=False):
     now_ts = time.time()
     settings = parse_settings_xml() or {}
     discord_cfg = _get_discord_config() or {}
+    restart_info = _compute_next_scheduled_restart_info(panel_config.get('scheduled_restarts') or [])
+    resources_running, resources_total = _current_resources_summary()
     payload = {
         'running': server_state['running'],
         'uptime': int(now_ts - server_state['start_time']) if server_state['start_time'] else 0,
@@ -682,11 +725,14 @@ def build_runtime_status_payload(include_history=False):
         'players_online': len(connected_players),
         'players_saved': _count_saved_player_profiles(),
         'max_players': _current_max_players(),
-        'resources_running': _current_resources_running(),
-        'resources_total': len(resource_states),
+        'resources_running': resources_running,
+        'resources_total': resources_total,
         'server_name': str(settings.get('name') or 'RageMP Server').strip() or 'RageMP Server',
         'discord_bot_enabled': bool(discord_cfg.get('enabled')),
-        'next_scheduled_restart': _compute_next_scheduled_restart(panel_config.get('scheduled_restarts') or []),
+        'next_scheduled_restart': restart_info['display'],
+        'next_restart_in_minutes': restart_info['minutes_until'],
+        'next_restart_clock': restart_info['next_clock'],
+        'scheduled_restart_times': restart_info['times'],
         'bridge_online': _bridge_online(now_ts),
         'bridge_last_heartbeat': panel_connector_last_heartbeat,
         'bridge_age_sec': round(max(0.0, now_ts - panel_connector_last_heartbeat), 1) if panel_connector_last_heartbeat else None
@@ -1448,9 +1494,9 @@ def _format_connected_players_block(max_lines=20, include_ping=False, include_id
     return text
 
 
-def _compute_next_scheduled_restart(times):
-    now = datetime.now()
-    candidates = []
+def _normalize_daily_restart_times(times):
+    normalized = []
+    seen = set()
     for item in times or []:
         try:
             hh, mm = str(item).strip().split(':', 1)
@@ -1458,16 +1504,55 @@ def _compute_next_scheduled_restart(times):
             minute = int(mm)
             if hour < 0 or hour > 23 or minute < 0 or minute > 59:
                 continue
-            candidate = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
-            if candidate <= now:
-                candidate += timedelta(days=1)
-            candidates.append(candidate)
+            value = f'{hour:02d}:{minute:02d}'
+            if value in seen:
+                continue
+            seen.add(value)
+            normalized.append((hour, minute, value))
         except Exception:
             continue
-    if not candidates:
-        return 'Not scheduled'
-    nearest = min(candidates)
-    return nearest.strftime('%Y-%m-%d %H:%M')
+    normalized.sort(key=lambda row: (row[0], row[1]))
+    return [value for _, _, value in normalized]
+
+
+def _compute_next_scheduled_restart_info(times):
+    now = datetime.now()
+    normalized = _normalize_daily_restart_times(times)
+    if not normalized:
+        return {
+            'scheduled': False,
+            'times': [],
+            'next_at': None,
+            'next_clock': None,
+            'minutes_until': None,
+            'display': 'Not scheduled'
+        }
+
+    candidates = []
+    for value in normalized:
+        hour, minute = (int(part) for part in value.split(':', 1))
+        candidate = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        if candidate < now:
+            candidate += timedelta(days=1)
+        candidates.append((candidate, value))
+
+    nearest_dt, nearest_clock = min(candidates, key=lambda row: row[0])
+    delta_seconds = max(0.0, (nearest_dt - now).total_seconds())
+    minutes_until = int((delta_seconds + 59) // 60)
+    display = f'{nearest_clock} ({minutes_until} min)' if minutes_until > 0 else f'{nearest_clock} (now)'
+
+    return {
+        'scheduled': True,
+        'times': normalized,
+        'next_at': nearest_dt.strftime('%Y-%m-%d %H:%M'),
+        'next_clock': nearest_clock,
+        'minutes_until': minutes_until,
+        'display': display
+    }
+
+
+def _compute_next_scheduled_restart(times):
+    return _compute_next_scheduled_restart_info(times).get('display', 'Not scheduled')
 
 
 def _resolve_status_state(status_cfg):
@@ -2493,7 +2578,7 @@ def _build_ragemp_bridge_config():
         'panelHost': host,
         'panelSecret': secret,
         'syncIntervalMs': 5000,
-        'heartbeatIntervalMs': 15000,
+        'heartbeatIntervalMs': 1000,
         'requestTimeoutMs': 5000,
         'logVerbose': True
     }
@@ -2838,7 +2923,7 @@ def update_stats():
                     _append_runtime_sample(force=True, emit_socket=True)
                     continue
 
-                server_state['cpu_usage'] = process.cpu_percent(interval=1)
+                server_state['cpu_usage'] = process.cpu_percent(interval=None)
                 server_state['memory_usage'] = process.memory_info().rss / (1024 * 1024)
             except psutil.NoSuchProcess:
                 add_console_line('!!! PROCESS NO LONGER EXISTS !!!')
@@ -2858,7 +2943,7 @@ def update_stats():
         socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
         _append_runtime_sample(force=False, emit_socket=True)
 
-        time.sleep(2)
+        time.sleep(1)
 
                                                               
 
@@ -2872,7 +2957,7 @@ def scheduled_restart_thread():
             now = datetime.now()
             current_hhmm = now.strftime('%H:%M')
             current_minute = now.strftime('%Y-%m-%d %H:%M')
-            times = panel_config.get('scheduled_restarts', [])
+            times = _normalize_daily_restart_times(panel_config.get('scheduled_restarts', []))
             if current_hhmm in times and current_minute != _last_scheduled_restart_minute:
                 if server_state['running']:
                     _last_scheduled_restart_minute = current_minute
@@ -2882,7 +2967,7 @@ def scheduled_restart_thread():
                     restart_server('SYSTEM')
         except Exception:
             pass
-        time.sleep(30)
+        time.sleep(1)
 
                                                         
 
@@ -4053,7 +4138,11 @@ def api_set_panel_config():
             return jsonify({'success': False, 'message': 'Invalid password'}), 403
 
     for key in ('locale', 'panel_name', 'auto_start', 'scheduled_restarts', 'panel_secret'):
-        if key in data:
+        if key not in data:
+            continue
+        if key == 'scheduled_restarts':
+            panel_config[key] = _normalize_daily_restart_times(data[key])
+        else:
             panel_config[key] = data[key]
 
     if 'discord' in data:

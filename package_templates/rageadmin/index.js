@@ -10,7 +10,7 @@ const DEFAULT_CONFIG = {
     panelHost: 'http://127.0.0.1:20000',
     panelSecret: 'changeme',
     syncIntervalMs: 5000,
-    heartbeatIntervalMs: 15000,
+    heartbeatIntervalMs: 1000,
     requestTimeoutMs: 5000,
     logVerbose: true
 };
@@ -499,11 +499,11 @@ function startIntervals() {
         return;
     }
     state.syncTimer = setInterval(syncPlayers, Math.max(2000, safeNumber(state.config.syncIntervalMs, 5000)));
-    state.heartbeatTimer = setInterval(sendHeartbeat, Math.max(5000, safeNumber(state.config.heartbeatIntervalMs, 15000)));
+    state.heartbeatTimer = setInterval(sendHeartbeat, Math.max(1000, safeNumber(state.config.heartbeatIntervalMs, 1000)));
     state.configTimer = setInterval(() => refreshConfig(false), 10000);
     state.actionsTimer = setInterval(applyPendingActions, 1500);
     setTimeout(syncPlayers, 1500);
-    setTimeout(sendHeartbeat, 2500);
+    setTimeout(sendHeartbeat, 1000);
 }
 
 mp.events.add('packagesLoaded', () => {
