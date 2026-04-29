@@ -4715,6 +4715,42 @@
       return 'No restart times configured.';
     }
 
+    function resolveClientRestartInfo(scheduleTimes, fallbackClock, fallbackMinutes){
+      const values = Array.isArray(scheduleTimes)
+        ? scheduleTimes.map(v => String(v || '').trim()).filter(v => /^\d{2}:\d{2}$/.test(v))
+        : [];
+      const now = new Date();
+      const candidates = values.map(time => {
+        const [hourText, minuteText] = time.split(':');
+        const candidate = new Date(now);
+        candidate.setHours(Number(hourText), Number(minuteText), 0, 0);
+        if(candidate.getTime() < now.getTime()) candidate.setDate(candidate.getDate() + 1);
+        return { time, at: candidate };
+      });
+
+      if(candidates.length){
+        candidates.sort((a, b) => a.at.getTime() - b.at.getTime());
+        const next = candidates[0];
+        const minutesUntil = Math.max(0, Math.ceil((next.at.getTime() - now.getTime()) / 60000));
+        return { nextClock: next.time, minutesUntil };
+      }
+
+      const cleanClock = String(fallbackClock || '').trim();
+      if(/^\d{2}:\d{2}$/.test(cleanClock)){
+        const [hourText, minuteText] = cleanClock.split(':');
+        const candidate = new Date(now);
+        candidate.setHours(Number(hourText), Number(minuteText), 0, 0);
+        if(candidate.getTime() < now.getTime()) candidate.setDate(candidate.getDate() + 1);
+        const minutesUntil = Math.max(0, Math.ceil((candidate.getTime() - now.getTime()) / 60000));
+        return { nextClock: cleanClock, minutesUntil };
+      }
+
+      return {
+        nextClock: cleanClock || '',
+        minutesUntil: fallbackMinutes
+      };
+    }
+
     function renderRestartSchedule(times, activeClock){
       const wrap = document.getElementById('restartScheduleList');
       if(!wrap) return;
@@ -4742,9 +4778,10 @@
       const maxPlayers = Number(data.max_players || 0);
       const totalProfiles = Number(data.players_saved || 0);
       const offlineProfiles = Math.max(0, totalProfiles - onlinePlayers);
-      const nextRestart = formatRestartCountdown(data.next_restart_in_minutes);
-      const nextRestartClock = String(data.next_restart_clock || '').trim();
       const restartTimes = Array.isArray(data.scheduled_restart_times) ? data.scheduled_restart_times : [];
+      const clientRestart = resolveClientRestartInfo(restartTimes, data.next_restart_clock, data.next_restart_in_minutes);
+      const nextRestartClock = String(clientRestart.nextClock || data.next_restart_clock || '').trim();
+      const nextRestart = formatRestartCountdown(clientRestart.minutesUntil);
       const serverName = String(data.server_name || 'RageMP Server').trim() || 'RageMP Server';
       const bridgeOnline = !!data.bridge_online;
       const discordEnabled = !!data.discord_bot_enabled;
