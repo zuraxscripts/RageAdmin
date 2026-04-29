@@ -359,6 +359,30 @@
       border-color: rgba(var(--primary-rgb),.4);
       box-shadow: 0 10px 22px rgba(var(--primary-rgb),.12), inset 0 0 0 1px rgba(255,255,255,.04);
     }
+    .sidebar-mobile-nav{
+      display:none;
+      flex:none;
+      gap:8px;
+      margin:0 0 12px;
+      padding:10px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+      overflow:visible;
+    }
+    .sidebar-mobile-nav .nav-item{
+      min-height:46px;
+      padding:11px 12px;
+      border-color: rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+    .sidebar-mobile-nav .nav-item.active{
+      background: linear-gradient(180deg, rgba(var(--primary-rgb),.22), rgba(var(--primary-rgb),.12));
+      border-color: rgba(var(--primary-rgb),.4);
+      box-shadow: 0 10px 22px rgba(var(--primary-rgb),.10), inset 0 0 0 1px rgba(255,255,255,.04);
+    }
 
     .sidebar-footer{
       margin-top:auto;
@@ -2136,38 +2160,10 @@
       .dashboard-overview-layout{grid-template-columns:1fr;}
       .overview-mini{grid-template-columns: repeat(2, minmax(0, 1fr));}
       .topbar{
-        position:sticky;
-        top:8px;
-        z-index:180;
-        padding:10px;
-        border-radius:18px;
-        backdrop-filter: blur(14px);
+        display:none;
       }
-      .top-nav{
-        display:grid;
-        grid-template-columns:repeat(3, minmax(0, 1fr));
-        gap:10px;
-        overflow:visible;
-        width:100%;
-      }
-      .top-nav .nav-item{
-        min-width:0;
-        min-height:74px;
-        padding:12px 10px;
-        justify-content:center;
-        align-items:center;
-        flex-direction:column;
-        gap:8px;
-        text-align:center;
-      }
-      .top-nav .nav-item i{
-        width:auto;
-        font-size:16px;
-      }
-      .top-nav .nav-item span{
-        min-width:0;
-        white-space:normal;
-        line-height:1.15;
+      .sidebar-mobile-nav{
+        display:flex;
       }
       .update-banner{
         flex-direction:column;
@@ -2196,7 +2192,7 @@
       .settings-sidebar-card{position:static;}
       .settings-category-tabs{
         display:grid;
-        grid-template-columns:repeat(3, minmax(0, 1fr));
+        grid-template-columns:repeat(2, minmax(0, 1fr));
         gap:10px;
       }
       .settings-category-tab{
@@ -2230,23 +2226,6 @@
     @media (max-width: 720px){
       .main{
         padding:68px 10px 14px;
-      }
-      .topbar{
-        top:6px;
-        padding:8px;
-        margin-bottom:10px;
-      }
-      .top-nav{
-        grid-template-columns:repeat(2, minmax(0, 1fr));
-        gap:8px;
-      }
-      .top-nav .nav-item{
-        min-height:68px;
-        padding:10px 9px;
-        border-radius:12px;
-      }
-      .top-nav .nav-item span{
-        font-size:12px;
       }
       .btnx{
         min-width:0;
@@ -2555,9 +2534,6 @@
       .perm-grid{ grid-template-columns: 1fr; }
       .file-actions .btnx.sm span.action-label,
       .resource-actions .action-label{display:none;}
-      .top-nav{
-        grid-template-columns:repeat(2, minmax(0, 1fr));
-      }
       .settings-category-tabs{
         grid-template-columns:1fr;
       }
@@ -2777,6 +2753,18 @@
       <div class="brand" style="justify-content:center;">
         <img class="brand-logo-img" src="/logo.png" alt="RageAdmin">
       </div>
+
+      <nav class="nav sidebar-mobile-nav" aria-label="Primary navigation">
+        <div class="nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-simple"></i> <span data-i18n="nav_dashboard">Dashboard</span></div>
+        <div class="nav-item" data-page="console"><i class="fa-solid fa-terminal"></i> <span data-i18n="nav_console">Console</span></div>
+        <div class="nav-item" data-page="files"><i class="fa-solid fa-folder-open"></i> <span data-i18n="nav_files">Files</span></div>
+        <div class="nav-item" data-page="resources" style="display:none;"><i class="fa-solid fa-puzzle-piece"></i> <span data-i18n="nav_resources">Resources</span></div>
+        <div class="nav-item" data-page="addons" style="display:none;"><i class="fa-solid fa-cubes"></i> <span data-i18n="nav_addons">Addons</span></div>
+        <div class="nav-item" data-page="settings" style="display:none;"><i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Settings</span></div>
+        <div class="nav-item" data-page="logs"><i class="fa-solid fa-file-lines"></i> <span data-i18n="nav_logs">Logs</span></div>
+        <div class="nav-item" data-page="players"><i class="fa-solid fa-users"></i> <span data-i18n="nav_players">Players</span></div>
+        <div class="nav-item" data-page="admin" style="display:none;"><i class="fa-solid fa-shield"></i> <span data-i18n="nav_admin">Admin</span></div>
+      </nav>
 
       <section class="sidebar-runtime">
         <div class="sidebar-runtime-name" id="runtimeServerName">RageMP Server</div>
@@ -4195,6 +4183,12 @@
       'addons': 'pageAddons'
     };
 
+    function setPageNavVisibility(pageId, visible){
+      document.querySelectorAll(`.nav-item[data-page="${pageId}"]`).forEach(item => {
+        item.style.display = visible ? '' : 'none';
+      });
+    }
+
     function setSettingsCategory(cat, force){
       const next = String(cat || 'general').toLowerCase();
       if(!force && settingsCategory === next) return;
@@ -4227,9 +4221,9 @@
       const target = document.getElementById(pageMap[pageId] || pageId);
       if(target) target.classList.add('active');
 
-      document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
-      const nav = document.querySelector(`.nav-item[data-page="${pageId}"]`);
-      if(nav) nav.classList.add('active');
+      document.querySelectorAll('.nav-item[data-page]').forEach(n => {
+        n.classList.toggle('active', n.getAttribute('data-page') === pageId);
+      });
 
       closeSidebar();
 
@@ -6536,37 +6530,28 @@
         document.getElementById('userRole').textContent = formatRole(data.role || 'user');
         renderAvatar(document.getElementById('userAvatar'), data.avatar_url || '', displayName);
 
-        if(data.role === 'admin'){
-          document.getElementById('adminNav').style.display = '';
-          document.getElementById('settingsNav').style.display = '';
+        const isAdmin = data.role === 'admin';
+        const perms = data.permissions || {};
+
+        if(isAdmin){
           document.getElementById('permPill').textContent = t('perm_admin','Admin');
         } else {
-          const p = data.permissions || {};
-          const enabled = Object.keys(p).filter(k => p[k] === true).length;
+          const enabled = Object.keys(perms).filter(k => perms[k] === true).length;
           document.getElementById('permPill').textContent = `${t('perm_label','Perms')}: ${enabled}`;
-
-          if(p.can_view_settings) document.getElementById('settingsNav').style.display = '';
         }
 
-        if(data.role !== 'admin'){
-          const perms = data.permissions || {};
-          const rules = {
-            dashboard: perms.can_view_dashboard,
-            console: perms.can_view_console,
-            files: perms.can_view_files,
-            logs: perms.can_view_logs,
-            players: perms.can_view_players,
-            resources: perms.can_manage_resources,
-            addons: perms.can_manage_resources,
-            settings: perms.can_view_settings
-          };
-          document.querySelectorAll('.nav-item[data-page]').forEach(item=>{
-            const page = item.getAttribute('data-page');
-            if(page in rules){
-              item.style.display = (rules[page] !== false) ? '' : 'none';
-            }
-          });
-        }
+        const navRules = {
+          dashboard: isAdmin ? true : perms.can_view_dashboard !== false,
+          console: isAdmin ? true : perms.can_view_console !== false,
+          files: isAdmin ? true : perms.can_view_files !== false,
+          logs: isAdmin ? true : perms.can_view_logs !== false,
+          players: isAdmin ? true : perms.can_view_players !== false,
+          resources: isAdmin ? true : !!perms.can_manage_resources,
+          addons: isAdmin ? true : !!perms.can_manage_resources,
+          settings: isAdmin ? true : !!perms.can_view_settings,
+          admin: isAdmin
+        };
+        Object.entries(navRules).forEach(([page, visible]) => setPageNavVisibility(page, visible));
       } catch(e){
         window.location.href = '/login';
       }
