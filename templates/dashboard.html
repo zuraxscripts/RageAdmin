@@ -1822,6 +1822,11 @@
       background:rgba(255,255,255,.06);
       font-size:12px;
     }
+    .tag.tag-empty{
+      color:var(--muted);
+      border-style:dashed;
+      font-weight:600;
+    }
     .tag .tag-remove{cursor:pointer;opacity:.6;transition:opacity .12s;}
     .tag .tag-remove:hover{opacity:1;}
     .schedule-editor-row{
@@ -1869,6 +1874,40 @@
     }
     .schedule-helper-copy{
       margin-top:8px;
+    }
+    .schedule-bulk-editor{
+      margin-top:10px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      background: rgba(255,255,255,.03);
+      overflow:hidden;
+    }
+    .schedule-bulk-editor summary{
+      list-style:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px;
+      cursor:pointer;
+      font-size:12px;
+      font-weight:700;
+      color:var(--text);
+      user-select:none;
+    }
+    .schedule-bulk-editor summary::-webkit-details-marker{
+      display:none;
+    }
+    .schedule-bulk-editor summary i{
+      color:var(--muted);
+      transition: transform .12s ease;
+    }
+    .schedule-bulk-editor[open] summary i{
+      transform: rotate(180deg);
+    }
+    .schedule-bulk-body{
+      padding:0 14px 14px;
+      border-top:1px solid rgba(255,255,255,.06);
     }
 
     .logs-wrap{
@@ -2351,6 +2390,12 @@
       }
       .schedule-preset-btn{
         flex:1 1 calc(50% - 4px);
+      }
+      .schedule-bulk-editor summary{
+        padding:11px 12px;
+      }
+      .schedule-bulk-body{
+        padding:0 12px 12px;
       }
       .console{
         padding:10px;
@@ -5815,21 +5860,30 @@
         <label class="form-label">${t('panel_scheduled_restarts','Scheduled Restarts')}</label>
         <div class="form-hint" style="margin-top:0;margin-bottom:8px;">${t('panel_scheduled_restarts_hint_daily','Restarts run every day at these HH:MM times.')}</div>
         <div class="tag-list" id="schedRestartTags">
-          ${times.map(t => `<span class="tag" data-time="${escapeHtml(t)}">${escapeHtml(t)} <i class="fa-solid fa-xmark tag-remove"></i></span>`).join('')}
+          ${times.length
+            ? times.map(t => `<span class="tag" data-time="${escapeHtml(t)}">${escapeHtml(t)} <i class="fa-solid fa-xmark tag-remove"></i></span>`).join('')
+            : `<span class="tag tag-empty">${t('panel_no_restart_times','No restart times added yet.')}</span>`}
         </div>
         <div class="schedule-editor-row">
           <input class="inputx schedule-time-input" id="newSchedInput" type="time" step="60" value="" />
           <button class="btnx primary" id="btnAddSchedRestart" type="button"><i class="fa-solid fa-plus"></i> ${t('btn_add','Add')}</button>
-          <button class="btnx" id="btnClearSchedRestart" type="button"><i class="fa-solid fa-trash"></i> ${t('btn_clear','Clear')}</button>
         </div>
         <div class="schedule-preset-list">
           ${['00:00', '06:00', '12:00', '18:00', '22:00'].map(time => `<button class="schedule-preset-btn" data-sched-preset="${time}" type="button">${time}</button>`).join('')}
         </div>
-        <div class="schedule-editor-row">
-          <input class="inputx" id="schedBulkInput" placeholder="${t('panel_scheduled_restarts_bulk_placeholder','Paste 06:00, 12:00, 18:00 or 6 12 1830')}" />
-          <button class="btnx" id="btnImportSchedRestart" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> ${t('panel_apply_times','Apply')}</button>
-        </div>
-        <div class="form-hint schedule-helper-copy">${t('panel_scheduled_restarts_helper','Quick tips: 6 = 06:00, 1830 = 18:30, and commas or new lines both work.')}</div>
+        <details class="schedule-bulk-editor" id="schedBulkEditor">
+          <summary>
+            <span>${t('panel_bulk_schedule_title','Add multiple times')}</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </summary>
+          <div class="schedule-bulk-body">
+            <div class="schedule-editor-row">
+              <input class="inputx" id="schedBulkInput" placeholder="${t('panel_scheduled_restarts_bulk_placeholder','Paste 06:00, 12:00, 18:00 or 6 12 1830')}" />
+              <button class="btnx" id="btnImportSchedRestart" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> ${t('panel_apply_times','Apply')}</button>
+            </div>
+            <div class="form-hint schedule-helper-copy">${t('panel_scheduled_restarts_helper','Quick tips: 6 = 06:00, 1830 = 18:30, and commas or new lines both work.')}</div>
+          </div>
+        </details>
       </div>`;
 
       html += `</div></div>`;
@@ -5875,10 +5929,6 @@
           e.preventDefault();
           if(addSchedRestart()) panelConfigDirty = true;
         }
-      });
-      document.getElementById('btnClearSchedRestart').addEventListener('click', () => {
-        renderScheduledRestartTags([]);
-        panelConfigDirty = true;
       });
       document.getElementById('btnImportSchedRestart').addEventListener('click', () => {
         if(importSchedRestarts()) panelConfigDirty = true;
@@ -5963,6 +6013,10 @@
           .map(normalizeScheduleTimeValue)
           .filter(Boolean)
       )).sort();
+      if(!values.length){
+        tagList.innerHTML = `<span class="tag tag-empty">${escapeHtml(t('panel_no_restart_times','No restart times added yet.'))}</span>`;
+        return;
+      }
       tagList.innerHTML = values.map(time =>
         `<span class="tag" data-time="${escapeHtml(time)}">${escapeHtml(time)} <i class="fa-solid fa-xmark tag-remove"></i></span>`
       ).join('');
@@ -5995,6 +6049,8 @@
       }
       renderScheduledRestartTags(collectScheduledRestartTimes().concat(values));
       if(input) input.value = '';
+      const bulkEditor = document.getElementById('schedBulkEditor');
+      if(bulkEditor) bulkEditor.open = false;
       return true;
     }
 
