@@ -5913,6 +5913,32 @@ def api_restart_quick():
         'restart': info
     })
 
+
+@app.route('/api/restart/quick', methods=['DELETE'])
+@login_required
+@require_permission('can_control_server')
+def api_restart_quick_cancel():
+    
+    info = _get_quick_restart_info()
+    if not info.get('scheduled'):
+        return jsonify({'success': False, 'message': 'No quick restart is scheduled'}), 404
+
+    target_clock = info.get('next_clock') or ''
+    minutes = info.get('minutes_until')
+    _clear_quick_restart_job()
+    add_console_line(f'=== QUICK RESTART CANCELLED BY {session["username"].upper()} ({target_clock}) ===', session['username'])
+    log_user_action(session['username'], 'CANCEL_QUICK_RESTART', f'{minutes} min left -> {target_clock}')
+    try:
+        discord_runtime.send_warning(f'[QUICK] Restart cancelled by {session["username"]} ({target_clock})')
+    except Exception:
+        pass
+
+    socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
+    return jsonify({
+        'success': True,
+        'message': 'Quick restart cancelled'
+    })
+
 @app.route('/api/console')
 @login_required
 @require_permission('can_view_console')

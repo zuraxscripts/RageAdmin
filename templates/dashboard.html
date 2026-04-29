@@ -306,6 +306,25 @@
       font-style:italic;
       line-height:1.45;
     }
+    .sidebar-runtime-next-value.quick-active{
+      color:#f6c453;
+      font-size:14px;
+      font-style:normal;
+      font-weight:800;
+      line-height:1.35;
+    }
+    .sidebar-runtime-next-actions{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:8px;
+      margin-top:10px;
+    }
+    .sidebar-runtime-next-actions[hidden]{
+      display:none;
+    }
+    .sidebar-runtime-next-actions .btnx{
+      margin-top:0;
+    }
     .sidebar-runtime .btnx{
       width:100%;
       margin-top:12px;
@@ -2920,6 +2939,10 @@
         <div class="sidebar-runtime-next">
           <div class="sidebar-runtime-next-label" data-i18n="runtime_next_restart_label">Next Restart</div>
           <div class="sidebar-runtime-next-value" id="runtimeNextRestart">Nothing scheduled</div>
+          <div class="sidebar-runtime-next-actions" id="quickRestartActions" hidden>
+            <button class="btnx sm" id="btnQuickRestartEdit"><i class="fa-solid fa-pen"></i> <span>Edit</span></button>
+            <button class="btnx sm" id="btnQuickRestartCancel"><i class="fa-solid fa-circle-xmark"></i> <span>Cancel</span></button>
+          </div>
         </div>
 
         <button class="btnx warning" id="btnQuickRestart"><i class="fa-solid fa-bolt"></i> <span>Quick Restart</span></button>
@@ -4788,6 +4811,8 @@
       const dailyRestart = formatRestartCountdown(dailyRestartInfo.minutesUntil);
       const nextRestart = formatRestartCountdown(data.next_restart_in_minutes);
       const nextRestartKind = String(data.next_restart_kind || '').trim().toLowerCase();
+      const quickRestartActive = !!data.quick_restart_active;
+      const quickRestartText = formatRestartCountdown(data.quick_restart_in_minutes);
       const serverName = String(data.server_name || 'RageMP Server').trim() || 'RageMP Server';
       const bridgeOnline = !!data.bridge_online;
       const discordEnabled = !!data.discord_bot_enabled;
@@ -4850,10 +4875,17 @@
       );
       const runtimeNextRestart = document.getElementById('runtimeNextRestart');
       if(runtimeNextRestart){
-        runtimeNextRestart.textContent = nextRestartKind === 'quick'
-          ? `Quick restart ${nextRestart}`
-          : nextRestart;
+        runtimeNextRestart.textContent = quickRestartActive
+          ? `${quickRestartText} (Quick)`
+          : (nextRestartKind === 'quick' ? `Quick restart ${nextRestart}` : nextRestart);
+        runtimeNextRestart.classList.toggle('quick-active', quickRestartActive);
       }
+      const quickRestartActions = document.getElementById('quickRestartActions');
+      if(quickRestartActions) quickRestartActions.hidden = !quickRestartActive;
+      const quickRestartTrigger = document.getElementById('btnQuickRestart');
+      if(quickRestartTrigger) quickRestartTrigger.hidden = quickRestartActive;
+      setButtonDisabled('btnQuickRestartEdit', !quickRestartActive);
+      setButtonDisabled('btnQuickRestartCancel', !quickRestartActive);
       const nextRestartCountdown = document.getElementById('nextRestartCountdown');
       if(nextRestartCountdown) nextRestartCountdown.textContent = dailyRestart;
       const nextRestartContext = document.getElementById('nextRestartContext');
@@ -4922,14 +4954,16 @@
       return NaN;
     }
 
-    async function scheduleQuickRestart(){
+    async function scheduleQuickRestart(opts = {}){
+      const options = (opts && typeof opts === 'object') ? opts : {};
       if(!serverRunning){
         toast('error', t('label_server','Server'), t('status_offline_desc','Start the server to go online.'));
         return;
       }
 
       const activeQuick = !!(lastRuntimeStatus && lastRuntimeStatus.quick_restart_active);
-      if(activeQuick){
+      const currentQuickMinutes = Number((lastRuntimeStatus && lastRuntimeStatus.quick_restart_in_minutes) ?? 0);
+      if(activeQuick && !options.skipReplaceConfirm){
         const currentQuick = formatRestartCountdown((lastRuntimeStatus && lastRuntimeStatus.quick_restart_in_minutes) ?? '');
         const ok = await openConfirmModal({
           title: 'Replace Quick Restart',
@@ -4946,7 +4980,7 @@
         field1: {
           label: 'Restart In',
           placeholder: '+10, 15m, 1h, 1:30',
-          value: '10',
+          value: String(options.defaultValue || (activeQuick && Number.isFinite(currentQuickMinutes) && currentQuickMinutes > 0 ? `+${Math.ceil(currentQuickMinutes)}` : '10')),
           required: true,
           error: 'Enter a valid delay.'
         }
@@ -4962,6 +4996,41 @@
       const out = await apiPost('/api/restart/quick', { minutes });
       if(out && out.success){
         toast('success', 'Quick Restart', out.message || `Restart scheduled in ${minutes} minutes.`);
+        fetchStatus(true);
+      } else {
+        toast('error', 'Quick Restart', (out && out.message) || t('error_failed','Failed'));
+      }
+    }
+
+    async function editQuickRestart(){
+      const currentQuickMinutes = Number((lastRuntimeStatus && lastRuntimeStatus.quick_restart_in_minutes) ?? 10);
+      const currentValue = Number.isFinite(currentQuickMinutes) && currentQuickMinutes > 0
+        ? `+${Math.ceil(currentQuickMinutes)}`
+        : '10';
+      await scheduleQuickRestart({
+        skipReplaceConfirm: true,
+        defaultValue: currentValue
+      });
+    }
+
+    async function cancelQuickRestart(){
+      const activeQuick = !!(lastRuntimeStatus && lastRuntimeStatus.quick_restart_active);
+      if(!activeQuick){
+        toast('error', 'Quick Restart', 'No quick restart is active.');
+        return;
+      }
+      const quickText = formatRestartCountdown((lastRuntimeStatus && lastRuntimeStatus.quick_restart_in_minutes) ?? '');
+      const ok = await openConfirmModal({
+        title: 'Cancel Quick Restart',
+        message: `Cancel the current quick restart (${quickText})?`,
+        confirmText: 'Cancel Restart',
+        confirmStyle: 'warning'
+      });
+      if(!ok) return;
+
+      const out = await apiDelete('/api/restart/quick');
+      if(out && out.success){
+        toast('success', 'Quick Restart', out.message || 'Quick restart cancelled.');
         fetchStatus(true);
       } else {
         toast('error', 'Quick Restart', (out && out.message) || t('error_failed','Failed'));
@@ -8094,6 +8163,8 @@
     bindClick('btnDashRestart', restartServer);
     bindClick('btnDashAnnounce', broadcastMessage);
     bindClick('btnQuickRestart', scheduleQuickRestart);
+    bindClick('btnQuickRestartEdit', editQuickRestart);
+    bindClick('btnQuickRestartCancel', cancelQuickRestart);
     bindClick('btnOpenScheduleSecondary', openScheduledRestartPanel);
     const btnRefreshStatus = document.getElementById('btnRefreshStatus');
     if(btnRefreshStatus) btnRefreshStatus.addEventListener('click', () => runWithLoading(btnRefreshStatus, () => fetchStatus(true)));
