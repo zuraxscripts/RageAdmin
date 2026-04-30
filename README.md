@@ -53,7 +53,7 @@ RageAdmin is a browser-based operations panel for a RAGE:MP server. It combines 
     </td>
     <td width="33%" valign="top">
       <strong>Operate Faster</strong><br />
-      Use the live console, send commands, edit <code>conf.json</code>, manage files, and control resources/addons.
+      Use the live console, send commands, edit <code>conf.json</code>, manage files, and maintain runtime content.
     </td>
     <td width="33%" valign="top">
       <strong>Moderate Players</strong><br />
@@ -88,7 +88,6 @@ flowchart LR
 | Storage | Local `data/db/*.json` files with legacy JSON migration |
 | RAGE:MP config | Visual management for `conf.json` fields |
 | Files | Browse, read, edit, upload, download, rename, delete, zip, unzip, create folders |
-| Resources/addons | List, configure, start, stop, restart where RAGE:MP supports it |
 | Players | Online list, saved profiles, identifiers, playtime, notes, warnings, kick, ban |
 | In-game bridge | Player sync, heartbeat, pending moderation actions, direct/broadcast UI notices |
 | Users | Admin/user roles, per-user permissions, forced password change, avatars |
