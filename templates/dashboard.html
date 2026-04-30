@@ -2904,8 +2904,319 @@
       max-width:1920px;
       margin:0 auto;
     }
+    .tx-shellbar{
+      position:sticky;
+      top:0;
+      z-index:520;
+      height:58px;
+      display:grid;
+      grid-template-columns:230px minmax(0, 1fr) auto;
+      align-items:center;
+      gap:18px;
+      padding:0 18px;
+      border-bottom:1px solid rgba(255,255,255,.09);
+      background:rgba(16,17,20,.92);
+      box-shadow:0 10px 34px rgba(0,0,0,.28);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+    }
+    .tx-brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      font-family:var(--font-display);
+      font-size:25px;
+      font-weight:800;
+      letter-spacing:-.055em;
+      color:#43d6a4;
+    }
+    .tx-brand img{
+      width:34px;
+      height:34px;
+      object-fit:contain;
+      border-radius:9px;
+    }
+    .tx-shellnav{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+      overflow-x:auto;
+      scrollbar-width:none;
+    }
+    .tx-shellnav::-webkit-scrollbar{
+      display:none;
+    }
+    .tx-shellnav .nav-item{
+      appearance:none;
+      border:0;
+      background:transparent;
+      color:#f5f7fb;
+      font:inherit;
+      font-size:13px;
+      font-weight:800;
+      min-height:38px;
+      padding:0 12px;
+      border-radius:10px;
+      flex:0 0 auto;
+    }
+    .tx-shellnav .nav-item i{
+      display:none;
+    }
+    .tx-shellnav .nav-item::before{
+      display:none;
+    }
+    .tx-shellnav .nav-item:hover{
+      transform:none;
+      background:rgba(255,255,255,.06);
+      border-color:transparent;
+    }
+    .tx-shellnav .nav-item.active{
+      background:rgba(255,255,255,.08);
+      box-shadow:inset 0 -2px 0 rgba(var(--primary-rgb),.95);
+      border-color:transparent;
+    }
+    .tx-user{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#dce3ee;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .tx-user .circle-btn{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+    }
+    @media (min-width:1281px){
+      .app{
+        grid-template-columns:256px minmax(0, 1fr) 256px;
+        gap:16px;
+        padding:16px 10px 18px;
+        min-height:calc(100dvh - 58px);
+      }
+      .sidebar{
+        position:sticky;
+        top:74px;
+        height:calc(100dvh - 90px);
+        border-radius:10px;
+        border:1px solid rgba(255,255,255,.10);
+      }
+      .sidebar .brand{
+        display:none !important;
+      }
+      .main{
+        padding:0;
+        max-width:none;
+      }
+      .workspace-hero{
+        display:none;
+      }
+      .players-rail{
+        display:flex;
+      }
+    }
+    .players-rail{
+      position:sticky;
+      top:74px;
+      height:calc(100dvh - 90px);
+      display:none;
+      flex-direction:column;
+      gap:16px;
+      min-width:0;
+    }
+    .players-rail-card{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:10px;
+      background:rgba(16,17,20,.80);
+      box-shadow:0 14px 40px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.04);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+    }
+    .players-rail-head{
+      min-height:102px;
+      padding:17px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+    .players-rail-icon{
+      width:58px;
+      height:58px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      background:rgba(255,255,255,.08);
+      color:#c7ccd7;
+      font-size:24px;
+    }
+    .players-rail-count{
+      text-align:right;
+      font-family:var(--font-display);
+      font-size:30px;
+      line-height:1;
+      color:#fff;
+    }
+    .players-rail-label{
+      margin-top:6px;
+      text-align:right;
+      color:var(--muted);
+      font-size:18px;
+    }
+    .players-rail-list-card{
+      flex:1;
+      min-height:0;
+      padding:10px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .players-filter{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      height:40px;
+      padding:0 10px;
+      border-radius:7px;
+      border:1px solid rgba(255,255,255,.13);
+      background:rgba(0,0,0,.22);
+      color:var(--muted);
+      margin-bottom:10px;
+    }
+    .players-filter input{
+      flex:1;
+      min-width:0;
+      border:0;
+      outline:0;
+      background:transparent;
+      color:var(--text);
+      font:inherit;
+      font-size:13px;
+    }
+    .players-filter kbd{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:#d6dce8;
+      font-size:11px;
+      border-radius:5px;
+      padding:2px 6px;
+      box-shadow:none;
+    }
+    .dashboard-player-list{
+      flex:1;
+      min-height:0;
+      overflow:auto;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      padding-right:2px;
+    }
+    .dashboard-player-card{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px;
+      border-radius:9px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.035);
+      color:var(--text);
+      font:inherit;
+      text-align:left;
+      width:100%;
+      cursor:pointer;
+      transition:background .16s var(--ease), border-color .16s var(--ease), transform .16s var(--ease);
+    }
+    .dashboard-player-card:hover{
+      background:rgba(255,255,255,.065);
+      border-color:rgba(var(--primary-rgb),.28);
+      transform:translateY(-1px);
+    }
+    .dashboard-player-avatar{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      display:grid;
+      place-items:center;
+      background:rgba(var(--primary-rgb),.14);
+      border:1px solid rgba(var(--primary-rgb),.26);
+      font-weight:800;
+      color:#f3df9a;
+      flex:0 0 auto;
+    }
+    .dashboard-player-meta{
+      min-width:0;
+      flex:1;
+    }
+    .dashboard-player-name{
+      font-weight:800;
+      color:#fff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-size:13px;
+    }
+    .dashboard-player-sub{
+      margin-top:2px;
+      color:var(--muted);
+      font-size:11px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .dashboard-player-ping{
+      font-size:11px;
+      font-weight:800;
+      color:#9be7bc;
+      padding:3px 7px;
+      border-radius:999px;
+      border:1px solid rgba(34,197,94,.25);
+      background:rgba(34,197,94,.09);
+    }
+    .players-rail-empty{
+      margin:auto;
+      max-width:190px;
+      text-align:center;
+      color:#d7dce7;
+      font-size:15px;
+      font-style:italic;
+      line-height:1.35;
+    }
+    .players-rail-empty span{
+      display:block;
+      margin-top:6px;
+      color:var(--muted);
+      font-size:12px;
+      font-style:normal;
+    }
     .topbar{
       display:none !important;
+    }
+    @media (min-width:981px){
+      .app{
+        gap:16px;
+        padding:16px 10px 18px;
+        min-height:calc(100dvh - 58px);
+      }
+      .sidebar{
+        position:sticky;
+        top:74px;
+        height:calc(100dvh - 90px);
+        border-radius:10px;
+        border:1px solid rgba(255,255,255,.10);
+      }
+      .sidebar .brand{
+        display:none !important;
+      }
+      .main{
+        padding:0;
+        max-width:none;
+      }
+      .sidebar-mobile-nav{
+        display:flex;
+      }
     }
     .workspace-hero{
       position:relative;
@@ -3013,6 +3324,34 @@
     .workspace-actions .btnx[data-hero-page]{
       background:rgba(255,255,255,.045);
     }
+    @media (min-width:1281px){
+      .workspace-hero{
+        display:none;
+      }
+      .players-rail{
+        display:flex;
+      }
+      .dashboard-overview-layout{
+        grid-template-columns:minmax(0, 1fr) minmax(300px, 340px);
+      }
+      .stat-grid{
+        grid-template-columns:repeat(4, minmax(0, 1fr));
+      }
+      .stat-tile{
+        min-height:92px;
+      }
+      .trend-grid{
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+      }
+      .dashboard-side-card{
+        padding:12px;
+      }
+    }
+    @media (max-width:980px){
+      .tx-shellbar{
+        display:none;
+      }
+    }
     .sidebar,
     .topbar,
     .cardx,
@@ -3108,6 +3447,17 @@
     }
     .top-nav .nav-item:hover{
       transform:translateY(-1px);
+    }
+    .tx-shellnav .nav-item::before{
+      display:none;
+    }
+    .tx-shellnav .nav-item:hover{
+      transform:none;
+    }
+    .tx-shellnav .nav-item.active{
+      background:rgba(255,255,255,.08);
+      box-shadow:inset 0 -2px 0 rgba(var(--primary-rgb),.95);
+      border-color:transparent;
     }
     .btnx,
     .btn-soft,
@@ -3339,6 +3689,26 @@
   
   <button class="hamburger" id="hamburgerBtn" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar"><i class="fa-solid fa-bars"></i></button>
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <header class="tx-shellbar">
+    <div class="tx-brand">
+      <img src="/logo.png" alt="RageAdmin">
+      <span>RageAdmin</span>
+    </div>
+    <nav class="tx-shellnav" aria-label="Primary navigation">
+      <button type="button" class="nav-item active" data-page="dashboard"><i class="fa-solid fa-table-cells-large"></i> <span data-i18n="nav_dashboard">Dashboard</span></button>
+      <button type="button" class="nav-item" data-page="players"><i class="fa-solid fa-users"></i> <span data-i18n="nav_players">Players</span></button>
+      <button type="button" class="nav-item" data-page="logs"><i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="nav_logs">Logs</span></button>
+      <button type="button" class="nav-item" data-page="files"><i class="fa-solid fa-folder-open"></i> <span data-i18n="nav_files">Files</span></button>
+      <button type="button" class="nav-item" data-page="console"><i class="fa-solid fa-terminal"></i> <span data-i18n="nav_console">Console</span></button>
+      <button type="button" class="nav-item" data-page="settings" style="display:none;"><i class="fa-solid fa-gear"></i> <span data-i18n="nav_settings">Settings</span></button>
+      <button type="button" class="nav-item" data-page="admin" style="display:none;"><i class="fa-solid fa-shield"></i> <span data-i18n="nav_admin">Admin</span></button>
+    </nav>
+    <div class="tx-user">
+      <span id="topUserName">-</span>
+      <button class="circle-btn" id="btnTopUserSettings" title="User settings"><i class="fa-solid fa-user-gear"></i></button>
+    </div>
+  </header>
 
   <div class="app">
     
@@ -3931,6 +4301,26 @@
       </section>
 
     </main>
+
+    <aside class="players-rail">
+      <section class="players-rail-card players-rail-head">
+        <div class="players-rail-icon"><i class="fa-solid fa-user-group"></i></div>
+        <div>
+          <div class="players-rail-count" id="dashboardPlayerCount">0</div>
+          <div class="players-rail-label" data-i18n="nav_players">Players</div>
+        </div>
+      </section>
+      <section class="players-rail-card players-rail-list-card">
+        <label class="players-filter">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="dashboardPlayerSearch" type="search" placeholder="Filter by name or ID">
+          <kbd>Ctrl+K</kbd>
+        </label>
+        <div class="dashboard-player-list" id="dashboardPlayersList">
+          <div class="players-rail-empty">No players online.<br><span>Waiting for RageAdmin bridge sync.</span></div>
+        </div>
+      </section>
+    </aside>
   </div>
 
   
@@ -4851,6 +5241,7 @@
 
       closeSidebar();
 
+      if(pageId === 'dashboard') loadPlayers({ noFade: true, force: true });
       if(pageId === 'files') loadFiles();
       if(pageId === 'admin') loadUsers();
       if(pageId === 'console') setTimeout(scrollConsoleToBottom, 50);
@@ -7447,6 +7838,8 @@
 
         const displayName = data.display_name || data.username || t('label_user','User');
         document.getElementById('userName').textContent = displayName;
+        const topUserName = document.getElementById('topUserName');
+        if(topUserName) topUserName.textContent = displayName;
         document.getElementById('userRole').textContent = formatRole(data.role || 'user');
         renderAvatar(document.getElementById('userAvatar'), data.avatar_url || '', displayName);
 
@@ -7958,6 +8351,8 @@
       }
       const countEl = document.getElementById('playerCount');
       if(countEl) countEl.textContent = counts.online;
+      const dashboardPlayerCount = document.getElementById('dashboardPlayerCount');
+      if(dashboardPlayerCount) dashboardPlayerCount.textContent = counts.online;
       const badgeEl = document.getElementById('playerCountBadge');
       if(badgeEl) badgeEl.textContent = counts.total;
       const onlineBadge = document.getElementById('playerCountOnlineBadge');
@@ -7971,6 +8366,60 @@
         const maxPlayers = Number((lastRuntimeStatus && lastRuntimeStatus.max_players) || 0);
         trendPlayersMeta.textContent = `${counts.online} / ${maxPlayers}`;
       }
+    }
+
+    let dashboardPlayersCache = [];
+
+    function renderDashboardPlayers(players){
+      dashboardPlayersCache = Array.isArray(players) ? players : [];
+      const listEl = document.getElementById('dashboardPlayersList');
+      if(!listEl) return;
+
+      const searchEl = document.getElementById('dashboardPlayerSearch');
+      const needle = String((searchEl && searchEl.value) || '').trim().toLowerCase();
+      const online = splitPlayersBySource(dashboardPlayersCache).online;
+      const rows = online.filter((p) => {
+        if(!needle) return true;
+        return [
+          p.name,
+          p.playerId,
+          p.serverId,
+          p.ip
+        ].some(v => String(v ?? '').toLowerCase().includes(needle));
+      });
+
+      if(rows.length === 0){
+        const emptyMain = online.length === 0 ? 'No players online.' : 'No matching players.';
+        const emptySub = online.length === 0 ? 'Waiting for RageAdmin bridge sync.' : 'Try a different name or ID.';
+        listEl.innerHTML = `<div class="players-rail-empty">${emptyMain}<br><span>${emptySub}</span></div>`;
+        return;
+      }
+
+      listEl.innerHTML = rows.map((p) => {
+        const name = String(p.name || 'Unknown');
+        const playerId = String(p.playerId || p.serverId || '').trim();
+        const initials = name.trim().slice(0, 2).toUpperCase() || '?';
+        const sid = hasPlayerServerId(p.serverId) ? `SID ${escapeHtml(p.serverId)}` : 'SID -';
+        const pid = playerId ? `PID ${escapeHtml(playerId)}` : 'PID -';
+        const ping = Number(p.ping || 0);
+        return `
+          <button class="dashboard-player-card" data-dashboard-player="${escapeHtml(playerId || p.serverId || '')}">
+            <span class="dashboard-player-avatar">${escapeHtml(initials)}</span>
+            <span class="dashboard-player-meta">
+              <span class="dashboard-player-name">${escapeHtml(name)}</span>
+              <span class="dashboard-player-sub">${sid} | ${pid}</span>
+            </span>
+            <span class="dashboard-player-ping">${ping}ms</span>
+          </button>
+        `;
+      }).join('');
+
+      listEl.querySelectorAll('[data-dashboard-player]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const ref = btn.getAttribute('data-dashboard-player');
+          if(ref) openPlayerProfileModal(ref);
+        });
+      });
     }
 
     let activePlayerProfile = null;
@@ -8273,6 +8722,7 @@
         online: split.online.length,
         saved: split.saved.length
       });
+      renderDashboardPlayers(list);
 
       const nextSignature = playersPayloadSignature(list);
       if(!opts.force && playersSignature === nextSignature){
@@ -8456,6 +8906,7 @@
           if(onlineBody) onlineBody.innerHTML = html;
           if(savedBody) savedBody.innerHTML = html;
           setPlayerCounters({ total: 0, online: 0, saved: 0 });
+          renderDashboardPlayers([]);
           return;
         }
         const data = await res.json();
@@ -8471,6 +8922,7 @@
         const html = `<tr><td colspan="7" style="text-align:center;padding:18px;color:var(--muted);">${t('players_load_failed','Failed to load players.')}</td></tr>`;
         if(onlineBody) onlineBody.innerHTML = html;
         if(savedBody) savedBody.innerHTML = html;
+        renderDashboardPlayers([]);
       }
     }
 
@@ -8586,6 +9038,7 @@
         ? Number(data.counts.total)
         : players.length;
       setPlayerCounters({ total: totalCount, online: onlineCount, saved: savedCount });
+      renderDashboardPlayers(players);
       if(currentPage === 'players') {
         renderPlayersRows(players, { animate: true });
       }
@@ -8723,9 +9176,20 @@
     bindClick('btnQuickRestartEdit', editQuickRestart);
     bindClick('btnQuickRestartCancel', cancelQuickRestart);
     bindClick('btnOpenScheduleSecondary', openScheduledRestartPanel);
+    bindClick('btnTopUserSettings', openProfileModal);
     document.querySelectorAll('[data-hero-page]').forEach(btn => {
       btn.addEventListener('click', () => switchPage(btn.getAttribute('data-hero-page')));
     });
+    const dashboardPlayerSearch = document.getElementById('dashboardPlayerSearch');
+    if(dashboardPlayerSearch){
+      dashboardPlayerSearch.addEventListener('input', () => renderDashboardPlayers(dashboardPlayersCache));
+      window.addEventListener('keydown', (event) => {
+        if((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k' && window.innerWidth > 980){
+          event.preventDefault();
+          dashboardPlayerSearch.focus();
+        }
+      });
+    }
     const btnRefreshStatus = document.getElementById('btnRefreshStatus');
     if(btnRefreshStatus) btnRefreshStatus.addEventListener('click', () => runWithLoading(btnRefreshStatus, () => fetchStatus(true)));
 
