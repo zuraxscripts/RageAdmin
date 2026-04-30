@@ -2280,7 +2280,8 @@
       }
       .sidebar-backdrop.open{
         display:block;
-        backdrop-filter: blur(2px);
+        backdrop-filter:none;
+        -webkit-backdrop-filter:none;
       }
       .hamburger{
         display:flex;
@@ -2757,7 +2758,7 @@
     }
 
     body.ws-offline .app{
-      filter: blur(6px);
+      filter:none;
       pointer-events:none;
       user-select:none;
     }
@@ -2771,7 +2772,8 @@
       align-items:center;
       justify-content:center;
       background:rgba(5,5,6,.55);
-      backdrop-filter: blur(6px);
+      backdrop-filter:none;
+      -webkit-backdrop-filter:none;
       z-index:12000;
     }
     .ws-overlay.active{ display:flex; }
@@ -2923,7 +2925,7 @@
     .tx-brand{
       display:flex;
       align-items:center;
-      gap:10px;
+      gap:0;
       min-width:0;
       font-family:var(--font-display);
       font-size:25px;
@@ -2932,10 +2934,13 @@
       color:#43d6a4;
     }
     .tx-brand img{
-      width:34px;
-      height:34px;
+      width:44px;
+      height:44px;
       object-fit:contain;
-      border-radius:9px;
+      border-radius:10px;
+    }
+    .tx-brand span{
+      display:none;
     }
     .tx-shellnav{
       display:flex;
@@ -3005,6 +3010,9 @@
         border:1px solid rgba(255,255,255,.10);
       }
       .sidebar .brand{
+        display:none !important;
+      }
+      .sidebar-mobile-nav{
         display:none !important;
       }
       .main{
@@ -3367,8 +3375,8 @@
     .profile-card,
     .table-wrap{
       border-color:rgba(255,255,255,.095);
-      backdrop-filter:blur(18px);
-      -webkit-backdrop-filter:blur(18px);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
     }
     .sidebar{
       background:
@@ -3571,16 +3579,18 @@
       }
       .sidebar{
         background:
-          linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02)),
-          rgba(9,9,11,.94);
+          linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015)),
+          rgba(9,9,11,.98);
+        backdrop-filter:none;
+        -webkit-backdrop-filter:none;
       }
       .sidebar.open{
         animation:drawerSettle .28s var(--ease) both;
       }
       .cardx,
       .modal-content-custom{
-        backdrop-filter:blur(14px);
-        -webkit-backdrop-filter:blur(14px);
+        backdrop-filter:blur(8px);
+        -webkit-backdrop-filter:blur(8px);
       }
     }
     @media (max-width:720px){
