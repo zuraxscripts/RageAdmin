@@ -1,127 +1,143 @@
 <div align="center">
-  <img src="templates/logo.png" alt="RageAdmin logo" width="190" />
+  <img src="templates/logo.png" alt="RageAdmin logo" width="160" />
 
   <h1>RageAdmin</h1>
 
-  <p><strong>Modern web control panel for RageMP servers on Linux.</strong></p>
+  <p><strong>Web control panel for RAGE:MP servers, built around a local JSON storage backend.</strong></p>
 
   <p>
-    Start, stop, and monitor your server, manage files and resources, control players,
-    schedule restarts, track updates, and keep everything in one browser UI.
+    Start the server, watch the console, edit files, manage players, schedule restarts,
+    sync an in-game bridge package, and keep panel/RAGE:MP updates in one browser UI.
   </p>
 
   <p>
-    <img alt="Linux x86_64 only" src="https://img.shields.io/badge/Linux-x86__64%20only-111827?style=for-the-badge&logo=linux&logoColor=white">
-    <img alt="Python 3.9+" src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white">
-    <img alt="MariaDB or MySQL" src="https://img.shields.io/badge/Database-MariaDB%20%7C%20MySQL-0f766e?style=for-the-badge">
-    <a href="./egg-rageadmin-ragemp.json"><img alt="Pterodactyl egg included" src="https://img.shields.io/badge/Pterodactyl-Egg%20Included-1f6feb?style=for-the-badge"></a>
+    <img alt="Linux x86_64 target" src="https://img.shields.io/badge/Target-Linux%20x86__64-101827?style=for-the-badge&logo=linux&logoColor=white">
+    <img alt="Python 3.9+" src="https://img.shields.io/badge/Python-3.9%2B-2563eb?style=for-the-badge&logo=python&logoColor=white">
+    <img alt="Storage JSON files" src="https://img.shields.io/badge/Storage-data%2Fdb%20JSON-16a34a?style=for-the-badge">
+    <img alt="No MySQL required" src="https://img.shields.io/badge/MySQL-not%20required-dc2626?style=for-the-badge">
+    <a href="./egg-rageadmin-ragemp.json"><img alt="Pterodactyl egg included" src="https://img.shields.io/badge/Pterodactyl-egg%20included-f59e0b?style=for-the-badge"></a>
   </p>
 
   <p>
-    <a href="#overview">Overview</a>
-    <span>&nbsp;|&nbsp;</span>
+    <a href="#what-it-does">What It Does</a>
+    <span>&nbsp;/&nbsp;</span>
     <a href="#quick-start">Quick Start</a>
-    <span>&nbsp;|&nbsp;</span>
-    <a href="#ubuntu-installation">Ubuntu Installation</a>
-    <span>&nbsp;|&nbsp;</span>
+    <span>&nbsp;/&nbsp;</span>
+    <a href="#first-run">First Run</a>
+    <span>&nbsp;/&nbsp;</span>
     <a href="#pterodactyl">Pterodactyl</a>
-    <span>&nbsp;|&nbsp;</span>
+    <span>&nbsp;/&nbsp;</span>
     <a href="#configuration">Configuration</a>
-    <span>&nbsp;|&nbsp;</span>
+    <span>&nbsp;/&nbsp;</span>
     <a href="#troubleshooting">Troubleshooting</a>
   </p>
 </div>
 
+---
+
 > [!IMPORTANT]
-> RageAdmin is intended for Linux `x86_64` / `amd64` only.
-> Windows and ARM / ARM64 are not supported.
+> RageAdmin currently targets Linux `x86_64` / `amd64` RAGE:MP server deployments. The panel code may start elsewhere for development, but the bundled automatic RAGE:MP server install uses the official Linux x64 archive.
 
-> [!TIP]
-> If you already run **Pterodactyl Panel**, that is the recommended deployment path.
-> This repository already includes [`egg-rageadmin-ragemp.json`](./egg-rageadmin-ragemp.json).
+> [!NOTE]
+> RageAdmin does **not** need MySQL, MariaDB, SQLite, Redis, or MongoDB. Runtime data is stored in local JSON files under `data/db/`.
 
-## Overview
+## What It Does
 
-RageAdmin is a web-based management panel for RageMP servers.
-It gives you a browser UI for live server control, console access, file operations, player management, resource and addon control, scheduled restarts, update checks, multi-user access, and Discord integration.
+RageAdmin is a browser-based operations panel for a RAGE:MP server. It combines process control, live console access, file management, player moderation, restart scheduling, Discord status tools, and an in-game bridge package.
 
 <table>
   <tr>
     <td width="33%" valign="top">
-      <strong>Runtime Control</strong><br />
-      Start, stop, restart, watch live status, monitor uptime, and manage scheduled restarts.
+      <strong>Run the Server</strong><br />
+      Start, stop, restart, auto-start, track uptime, see live stats, and schedule daily or quick restarts.
     </td>
     <td width="33%" valign="top">
-      <strong>Operations</strong><br />
-      Use the live console, manage files, edit <code>conf.json</code>, and control resources and addons.
+      <strong>Operate Faster</strong><br />
+      Use the live console, send commands, edit <code>conf.json</code>, manage files, and control resources/addons.
     </td>
     <td width="33%" valign="top">
-      <strong>Administration</strong><br />
-      Manage players, warnings, kick and ban actions, users, permissions, logs, and Discord integration.
+      <strong>Moderate Players</strong><br />
+      Track profiles, warnings, notes, bans, kicks, direct messages, broadcast notices, and saved identifiers.
     </td>
   </tr>
 </table>
 
-## Feature Highlights
+## System Map
+
+```mermaid
+flowchart LR
+    Browser[Browser UI] --> Flask[Flask + Socket.IO panel]
+    Flask --> Store[data/db JSON storage]
+    Flask --> Files[RAGE:MP server files]
+    Flask --> Proc[ragemp-server process]
+    Proc --> Bridge[RageAdmin server package]
+    Bridge --> Hooks[Panel hook API]
+    Hooks --> Flask
+    Bridge --> Client[Client package notice UI]
+    Flask --> Discord[Optional Discord bot/status]
+    Flask --> Updater[Panel and RAGE:MP updater]
+```
+
+## Feature Matrix
 
 | Area | Included |
 | --- | --- |
-| Server | Start, stop, restart, status overview, uptime, scheduled restarts |
-| Console | Live console stream, command input, clear and scroll controls |
-| Files | Upload, download, edit, rename, delete, compress, extract |
-| RageMP Config | Panel-side `conf.json` management |
-| Runtime Content | Resource and addon management |
-| Players | Player list, profiles, warnings, kick, ban, direct messages |
-| Access Control | User accounts, roles, permissions, admin action logs |
-| Updates | Panel update checker and RageMP server file update checks |
-| Integrations | Optional Discord bot and live status embed integration |
-| Setup | First-run setup wizard and automatic RageMP Linux package download |
-
-## Support Matrix
-
-| Target | Status |
-| --- | --- |
-| Linux | Supported |
-| Ubuntu 22.04 / 24.04 | Recommended |
-| `x86_64` / `amd64` | Supported |
-| Windows | Not supported |
-| ARM / ARM64 | Not supported |
+| Server lifecycle | Start, stop, restart, auto-start, process detection, uptime, CPU/RAM samples |
+| Console | Live output, history, command input, command logging |
+| Setup | PIN-protected first run, admin account creation, RAGE:MP Linux archive download |
+| Storage | Local `data/db/*.json` files with legacy JSON migration |
+| RAGE:MP config | Visual management for `conf.json` fields |
+| Files | Browse, read, edit, upload, download, rename, delete, zip, unzip, create folders |
+| Resources/addons | List, configure, start, stop, restart where RAGE:MP supports it |
+| Players | Online list, saved profiles, identifiers, playtime, notes, warnings, kick, ban |
+| In-game bridge | Player sync, heartbeat, pending moderation actions, direct/broadcast UI notices |
+| Users | Admin/user roles, per-user permissions, forced password change, avatars |
+| Logs | Per-user action logs and console action tracking |
+| Discord | Optional bot token, warning channel, customizable status embed JSON |
+| Updates | Panel update checks from GitHub and RAGE:MP server archive metadata checks |
+| Pterodactyl | Ready-to-import egg with portable Node.js and configurable NPM packages |
 
 ## Requirements
 
 | Requirement | Notes |
 | --- | --- |
+| OS | Linux deployment recommended, Ubuntu 22.04/24.04 tested target |
+| Architecture | `x86_64` / `amd64` |
 | Python | `3.9+` |
-| Database | MySQL or MariaDB |
-| Tools | `git`, `pip` |
-| Network | Internet access during first setup |
-| OS | Ubuntu recommended |
+| Python packages | Installed from [`requirements.txt`](./requirements.txt) |
+| Tools | `git`, `python3`, `python3-venv`, `python3-pip` |
+| Network | Needed during first setup to download the RAGE:MP Linux server archive |
+| Database server | Not needed |
 
 Recommended stack:
 
-- Ubuntu 24.04 LTS
-- Python 3.11
-- MariaDB
-- Nginx reverse proxy
-- `systemd` service for startup
+| Component | Recommendation |
+| --- | --- |
+| OS | Ubuntu 24.04 LTS |
+| Python | Python 3.11+ |
+| Reverse proxy | Nginx or another proxy with WebSocket support |
+| Service manager | `systemd` |
+| Storage backup | Back up `data/db/`, `data/logs/`, `panel_version.json`, and RAGE:MP server files |
 
 ## Quick Start
 
-If you want the shortest full install flow on Ubuntu:
-
 ```bash
 sudo apt update
-sudo apt install -y git python3 python3-venv python3-pip mariadb-server
+sudo apt install -y git python3 python3-venv python3-pip
+
 git clone https://github.com/zuraxscripts/RageAdmin.git
 cd RageAdmin
+
 python3 -m venv .venv
 source .venv/bin/activate
+
 pip install --upgrade pip
 pip install -r requirements.txt
+
 python3 main.py --port 20000
 ```
 
-Then open:
+Open the panel:
 
 ```text
 http://YOUR_SERVER_IP:20000
@@ -129,280 +145,80 @@ http://YOUR_SERVER_IP:20000
 
 ## First Run
 
-On first launch the panel opens a setup flow in the browser and asks for:
+The first launch is protected by a setup PIN printed in the console.
 
-1. The setup PIN shown in the console
-2. Your admin username and password
-3. MariaDB / MySQL connection details
+Setup asks for:
 
-During setup, RageAdmin will:
+1. Setup PIN from the terminal
+2. Admin username
+3. Admin password
 
-1. Save and validate the database connection
-2. Create the required tables
-3. Download the official [RageMP](https://rage.mp/) Linux server archive
-4. Extract server files into `RageMP-Server/ragemp-srv`
-5. Generate runtime files such as `conf.json` when needed
-6. Create the first admin account
+Setup then performs:
 
-Default server executable path:
+| Step | Result |
+| --- | --- |
+| Storage | Creates local JSON storage in `data/db/` |
+| Secret | Generates the panel bridge secret if still using the default |
+| Server files | Downloads the official RAGE:MP Linux x64 archive when missing |
+| Runtime files | Ensures `packages/`, `client_packages/`, `maps/`, `plugins/`, and `conf.json` exist |
+| Bridge | Installs `packages/rageadmin` and `client_packages/rageadmin` |
+| User | Creates the first admin account |
 
-```text
-./RageMP-Server/ragemp-srv/ragemp-server
-```
-
-Default panel port:
-
-```text
-20000
-```
-
-## Ubuntu Installation
-
-### 1. Install system packages
-
-```bash
-sudo apt update
-sudo apt install -y git python3 python3-venv python3-pip mariadb-server
-```
-
-If you want a reverse proxy:
-
-```bash
-sudo apt install -y nginx
-```
-
-### 2. Create a database
-
-Log into MariaDB:
-
-```bash
-sudo mysql
-```
-
-Create a database and user:
-
-```sql
-CREATE DATABASE rageadmin CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'rageadmin'@'127.0.0.1' IDENTIFIED BY 'CHANGE_ME_STRONG_PASSWORD';
-GRANT ALL PRIVILEGES ON rageadmin.* TO 'rageadmin'@'127.0.0.1';
-FLUSH PRIVILEGES;
-EXIT;
-```
-
-If the panel will connect from another machine or container, use the correct host instead of `127.0.0.1`.
-
-### 3. Clone the repository
-
-```bash
-git clone https://github.com/zuraxscripts/RageAdmin.git
-cd RageAdmin
-```
-
-### 4. Create a virtual environment
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-### 5. Install dependencies
-
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-### 6. Start the panel
-
-```bash
-python3 main.py --port 20000
-```
-
-Open:
-
-```text
-http://YOUR_SERVER_IP:20000
-```
-
-### 7. Complete setup
-
-1. Enter the setup PIN from the console
-2. Create the admin account
-3. Enter the MariaDB / MySQL connection details
-4. Wait for the panel to finish downloading and preparing the server
-
-## Custom Port
-
-You can run RageAdmin on a different port:
-
-```bash
-python3 main.py --port 8080
-```
-
-You can also use environment variables:
-
-```bash
-PANEL_PORT=8080 python3 main.py
-```
-
-or:
-
-```bash
-PORT=8080 python3 main.py
-```
-
-## Firewall
-
-If `ufw` is enabled:
-
-```bash
-sudo ufw allow 20000/tcp
-sudo ufw reload
-```
-
-## Pterodactyl
-
-If you already run **Pterodactyl**, this is the recommended deployment method.
-
-Included egg:
-
-- [`egg-rageadmin-ragemp.json`](./egg-rageadmin-ragemp.json)
-
-### What the egg does
-
-- Installs `git`, `curl`, and `python3`
-- Clones this repository into the server directory
-- Creates a startup wrapper that syncs RageMP `conf.json` to the primary allocation
-- Starts the panel with:
-
-```bash
-bash /home/container/start-rageadmin.sh
-```
-
-### Importing the egg
-
-Import the JSON file into your Pterodactyl panel and create a server from that egg.
-The egg exposes:
-
-- Primary allocation `SERVER_PORT` for the RageMP game server
-- One additional allocation on `SERVER_PORT + 1` for RageMP package transfer / HTTP
-- `PANEL_PORT` for the RageAdmin web panel on a third allocation
-
-After the server starts, open the allocated port in your browser and complete the same setup flow.
-
-### Pterodactyl notes
-
-- Linux only
-- `amd64` / `x86_64` only
-- Windows nodes are not supported
-- ARM nodes are not supported
-- The panel still needs a working MySQL / MariaDB database
-- First setup still needs outbound internet access to download [RageMP](https://rage.mp/) server files
-- In current Pterodactyl, extra allocations still need to be assigned manually in Allocation Management
-- `PANEL_PORT` must not match `SERVER_PORT` or `SERVER_PORT + 1`
-
-## Configuration
-
-### Default Paths
+Default paths:
 
 | Item | Value |
 | --- | --- |
 | Panel port | `20000` |
 | Server executable | `./RageMP-Server/ragemp-srv/ragemp-server` |
 | Server directory | `./RageMP-Server/ragemp-srv/` |
-| Logs directory | `./data/logs/` |
+| Panel storage | `./data/db/*.json` |
+| Logs | `./data/logs/` |
 
-### Important Files and Directories
+## Storage Layout
 
-| Path | Purpose |
+RageAdmin uses small JSON files instead of an external database server.
+
+| File | Purpose |
 | --- | --- |
-| [`main.py`](./main.py) | Launcher |
-| [`server_manager.py`](./server_manager.py) | Main web panel server |
-| [`updater.py`](./updater.py) | Built-in updater worker |
-| [`requirements.txt`](./requirements.txt) | Python dependencies |
-| [`egg-rageadmin-ragemp.json`](./egg-rageadmin-ragemp.json) | Pterodactyl egg |
-| `panel_config.json` | Panel configuration |
-| [`update_config.json`](./update_config.json) | Update source configuration |
-| `data/` | Runtime data, logs, DB config, update state |
-| `RageMP-Server/` | Downloaded RageMP server files |
-| [`templates/`](./templates) | HTML templates and static assets |
-| [`locales/`](./locales) | UI translations |
+| `data/db/users.json` | Panel users, password hashes, roles, permissions |
+| `data/db/server.json` | RAGE:MP executable path, log path, restart/update metadata |
+| `data/db/panel.json` | Panel name, locale, port, secret, scheduled restarts, Discord settings |
+| `data/db/bans.json` | Stored bans |
+| `data/db/player_profiles.json` | Player profiles, identifiers, notes, warnings, history |
+| `data/db/stats_history.json` | Runtime chart samples |
 
-<details>
-<summary><strong>Environment variables</strong></summary>
+Legacy files such as `data/users.json`, `data/config.json`, `data/bans.json`, `data/player_profiles.json`, and root `panel_config.json` are migrated into `data/db/` when possible.
 
-<br />
-
-Optional runtime variables:
-
-```bash
-PANEL_PORT=20000
-PORT=20000
-PANEL_PRODUCTION=true
-PANEL_ACCESS_LOGS=false
-PANEL_FORCE_HTTPS=false
-PANEL_SESSION_COOKIE_SECURE=false
-PANEL_SOCKETIO_ASYNC_MODE=threading
-```
-
-Optional database variables:
-
-```bash
-HAPPINESS_DB_HOST=127.0.0.1
-HAPPINESS_DB_PORT=3306
-HAPPINESS_DB_USER=rageadmin
-HAPPINESS_DB_PASSWORD=CHANGE_ME
-HAPPINESS_DB_NAME=rageadmin
-```
-
-If the `HAPPINESS_DB_*` variables are set, the panel can load database settings from the environment instead of the local DB config file.
-
-</details>
-
-<details>
-<summary><strong>systemd service example</strong></summary>
-
-<br />
+## Ubuntu Service
 
 Create a dedicated user:
 
 ```bash
-sudo useradd -r -m -s /usr/sbin/nologin hpm
+sudo useradd -r -m -s /usr/sbin/nologin rageadmin
 ```
 
-Clone the project:
+Install the app:
 
 ```bash
 sudo mkdir -p /opt/rageadmin
-sudo chown -R hpm:hpm /opt/rageadmin
-sudo -u hpm git clone https://github.com/zuraxscripts/RageAdmin.git /opt/rageadmin/app
+sudo chown -R rageadmin:rageadmin /opt/rageadmin
+sudo -u rageadmin git clone https://github.com/zuraxscripts/RageAdmin.git /opt/rageadmin/app
+sudo -u rageadmin python3 -m venv /opt/rageadmin/app/.venv
+sudo -u rageadmin /opt/rageadmin/app/.venv/bin/pip install --upgrade pip
+sudo -u rageadmin /opt/rageadmin/app/.venv/bin/pip install -r /opt/rageadmin/app/requirements.txt
 ```
 
-Create the virtual environment and install dependencies:
-
-```bash
-sudo -u hpm python3 -m venv /opt/rageadmin/app/.venv
-sudo -u hpm /opt/rageadmin/app/.venv/bin/pip install --upgrade pip
-sudo -u hpm /opt/rageadmin/app/.venv/bin/pip install -r /opt/rageadmin/app/requirements.txt
-```
-
-Create the service file:
-
-```bash
-sudo nano /etc/systemd/system/rageadmin.service
-```
-
-Use:
+Create `/etc/systemd/system/rageadmin.service`:
 
 ```ini
 [Unit]
 Description=RageAdmin
-After=network.target mariadb.service
+After=network.target
 
 [Service]
 Type=simple
-User=hpm
-Group=hpm
+User=rageadmin
+Group=rageadmin
 WorkingDirectory=/opt/rageadmin/app
 Environment=PANEL_PORT=20000
 ExecStart=/opt/rageadmin/app/.venv/bin/python /opt/rageadmin/app/main.py --port 20000
@@ -413,7 +229,7 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-Enable and start it:
+Enable it:
 
 ```bash
 sudo systemctl daemon-reload
@@ -421,32 +237,15 @@ sudo systemctl enable --now rageadmin
 sudo systemctl status rageadmin
 ```
 
-View logs:
+Follow logs:
 
 ```bash
 journalctl -u rageadmin -f
 ```
 
-</details>
+## Nginx Reverse Proxy
 
-<details>
-<summary><strong>Nginx reverse proxy example</strong></summary>
-
-<br />
-
-Install Nginx if needed:
-
-```bash
-sudo apt install -y nginx
-```
-
-Create a site:
-
-```bash
-sudo nano /etc/nginx/sites-available/rageadmin
-```
-
-Example config:
+RageAdmin uses Socket.IO, so the proxy must pass WebSocket upgrade headers.
 
 ```nginx
 server {
@@ -466,95 +265,211 @@ server {
 }
 ```
 
-Enable the site:
-
-```bash
-sudo ln -s /etc/nginx/sites-available/rageadmin /etc/nginx/sites-enabled/rageadmin
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-If you use HTTPS behind a reverse proxy, these environment variables may be useful:
+Useful environment flags behind HTTPS:
 
 ```bash
 PANEL_FORCE_HTTPS=true
 PANEL_SESSION_COOKIE_SECURE=true
 ```
 
-</details>
+## Pterodactyl
+
+Use the included egg when deploying through Pterodactyl:
+
+| File | Purpose |
+| --- | --- |
+| [`egg-rageadmin-ragemp.json`](./egg-rageadmin-ragemp.json) | Ready-to-import Pterodactyl egg |
+
+The egg does the following:
+
+| Step | Details |
+| --- | --- |
+| Clone | Clones this repository from `GIT_REPO_URL` and `GIT_BRANCH` |
+| Node.js | Installs portable Node.js from `NODEJS_VERSION` |
+| Startup | Creates `/home/container/start-rageadmin.sh` |
+| Ports | Keeps RAGE:MP game, transfer, and panel ports separated |
+| Config sync | Writes `conf.json` port/bind values from allocations |
+| NPM packages | Optionally runs `npm install` for `NPM_PACKAGES` inside the RAGE:MP server dir |
+| Panel | Starts `python3 main.py --port "$PANEL_PORT"` |
+
+Required allocations:
+
+| Allocation | Meaning |
+| --- | --- |
+| `SERVER_PORT` | RAGE:MP game port |
+| `SERVER_PORT + 1` | RAGE:MP transfer/HTTP port |
+| `PANEL_PORT` | RageAdmin web panel port |
+
+Important Pterodactyl notes:
+
+| Topic | Note |
+| --- | --- |
+| Third allocation | `PANEL_PORT` must not equal `SERVER_PORT` or `SERVER_PORT + 1` |
+| External database | Not required |
+| Architecture | Use Linux `amd64` / `x86_64` nodes |
+| Internet | First setup needs outbound access for RAGE:MP files |
+| NPM packages | Leave `NPM_PACKAGES` empty unless your gamemode needs extra Node packages |
+
+## Configuration
+
+### CLI and Environment
+
+```bash
+python3 main.py --port 20000
+```
+
+The panel port can also come from environment variables:
+
+```bash
+PANEL_PORT=20000 python3 main.py
+PORT=20000 python3 main.py
+```
+
+Runtime environment variables:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `PANEL_PORT` | `20000` | Preferred panel HTTP port |
+| `PORT` | `20000` | Fallback panel HTTP port |
+| `PANEL_PRODUCTION` | `true` | Enables production defaults |
+| `PANEL_ACCESS_LOGS` | `false` in production | Controls HTTP access logging |
+| `PANEL_FORCE_HTTPS` | `false` | Redirects HTTP to HTTPS when enabled |
+| `PANEL_SESSION_COOKIE_SECURE` | follows HTTPS flag | Marks session cookie secure |
+| `PANEL_SOCKETIO_ASYNC_MODE` | auto/threading | Forces Socket.IO async backend |
+| `HPM_UPDATE_CONFIG_URL` | empty | Optional remote update config JSON |
+| `HPM_PANEL_REPO` | `zuraxscripts/RageAdmin` | GitHub repo used for panel update checks |
+| `HPM_RAGEMP_SERVER_URL` | official RAGE:MP Linux archive | Server archive URL override |
+| `HPM_UPDATE_INTERVAL_MINUTES` | config/default | Background update check interval |
+
+### Repository Files
+
+| Path | Purpose |
+| --- | --- |
+| [`main.py`](./main.py) | Launcher, dependency check, child process supervision |
+| [`server_manager.py`](./server_manager.py) | Flask/Socket.IO panel, routes, setup, server control |
+| [`storage.py`](./storage.py) | JSON storage layer and legacy migration |
+| [`updater.py`](./updater.py) | Panel and RAGE:MP updater worker |
+| [`requirements.txt`](./requirements.txt) | Python dependencies |
+| [`panel_version.json`](./panel_version.json) | Current panel version |
+| [`update_config.json`](./update_config.json) | Default update sources |
+| [`egg-rageadmin-ragemp.json`](./egg-rageadmin-ragemp.json) | Pterodactyl egg |
+| [`templates/`](./templates) | Panel pages and UI assets |
+| [`locales/`](./locales) | English and Czech translations |
+| [`package_templates/`](./package_templates) | RAGE:MP bridge package templates |
+
+## In-Game Bridge
+
+During setup, RageAdmin installs a server-side and client-side RAGE:MP package:
+
+| Package | Installed to | Purpose |
+| --- | --- | --- |
+| Server bridge | `RageMP-Server/ragemp-srv/packages/rageadmin` | Sends player sync, heartbeat, identifiers, and receives pending actions |
+| Client notice UI | `RageMP-Server/ragemp-srv/client_packages/rageadmin` | Shows admin messages, warnings, broadcasts, and restart notices in-game |
+
+The bridge uses a generated `panelSecret` stored in `data/db/panel.json` and mirrored into `packages/rageadmin/config.json`.
 
 ## Updating
 
-The built-in update system can check:
+RageAdmin can check and apply updates for:
 
-- The panel itself
-- [RageMP](https://rage.mp/) server files
+| Target | Source |
+| --- | --- |
+| Panel | GitHub repository from `update_config.json` or `HPM_PANEL_REPO` |
+| RAGE:MP server files | Archive URL from `update_config.json` or `HPM_RAGEMP_SERVER_URL` |
 
-By default, panel update metadata is read from:
+The updater stores state in:
 
-- [`update_config.json`](./update_config.json)
+| File | Purpose |
+| --- | --- |
+| `data/update_status.json` | Last update check/apply state |
+| `data/update_job.json` | Active updater job definition |
+| `data/update.log` | Updater log output |
 
-RageMP server updates are checked against the official Linux archive URL using HTTP metadata such as `ETag` and `Last-Modified`.
+## Backups
 
-You can also trigger update checks directly from the web panel.
+Before updates or server maintenance, back up at least:
+
+```text
+data/db/
+data/logs/
+RageMP-Server/ragemp-srv/conf.json
+RageMP-Server/ragemp-srv/packages/
+RageMP-Server/ragemp-srv/client_packages/
+RageMP-Server/ragemp-srv/maps/
+RageMP-Server/ragemp-srv/plugins/
+```
 
 ## Security Notes
 
-- Use a strong admin password
-- Do not expose the panel publicly without proper firewall or reverse proxy rules
-- Use HTTPS when exposing the panel to the internet
-- Protect the generated panel secret
-- Give only the permissions needed to non-admin users
+| Area | Recommendation |
+| --- | --- |
+| Admin account | Use a strong password and keep admin users limited |
+| Public exposure | Put the panel behind firewall rules or a reverse proxy |
+| HTTPS | Use HTTPS when the panel is reachable over the internet |
+| Panel secret | Do not publish `data/db/panel.json` or `packages/rageadmin/config.json` |
+| Backups | Treat `data/db/users.json` as sensitive because it contains password hashes |
+| Permissions | Give non-admin users only the permissions they need |
 
 ## Troubleshooting
 
-### The panel does not open
+### Panel does not open
 
-Check that the service is running and the port is open:
+Check whether the process is listening:
 
 ```bash
 ss -tulpn | grep 20000
 ```
 
-### Setup cannot connect to the database
-
-Make sure:
-
-- MariaDB / MySQL is running
-- The database already exists
-- The username, password, host, and port are correct
-- The DB user has privileges on the selected database
-
-Quick check:
+Check service logs if using systemd:
 
 ```bash
-mysql -h 127.0.0.1 -u rageadmin -p rageadmin
+journalctl -u rageadmin -f
 ```
 
-### The server executable is missing
+### Setup PIN is missing
 
-The panel expects the Linux server binary at:
+Restart the panel and watch the terminal output. The setup PIN is printed while setup is still required.
+
+### Storage files are missing
+
+Start the panel once, or create them through setup. RageAdmin creates these automatically:
+
+```text
+data/db/users.json
+data/db/server.json
+data/db/panel.json
+data/db/bans.json
+data/db/player_profiles.json
+data/db/stats_history.json
+```
+
+### Server executable is missing
+
+The default path is:
 
 ```text
 ./RageMP-Server/ragemp-srv/ragemp-server
 ```
 
-If setup did not finish correctly, start the panel again and complete the setup flow.
+If the file is missing, rerun setup or check whether outbound downloads from `https://cdn.rage.mp/` are blocked.
 
-### WebSocket or live console issues behind Nginx
+### WebSocket/live console issues behind Nginx
 
-Make sure your reverse proxy passes:
+Confirm the proxy passes these headers:
 
-- `Upgrade`
-- `Connection`
+```nginx
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+```
 
-The Nginx example above already includes both.
+### Pterodactyl panel opens but RAGE:MP port is wrong
 
-### Running on Windows or ARM
+Confirm that three allocations are assigned and that `PANEL_PORT` is separate from `SERVER_PORT` and `SERVER_PORT + 1`.
 
-That is not supported for this project.
+### MySQL/MariaDB setup guide is not here
 
-## Notes
+That is intentional. RageAdmin stores its panel data in `data/db/*.json` and does not connect to a database server.
 
-This repository is focused on [RageMP](https://rage.mp/) server management on Linux.
-If you want the easiest deployment path and already use Pterodactyl, use the included egg and keep the panel behind proper network rules.
+## License
+
+No license file is currently included in this repository. Add one before publishing or redistributing builds publicly.

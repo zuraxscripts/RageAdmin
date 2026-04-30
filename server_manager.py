@@ -4058,7 +4058,7 @@ def api_setup():
     def _runner():
         global config, panel_config
         try:
-            _setup_update(step='Storage', progress=5, message='Preparing standalone file database')
+            _setup_update(step='Storage', progress=5, message='Preparing standalone file storage')
             storage.ensure_storage_files()
 
                                                               
