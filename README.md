@@ -471,4 +471,8 @@ That is intentional. RageAdmin stores its panel data in `data/db/*.json` and doe
 
 ## License
 
-No license file is currently included in this repository. Add one before publishing or redistributing builds publicly.
+RageAdmin is **source-available**, not open-source.
+
+Commercial use, resale, redistribution, rebranding, public forks as a separate product, hosted services, and paid deployment packages are not allowed without prior written permission from the copyright holder.
+
+See [LICENSE](./LICENSE).
