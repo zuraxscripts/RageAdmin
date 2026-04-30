@@ -7,6 +7,9 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
@@ -43,6 +46,12 @@
       --info:#cfbc74;
       --radius:18px;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --font-sans:"Manrope","Segoe UI",sans-serif;
+      --font-display:"Space Grotesk","Manrope",sans-serif;
+      --surface:rgba(17,17,20,.72);
+      --surface-strong:rgba(19,19,23,.92);
+      --surface-soft:rgba(255,255,255,.045);
+      --ease:cubic-bezier(.2,.8,.2,1);
     }
 
     *{box-sizing:border-box}
@@ -51,16 +60,35 @@
                   radial-gradient(1200px 800px at 100% 0%, rgba(124,104,35,.12), transparent 55%),
                   var(--bg);
       color:var(--text);
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      font-family: var(--font-sans);
       min-height:100vh;
       overflow-x:hidden;
       margin:0;
+      text-rendering:optimizeLegibility;
+      -webkit-font-smoothing:antialiased;
+      isolation:isolate;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      opacity:.55;
+      background:
+        linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px),
+        radial-gradient(900px 520px at 82% 14%, rgba(var(--primary-rgb),.10), transparent 60%);
+      background-size:54px 54px, 54px 54px, auto;
+      mask-image:linear-gradient(180deg, rgba(0,0,0,.92), rgba(0,0,0,.24) 70%, transparent);
     }
 
     .app{
       display:grid;
       grid-template-columns: 290px 1fr;
       min-height:100vh;
+      position:relative;
+      z-index:1;
     }
 
     .sidebar{
@@ -2858,6 +2886,285 @@
     }
     .CodeMirror-cursor{border-left:2px solid var(--primary) !important;}
     .CodeMirror-selected{background:rgba(var(--primary-rgb),.22) !important;}
+
+    /* Responsive visual refresh: low-risk overrides only, no API or DOM flow changes. */
+    h1,h2,h3,
+    .brand .name,
+    .cardx-title,
+    .modal-title-custom,
+    .stat-value,
+    .restart-countdown,
+    .trend-title,
+    .ws-card .title{
+      font-family:var(--font-display);
+      letter-spacing:-.02em;
+    }
+    .main{
+      width:100%;
+      max-width:1920px;
+      margin:0 auto;
+    }
+    .sidebar,
+    .topbar,
+    .cardx,
+    .modal-content-custom,
+    .panel-version-card,
+    .sidebar-runtime,
+    .user-card,
+    .dashboard-side-card,
+    .stat-tile,
+    .trend-card,
+    .overview-item,
+    .profile-section,
+    .profile-card,
+    .table-wrap{
+      border-color:rgba(255,255,255,.095);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+    }
+    .sidebar{
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+        rgba(8,8,10,.80);
+    }
+    .topbar{
+      position:sticky;
+      top:12px;
+      z-index:80;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
+        rgba(9,9,11,.68);
+    }
+    .cardx{
+      position:relative;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
+        var(--surface);
+      box-shadow:0 16px 46px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.045);
+      transition:transform .22s var(--ease), border-color .22s var(--ease), box-shadow .22s var(--ease);
+    }
+    .cardx::before,
+    .modal-content-custom::before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto 0;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(var(--primary-rgb),.45), transparent);
+      opacity:.7;
+      pointer-events:none;
+    }
+    .cardx-header{
+      background:linear-gradient(180deg, rgba(0,0,0,.26), rgba(0,0,0,.10));
+    }
+    .cardx-title i,
+    .modal-title-custom i{
+      color:#efd685;
+      filter:drop-shadow(0 0 16px rgba(var(--primary-rgb),.20));
+    }
+    .nav-item{
+      position:relative;
+      overflow:hidden;
+      isolation:isolate;
+      transition:transform .18s var(--ease), background .18s var(--ease), border-color .18s var(--ease), color .18s var(--ease);
+    }
+    .nav-item::before{
+      content:"";
+      position:absolute;
+      inset:8px auto 8px 8px;
+      width:3px;
+      border-radius:999px;
+      background:linear-gradient(180deg, #f4dc8d, rgba(var(--primary-rgb),.36));
+      opacity:0;
+      transform:scaleY(.45);
+      transition:opacity .18s var(--ease), transform .18s var(--ease);
+    }
+    .nav-item.active::before{
+      opacity:1;
+      transform:scaleY(1);
+    }
+    .nav-item:hover{
+      transform:translateX(2px);
+    }
+    .top-nav .nav-item:hover{
+      transform:translateY(-1px);
+    }
+    .btnx,
+    .btn-soft,
+    .circle-btn,
+    .panel-version-refresh,
+    .modal-close{
+      transition:transform .18s var(--ease), border-color .18s var(--ease), background .18s var(--ease), box-shadow .18s var(--ease);
+    }
+    .btnx{
+      position:relative;
+      overflow:hidden;
+      min-height:40px;
+      font-weight:700;
+    }
+    .btnx::after,
+    .btn-submit::after{
+      content:"";
+      position:absolute;
+      inset:-140% auto -140% -65%;
+      width:46%;
+      transform:rotate(18deg);
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+      opacity:0;
+      pointer-events:none;
+    }
+    .inputx,
+    .form-input,
+    select.inputx{
+      min-height:42px;
+      transition:border-color .18s var(--ease), background .18s var(--ease), box-shadow .18s var(--ease), transform .18s var(--ease);
+    }
+    .inputx:focus{
+      box-shadow:0 0 0 3px rgba(var(--primary-rgb),.16);
+    }
+    .table-wrap{
+      overflow:auto;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(var(--primary-rgb),.45) rgba(255,255,255,.06);
+    }
+    .table tbody tr{
+      transition:background .16s var(--ease);
+    }
+    .table tbody tr:hover{
+      background:rgba(255,255,255,.035);
+    }
+    .modal-custom.active .modal-content-custom{
+      animation:modalLift .28s var(--ease) both;
+    }
+    .modal-content-custom{
+      position:relative;
+    }
+    .page-section.active .cardx{
+      animation:cardLift .34s var(--ease) both;
+    }
+    .page-section.active .cardx:nth-of-type(2){
+      animation-delay:.04s;
+    }
+    .page-section.active .cardx:nth-of-type(3){
+      animation-delay:.08s;
+    }
+    .toastx{
+      animation:toastFloatIn .26s var(--ease);
+    }
+    .hamburger{
+      box-shadow:0 14px 34px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .hamburger:hover{
+      border-color:rgba(var(--primary-rgb),.42);
+      background:rgba(18,18,20,.78);
+      transform:translateY(-1px);
+    }
+    @media (hover:hover) and (min-width:981px){
+      .cardx:hover{
+        transform:translateY(-2px);
+        border-color:rgba(255,255,255,.14);
+        box-shadow:0 22px 60px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.06);
+      }
+      .btnx:hover::after,
+      .btn-submit:hover::after{
+        animation:buttonSheen .85s var(--ease);
+      }
+    }
+    @media (max-width:1180px){
+      .app{
+        grid-template-columns:260px 1fr;
+      }
+      .dashboard-overview-layout{
+        grid-template-columns:1fr;
+      }
+      .overview-mini{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width:980px){
+      .topbar{
+        position:static;
+      }
+      .sidebar{
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02)),
+          rgba(9,9,11,.94);
+      }
+      .sidebar.open{
+        animation:drawerSettle .28s var(--ease) both;
+      }
+      .cardx,
+      .modal-content-custom{
+        backdrop-filter:blur(14px);
+        -webkit-backdrop-filter:blur(14px);
+      }
+    }
+    @media (max-width:720px){
+      .cardx-title{
+        font-size:14px;
+      }
+      .cardx-header .actions,
+      .topbar .actions{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
+      #playersTablesWrap .table-wrap table{
+        min-width:760px;
+      }
+      #banListCard .table-wrap table{
+        min-width:720px;
+      }
+      #pageFiles .table-wrap table{
+        min-width:680px;
+      }
+      #pageAdmin .table-wrap table{
+        min-width:560px;
+      }
+    }
+    @media (max-width:430px){
+      .main{
+        padding-left:6px;
+        padding-right:6px;
+      }
+      .cardx{
+        border-radius:15px;
+      }
+      .cardx-body{
+        padding:10px;
+      }
+      .overview-mini{
+        grid-template-columns:1fr;
+      }
+    }
+    @keyframes cardLift{
+      from{opacity:0; transform:translateY(12px) scale(.992);}
+      to{opacity:1; transform:translateY(0) scale(1);}
+    }
+    @keyframes modalLift{
+      from{opacity:0; transform:translateY(14px) scale(.985);}
+      to{opacity:1; transform:translateY(0) scale(1);}
+    }
+    @keyframes drawerSettle{
+      from{box-shadow:0 24px 80px rgba(0,0,0,.30);}
+      to{box-shadow:0 24px 80px rgba(0,0,0,.62);}
+    }
+    @keyframes toastFloatIn{
+      from{opacity:0; transform:translateY(16px) scale(.975);}
+      to{opacity:1; transform:translateY(0) scale(1);}
+    }
+    @keyframes buttonSheen{
+      0%{opacity:0; transform:translateX(0) rotate(18deg);}
+      22%{opacity:1;}
+      100%{opacity:0; transform:translateX(440%) rotate(18deg);}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .page-section.active,
+      .page-section.active .cardx,
+      .modal-custom.active,
+      .modal-custom.active .modal-content-custom,
+      .toastx,
+      .sidebar.open{
+        animation:none !important;
+      }
+    }
   </style>
 </head>
 
@@ -2870,7 +3177,7 @@
     </div>
   </div>
   
-  <button class="hamburger" id="hamburgerBtn"><i class="fa-solid fa-bars"></i></button>
+  <button class="hamburger" id="hamburgerBtn" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar"><i class="fa-solid fa-bars"></i></button>
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="app">
@@ -4226,6 +4533,7 @@
       const isOpen = !!open;
       sidebar.classList.toggle('open', isOpen);
       sidebarBackdrop.classList.toggle('open', isOpen);
+      hamburgerBtn.setAttribute('aria-expanded', String(isOpen));
       document.body.classList.toggle('mobile-sidebar-open', isOpen && window.innerWidth <= 980);
     }
 
@@ -4243,6 +4551,11 @@
     window.addEventListener('resize', () => {
       if (window.innerWidth > 980) {
         document.body.classList.remove('mobile-sidebar-open');
+        setSidebarOpen(false);
+      }
+    });
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && sidebar.classList.contains('open')) {
         setSidebarOpen(false);
       }
     });

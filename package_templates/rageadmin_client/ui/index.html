@@ -14,6 +14,7 @@
             --yellow: #f59e0b;
             --blue: #60a5fa;
             --shadow: 0 22px 55px rgba(0, 0, 0, 0.38);
+            --ease: cubic-bezier(.2,.8,.2,1);
         }
 
         * {
@@ -28,7 +29,9 @@
             overflow: hidden;
             background: transparent;
             color: var(--text);
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
         }
 
         .notice-layer {
@@ -55,10 +58,16 @@
             border-radius: 18px;
             border: 1px solid rgba(255,255,255,0.08);
             background:
-                radial-gradient(320px 110px at 0% 0%, rgba(255,255,255,0.06), transparent 60%),
+                linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.015)),
+                radial-gradient(420px 130px at 0% 0%, rgba(212,175,74,0.13), transparent 64%),
                 var(--bg-soft);
             box-shadow: var(--shadow);
-            animation: noticeIn 220ms ease-out;
+            backdrop-filter: blur(12px);
+            animation: noticeIn 260ms var(--ease);
+        }
+
+        .notice.leaving {
+            animation: noticeOut 200ms ease-in forwards;
         }
 
         .notice::after {
@@ -132,13 +141,45 @@
         }
 
         @keyframes noticeIn {
-            from { opacity: 0; transform: translateY(-8px) scale(0.985); }
+            from { opacity: 0; transform: translateY(-12px) scale(0.97); filter: blur(4px); }
             to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes noticeOut {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(-10px) scale(0.98); }
         }
 
         @keyframes shrink {
             from { transform: scaleX(1); }
             to { transform: scaleX(0); }
+        }
+
+        @media (max-width: 900px) {
+            .notice-stack {
+                top: 16px;
+                width: min(680px, calc(100vw - 34px));
+            }
+
+            .notice {
+                border-radius: 16px;
+                padding: 14px 15px 16px;
+            }
+
+            .notice-title {
+                font-size: 19px;
+            }
+
+            .notice-message {
+                font-size: 14px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
         }
     </style>
 </head>
@@ -185,9 +226,15 @@
         }
 
         function removeNotice(node) {
-            if (node && node.parentNode) {
-                node.parentNode.removeChild(node);
+            if (!node || !node.parentNode) {
+                return;
             }
+            node.classList.add('leaving');
+            window.setTimeout(() => {
+                if (node.parentNode) {
+                    node.parentNode.removeChild(node);
+                }
+            }, 190);
         }
 
         function pushNotice(rawPayload) {
