@@ -276,15 +276,61 @@
     }
     .sidebar-runtime .runtime-toolbar{
       display:grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap:8px;
       margin:14px 0 12px;
     }
     .sidebar-runtime .runtime-tool{
       width:100%;
-      min-height:42px;
-      justify-content:flex-start;
-      border-radius:12px;
+      min-height:34px;
+      height:34px;
+      padding:0;
+      justify-content:center;
+      border-radius:8px;
+      margin-top:0;
+      position:relative;
+    }
+    .sidebar-runtime .runtime-tool span{display:none;}
+    .sidebar-runtime .runtime-tool::after{
+      content:attr(data-tooltip);
+      position:absolute;
+      left:50%;
+      bottom:calc(100% + 8px);
+      z-index:30;
+      padding:6px 8px;
+      border-radius:7px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(9,10,13,.96);
+      color:#f8fafc;
+      font-size:12px;
+      font-weight:750;
+      line-height:1;
+      white-space:nowrap;
+      pointer-events:none;
+      opacity:0;
+      transform:translate(-50%, 4px);
+      box-shadow:0 10px 24px rgba(0,0,0,.35);
+      transition:opacity .12s ease, transform .12s ease;
+    }
+    .sidebar-runtime .runtime-tool:first-child::after{
+      left:0;
+      transform:translateY(4px);
+    }
+    .sidebar-runtime .runtime-tool:last-child::after{
+      left:auto;
+      right:0;
+      transform:translateY(4px);
+    }
+    .sidebar-runtime .runtime-tool:hover::after,
+    .sidebar-runtime .runtime-tool:focus-visible::after{
+      opacity:1;
+      transform:translate(-50%, 0);
+    }
+    .sidebar-runtime .runtime-tool:first-child:hover::after,
+    .sidebar-runtime .runtime-tool:first-child:focus-visible::after,
+    .sidebar-runtime .runtime-tool:last-child:hover::after,
+    .sidebar-runtime .runtime-tool:last-child:focus-visible::after{
+      transform:translateY(0);
     }
     .sidebar-runtime-name{
       font-size:16px;
@@ -353,7 +399,7 @@
     .sidebar-runtime-next-actions .btnx{
       margin-top:0;
     }
-    .sidebar-runtime .btnx{
+    .sidebar-runtime > .btnx{
       width:100%;
       margin-top:12px;
     }
@@ -542,6 +588,17 @@
       font-size:15px;
       font-weight:700;
       display:flex; align-items:center; gap:10px;
+    }
+    .dash-overview .cardx-header{
+      min-height:64px;
+      align-items:center;
+    }
+    .dash-overview .cardx-title{
+      min-height:40px;
+    }
+    .dash-overview #btnRefreshStatus{
+      min-height:40px;
+      align-self:center;
     }
     .cardx-body{ padding:16px; }
 
@@ -928,6 +985,45 @@
     .btnx.success:hover{ background: rgba(34,197,94,.18); }
     .btnx.warning{ background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.28); }
     .btnx.warning:hover{ background: rgba(245,158,11,.18); }
+    .runtime-tool.success{
+      background:rgba(22,163,74,.22);
+      border-color:rgba(34,197,94,.42);
+      color:#eafff2;
+    }
+    .runtime-tool.success:hover{
+      background:rgba(22,163,74,.34);
+      border-color:rgba(74,222,128,.58);
+      box-shadow:0 0 0 3px rgba(34,197,94,.10);
+    }
+    .runtime-tool.danger{
+      background:rgba(239,68,68,.22);
+      border-color:rgba(248,113,113,.44);
+      color:#fff1f2;
+    }
+    .runtime-tool.danger:hover{
+      background:rgba(239,68,68,.52);
+      border-color:rgba(252,165,165,.70);
+      box-shadow:0 0 0 3px rgba(239,68,68,.12);
+    }
+    .runtime-tool.primary{
+      background:rgba(255,255,255,.055);
+      border-color:rgba(255,255,255,.13);
+      color:#e5e7eb;
+    }
+    .runtime-tool.primary:hover{
+      background:rgba(255,255,255,.10);
+      border-color:rgba(255,255,255,.22);
+    }
+    .runtime-tool.warning{
+      background:rgba(var(--primary-rgb),.18);
+      border-color:rgba(var(--primary-rgb),.32);
+      color:#fde9a7;
+    }
+    .runtime-tool.warning:hover{
+      background:rgba(var(--primary-rgb),.28);
+      border-color:rgba(var(--primary-rgb),.50);
+      box-shadow:0 0 0 3px rgba(var(--primary-rgb),.10);
+    }
     .btnx.sm{padding:6px 10px; font-size:12px; border-radius:10px;}
     .btnx.primary.prominent{
       background: linear-gradient(180deg, rgba(var(--primary-rgb),.45), rgba(var(--primary-rgb),.22));
@@ -2215,6 +2311,156 @@
       background:#0f0f12;
       color:var(--text);
     }
+    .custom-select{
+      position:relative;
+      display:inline-block;
+      min-width:180px;
+      max-width:100%;
+      vertical-align:middle;
+    }
+    .custom-select-native{
+      position:absolute !important;
+      inset:0;
+      width:100% !important;
+      height:100% !important;
+      opacity:0;
+      pointer-events:none;
+      z-index:-1;
+    }
+    .custom-select-button{
+      width:100%;
+      min-height:42px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:0 13px 0 14px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.15);
+      background:
+        radial-gradient(140px 52px at 12% 0%, rgba(var(--primary-rgb),.18), transparent 70%),
+        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.025)),
+        rgba(8,9,12,.78);
+      color:var(--text);
+      font:inherit;
+      font-size:13px;
+      font-weight:750;
+      text-align:left;
+      cursor:pointer;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 10px 24px rgba(0,0,0,.22);
+      transition:border-color .16s var(--ease), background .16s var(--ease), box-shadow .16s var(--ease), transform .16s var(--ease);
+    }
+    .custom-select-button:hover{
+      border-color:rgba(var(--primary-rgb),.45);
+      background:
+        radial-gradient(160px 58px at 12% 0%, rgba(var(--primary-rgb),.24), transparent 70%),
+        linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.035)),
+        rgba(12,13,16,.86);
+      transform:translateY(-1px);
+    }
+    .custom-select-button:focus-visible{
+      outline:0;
+      border-color:rgba(var(--primary-rgb),.72);
+      box-shadow:0 0 0 3px rgba(var(--primary-rgb),.18), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .custom-select-label{
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .custom-select-chevron{
+      color:#e3cf83;
+      font-size:12px;
+      transition:transform .16s var(--ease), color .16s var(--ease);
+      flex:0 0 auto;
+    }
+    .custom-select.open .custom-select-chevron{
+      transform:rotate(180deg);
+      color:#fff0b0;
+    }
+    .custom-select-menu{
+      position:absolute;
+      left:0;
+      top:calc(100% + 8px);
+      z-index:1200;
+      width:max-content;
+      min-width:100%;
+      max-width:min(320px, calc(100vw - 24px));
+      max-height:260px;
+      padding:6px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.13);
+      background:
+        radial-gradient(220px 90px at 12% 0%, rgba(var(--primary-rgb),.16), transparent 70%),
+        rgba(10,11,14,.98);
+      box-shadow:0 22px 60px rgba(0,0,0,.46), inset 0 1px 0 rgba(255,255,255,.06);
+      overflow:auto;
+      opacity:0;
+      pointer-events:none;
+      transform:translateY(-6px) scale(.98);
+      transform-origin:top left;
+      transition:opacity .14s var(--ease), transform .14s var(--ease);
+    }
+    .custom-select.open .custom-select-menu{
+      opacity:1;
+      pointer-events:auto;
+      transform:translateY(0) scale(1);
+    }
+    .custom-select-option{
+      width:100%;
+      min-height:34px;
+      display:flex;
+      align-items:center;
+      gap:9px;
+      padding:8px 10px;
+      border:0;
+      border-radius:10px;
+      background:transparent;
+      color:#dfe5f0;
+      font:inherit;
+      font-size:13px;
+      font-weight:700;
+      text-align:left;
+      cursor:pointer;
+      white-space:nowrap;
+      transition:background .12s ease, color .12s ease, transform .12s ease;
+    }
+    .custom-select-option:hover,
+    .custom-select-option:focus-visible{
+      outline:0;
+      background:rgba(255,255,255,.08);
+      color:#fff;
+    }
+    .custom-select-option.selected{
+      background:rgba(var(--primary-rgb),.24);
+      color:#fff4c2;
+    }
+    .custom-select-option.selected::before{
+      content:"";
+      width:7px;
+      height:7px;
+      border-radius:999px;
+      background:#e3cf83;
+      box-shadow:0 0 0 4px rgba(var(--primary-rgb),.13);
+      flex:0 0 auto;
+    }
+    .custom-select-option:disabled{
+      opacity:.42;
+      cursor:not-allowed;
+    }
+    .custom-select.is-disabled{
+      opacity:.55;
+      pointer-events:none;
+    }
+    .cardx.select-open,
+    .settings-section.select-open,
+    .modal-content-custom.select-open{
+      overflow:visible;
+    }
+    .select-wrap > i{
+      display:none;
+    }
 
     #mainConsole{height:calc(100vh - 280px);min-height:300px;}
     #dashboardConsole{height:clamp(320px, 42vh, 520px);}
@@ -2910,9 +3156,9 @@
       position:sticky;
       top:0;
       z-index:520;
-      height:58px;
+      height:70px;
       display:grid;
-      grid-template-columns:230px minmax(0, 1fr) auto;
+      grid-template-columns:minmax(230px, auto) minmax(0, 1fr) auto;
       align-items:center;
       gap:18px;
       padding:0 18px;
@@ -2925,6 +3171,7 @@
     .tx-brand{
       display:flex;
       align-items:center;
+      justify-content:center;
       gap:0;
       min-width:0;
       font-family:var(--font-display);
@@ -2934,8 +3181,8 @@
       color:#43d6a4;
     }
     .tx-brand img{
-      width:44px;
-      height:44px;
+      width:138px;
+      height:50px;
       object-fit:contain;
       border-radius:10px;
     }
@@ -2961,9 +3208,9 @@
       font:inherit;
       font-size:13px;
       font-weight:800;
-      min-height:38px;
-      padding:0 12px;
-      border-radius:10px;
+      min-height:46px;
+      padding:0 16px;
+      border-radius:14px;
       flex:0 0 auto;
     }
     .tx-shellnav .nav-item i{
@@ -2991,21 +3238,21 @@
       white-space:nowrap;
     }
     .tx-user .circle-btn{
-      width:34px;
-      height:34px;
-      border-radius:10px;
+      width:40px;
+      height:40px;
+      border-radius:12px;
     }
     @media (min-width:1281px){
       .app{
         grid-template-columns:256px minmax(0, 1fr) 256px;
         gap:16px;
         padding:16px 10px 18px;
-        min-height:calc(100dvh - 58px);
+        min-height:calc(100dvh - 70px);
       }
       .sidebar{
         position:sticky;
-        top:74px;
-        height:calc(100dvh - 90px);
+        top:86px;
+        height:calc(100dvh - 102px);
         border-radius:10px;
         border:1px solid rgba(255,255,255,.10);
       }
@@ -3014,6 +3261,12 @@
       }
       .sidebar-mobile-nav{
         display:none !important;
+      }
+      .sidebar .user-card{
+        display:none !important;
+      }
+      .sidebar-footer{
+        margin-top:auto !important;
       }
       .main{
         padding:0;
@@ -3028,8 +3281,8 @@
     }
     .players-rail{
       position:sticky;
-      top:74px;
-      height:calc(100dvh - 90px);
+      top:86px;
+      height:calc(100dvh - 102px);
       display:none;
       flex-direction:column;
       gap:16px;
@@ -3120,9 +3373,10 @@
       display:flex;
       flex-direction:column;
       gap:8px;
-      padding-right:2px;
+      padding:2px 2px 4px;
     }
     .dashboard-player-card{
+      position:relative;
       display:flex;
       align-items:center;
       gap:10px;
@@ -3135,12 +3389,19 @@
       text-align:left;
       width:100%;
       cursor:pointer;
-      transition:background .16s var(--ease), border-color .16s var(--ease), transform .16s var(--ease);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.045);
+      overflow:visible;
+      transition:background .16s var(--ease), border-color .16s var(--ease), box-shadow .16s var(--ease);
     }
     .dashboard-player-card:hover{
       background:rgba(255,255,255,.065);
-      border-color:rgba(var(--primary-rgb),.28);
-      transform:translateY(-1px);
+      border-color:rgba(var(--primary-rgb),.52);
+      box-shadow:0 0 0 1px rgba(var(--primary-rgb),.22), 0 10px 24px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.10);
+    }
+    .dashboard-player-card:focus-visible{
+      outline:0;
+      border-color:rgba(var(--primary-rgb),.68);
+      box-shadow:0 0 0 3px rgba(var(--primary-rgb),.18), inset 0 1px 0 rgba(255,255,255,.10);
     }
     .dashboard-player-avatar{
       width:34px;
@@ -3174,14 +3435,57 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
-    .dashboard-player-ping{
-      font-size:11px;
-      font-weight:800;
-      color:#9be7bc;
-      padding:3px 7px;
+    .dashboard-player-signal{
+      position:relative;
+      width:28px;
+      height:28px;
       border-radius:999px;
-      border:1px solid rgba(34,197,94,.25);
-      background:rgba(34,197,94,.09);
+      display:grid;
+      place-items:center;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.055);
+      color:#9ca3af;
+      flex:0 0 auto;
+    }
+    .dashboard-player-signal.good{
+      color:#6ee7a8;
+      border-color:rgba(34,197,94,.38);
+      background:rgba(34,197,94,.11);
+    }
+    .dashboard-player-signal.warn{
+      color:#facc15;
+      border-color:rgba(245,158,11,.40);
+      background:rgba(245,158,11,.12);
+    }
+    .dashboard-player-signal.bad{
+      color:#fb7185;
+      border-color:rgba(239,68,68,.42);
+      background:rgba(239,68,68,.12);
+    }
+    .dashboard-player-signal::after{
+      content:attr(data-tooltip);
+      position:absolute;
+      right:0;
+      bottom:calc(100% + 8px);
+      z-index:40;
+      padding:6px 8px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(9,10,13,.96);
+      color:#f8fafc;
+      font-size:12px;
+      font-weight:750;
+      line-height:1;
+      white-space:nowrap;
+      opacity:0;
+      pointer-events:none;
+      transform:translateY(4px);
+      box-shadow:0 10px 24px rgba(0,0,0,.35);
+      transition:opacity .12s ease, transform .12s ease;
+    }
+    .dashboard-player-signal:hover::after{
+      opacity:1;
+      transform:translateY(0);
     }
     .players-rail-empty{
       margin:auto;
@@ -3206,17 +3510,23 @@
       .app{
         gap:16px;
         padding:16px 10px 18px;
-        min-height:calc(100dvh - 58px);
+        min-height:calc(100dvh - 70px);
       }
       .sidebar{
         position:sticky;
-        top:74px;
-        height:calc(100dvh - 90px);
+        top:86px;
+        height:calc(100dvh - 102px);
         border-radius:10px;
         border:1px solid rgba(255,255,255,.10);
       }
       .sidebar .brand{
         display:none !important;
+      }
+      .sidebar .user-card{
+        display:none !important;
+      }
+      .sidebar-footer{
+        margin-top:auto !important;
       }
       .main{
         padding:0;
@@ -3742,19 +4052,19 @@
         <div class="sidebar-runtime-meta" id="runtimeServerMeta" data-i18n="status_waiting">Waiting for status...</div>
 
         <div class="runtime-toolbar">
-          <button class="btnx success runtime-tool" id="btnDashStart" title="Start">
+          <button class="btnx success runtime-tool" id="btnDashStart" data-tooltip="Start the server" aria-label="Start the server">
             <i class="fa-solid fa-play"></i>
             <span data-i18n="btn_start">Start</span>
           </button>
-          <button class="btnx danger runtime-tool" id="btnDashStop" title="Stop">
+          <button class="btnx danger runtime-tool" id="btnDashStop" data-tooltip="Stop the server" aria-label="Stop the server">
             <i class="fa-solid fa-stop"></i>
             <span data-i18n="btn_stop">Stop</span>
           </button>
-          <button class="btnx primary runtime-tool" id="btnDashRestart" title="Restart">
+          <button class="btnx primary runtime-tool" id="btnDashRestart" data-tooltip="Restart the server" aria-label="Restart the server">
             <i class="fa-solid fa-rotate"></i>
             <span data-i18n="btn_restart">Restart</span>
           </button>
-          <button class="btnx warning runtime-tool" id="btnDashAnnounce" title="Announce">
+          <button class="btnx warning runtime-tool" id="btnDashAnnounce" data-tooltip="Send announcement" aria-label="Send announcement">
             <i class="fa-solid fa-bullhorn"></i>
             <span data-i18n="btn_announce">Announce</span>
           </button>
@@ -5528,15 +5838,40 @@
       el.className = `runtime-pill ${variant || 'neutral'}`;
     }
 
+    function readMetric(source, keys, fallback = 0){
+      if(!source || typeof source !== 'object') return fallback;
+      for(const key of keys){
+        if(source[key] === null || source[key] === undefined || source[key] === '') continue;
+        const value = Number(source[key]);
+        if(Number.isFinite(value)) return value;
+      }
+      return fallback;
+    }
+
+    function clampNumber(value, min, max){
+      const numeric = Number(value);
+      if(!Number.isFinite(numeric)) return min;
+      return Math.min(max, Math.max(min, numeric));
+    }
+
+    function normalizeRuntimeSample(sample){
+      const normalized = Object.assign({}, sample || {});
+      normalized.cpu = clampNumber(readMetric(normalized, ['cpu', 'cpu_usage', 'cpu_percent', 'process_cpu'], 0), 0, 100);
+      normalized.memory = Math.max(0, readMetric(normalized, ['memory', 'memory_usage', 'memory_mb', 'rss_mb'], 0));
+      return normalized;
+    }
+
     function setStatsHistory(samples){
       runtimeHistory = (Array.isArray(samples) ? samples : [])
         .filter(row => row && typeof row === 'object')
+        .map(normalizeRuntimeSample)
         .slice(-120);
       drawDashboardCharts();
     }
 
     function pushRuntimeSample(sample){
       if(!sample || typeof sample !== 'object') return;
+      sample = normalizeRuntimeSample(sample);
       if(runtimeHistory.length > 0 && runtimeHistory[runtimeHistory.length - 1].ts === sample.ts){
         runtimeHistory[runtimeHistory.length - 1] = sample;
       } else {
@@ -5746,8 +6081,10 @@
       updateStatusIndicator(!!data.running);
 
       const uptimeText = formatUptime(data.uptime || 0);
-      const cpuText = (data.cpu ?? 0).toFixed(1) + '%';
-      const memoryText = (data.memory ?? 0).toFixed(1) + ' MB';
+      const cpuValue = clampNumber(readMetric(data, ['cpu', 'cpu_usage', 'cpu_percent', 'process_cpu'], 0), 0, 100);
+      const memoryValue = Math.max(0, readMetric(data, ['memory', 'memory_usage', 'memory_mb', 'rss_mb'], 0));
+      const cpuText = cpuValue.toFixed(1) + '%';
+      const memoryText = memoryValue.toFixed(1) + ' MB';
       const onlinePlayers = Number(data.players_online || 0);
       const maxPlayers = Number(data.max_players || 0);
       const totalProfiles = Number(data.players_saved || 0);
@@ -7559,6 +7896,7 @@
       } else if (dates.length > 0) {
         dateSelect.selectedIndex = 1;
       }
+      syncCustomSelect(dateSelect);
       loadLogEntries();
     }
 
@@ -7584,6 +7922,7 @@
 
         const chosenUser = (prevUser && prevUser !== 'ALL' && logsData[prevUser]) ? prevUser : 'ALL';
         userSelect.value = chosenUser;
+        syncCustomSelect(userSelect);
 
         userSelect.onchange = () => updateLogDateOptions(userSelect.value);
         dateSelect.onchange = loadLogEntries;
@@ -7774,6 +8113,7 @@
       document.getElementById('newUsername').value = '';
       document.getElementById('newUserPassword').value = '';
       document.getElementById('newUserRole').value = 'user';
+      syncCustomSelectById('newUserRole');
       document.getElementById('perm_view_dashboard').checked = true;
       document.getElementById('perm_control_server').checked = true;
       document.getElementById('perm_view_console').checked = true;
@@ -8380,6 +8720,20 @@
 
     let dashboardPlayersCache = [];
 
+    function getPingSignal(ping){
+      const value = Number(ping);
+      if(!Number.isFinite(value) || value <= 0){
+        return { className: 'unknown', label: 'Ping unknown' };
+      }
+      if(value <= 60){
+        return { className: 'good', label: `${Math.round(value)} ms - stable` };
+      }
+      if(value <= 120){
+        return { className: 'warn', label: `${Math.round(value)} ms - playable` };
+      }
+      return { className: 'bad', label: `${Math.round(value)} ms - high latency` };
+    }
+
     function renderDashboardPlayers(players){
       dashboardPlayersCache = Array.isArray(players) ? players : [];
       const listEl = document.getElementById('dashboardPlayersList');
@@ -8412,6 +8766,7 @@
         const sid = hasPlayerServerId(p.serverId) ? `SID ${escapeHtml(p.serverId)}` : 'SID -';
         const pid = playerId ? `PID ${escapeHtml(playerId)}` : 'PID -';
         const ping = Number(p.ping || 0);
+        const signal = getPingSignal(ping);
         return `
           <button class="dashboard-player-card" data-dashboard-player="${escapeHtml(playerId || p.serverId || '')}">
             <span class="dashboard-player-avatar">${escapeHtml(initials)}</span>
@@ -8419,7 +8774,9 @@
               <span class="dashboard-player-name">${escapeHtml(name)}</span>
               <span class="dashboard-player-sub">${sid} | ${pid}</span>
             </span>
-            <span class="dashboard-player-ping">${ping}ms</span>
+            <span class="dashboard-player-signal ${signal.className}" data-tooltip="${escapeHtml(signal.label)}" aria-label="${escapeHtml(signal.label)}">
+              <i class="fa-solid fa-wifi"></i>
+            </span>
           </button>
         `;
       }).join('');
@@ -9059,6 +9416,7 @@
       editingUsername = username;
       document.getElementById('editUserTitle').textContent = username;
       document.getElementById('editUserRole').value = userData.role || 'user';
+      syncCustomSelectById('editUserRole');
       const perms = userData.permissions || {};
       document.getElementById('edit_perm_view_dashboard').checked = !!perms.can_view_dashboard;
       document.getElementById('edit_perm_control_server').checked = !!perms.can_control_server;
@@ -9163,6 +9521,164 @@
       while(bytes >= 1024 && i < units.length-1){ bytes /= 1024; i++; }
       return (i === 0 ? bytes.toFixed(0) : bytes.toFixed(1)) + ' ' + units[i];
     }
+
+    const customSelectInstances = new WeakMap();
+    let activeCustomSelect = null;
+
+    function getSelectDisplayText(select){
+      const selected = select && select.selectedOptions && select.selectedOptions[0]
+        ? select.selectedOptions[0]
+        : (select && select.options ? select.options[select.selectedIndex] : null);
+      return selected ? selected.textContent.trim() : '';
+    }
+
+    function closeCustomSelect(wrapper){
+      if(!wrapper) return;
+      wrapper.classList.remove('open');
+      if(wrapper._selectOpenAncestors){
+        wrapper._selectOpenAncestors.forEach(el => el.classList.remove('select-open'));
+        wrapper._selectOpenAncestors = [];
+      }
+      const button = wrapper.querySelector('.custom-select-button');
+      if(button) button.setAttribute('aria-expanded', 'false');
+      if(activeCustomSelect === wrapper) activeCustomSelect = null;
+    }
+
+    function syncCustomSelect(select){
+      const parts = customSelectInstances.get(select);
+      if(!parts) return;
+      parts.label.textContent = getSelectDisplayText(select) || '-';
+      parts.button.disabled = !!select.disabled;
+      parts.wrapper.classList.toggle('is-disabled', !!select.disabled);
+    }
+
+    function syncCustomSelectById(id){
+      const select = document.getElementById(id);
+      if(select) syncCustomSelect(select);
+    }
+
+    function renderCustomSelectOptions(select){
+      const parts = customSelectInstances.get(select);
+      if(!parts) return;
+      parts.menu.innerHTML = '';
+      Array.from(select.options || []).forEach((option) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'custom-select-option';
+        item.textContent = option.textContent.trim() || option.value || '-';
+        item.disabled = !!option.disabled;
+        item.setAttribute('role', 'option');
+        item.setAttribute('aria-selected', option.selected ? 'true' : 'false');
+        if(option.selected) item.classList.add('selected');
+        item.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          if(option.disabled) return;
+          select.value = option.value;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          syncCustomSelect(select);
+          closeCustomSelect(parts.wrapper);
+          parts.button.focus();
+        });
+        parts.menu.appendChild(item);
+      });
+      if(!parts.menu.children.length){
+        const empty = document.createElement('div');
+        empty.className = 'custom-select-option';
+        empty.textContent = '-';
+        parts.menu.appendChild(empty);
+      }
+    }
+
+    function enhanceCustomSelect(select){
+      if(!select || select.dataset.customSelectReady === '1' || select.closest('.custom-select')) return;
+      select.dataset.customSelectReady = '1';
+
+      const wrapper = document.createElement('span');
+      wrapper.className = 'custom-select';
+      if(select.style.width) wrapper.style.width = select.style.width;
+      if(select.style.minWidth) wrapper.style.minWidth = select.style.minWidth;
+      if(select.style.maxWidth) wrapper.style.maxWidth = select.style.maxWidth;
+
+      select.parentNode.insertBefore(wrapper, select);
+      wrapper.appendChild(select);
+      select.classList.add('custom-select-native');
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'custom-select-button';
+      button.setAttribute('aria-haspopup', 'listbox');
+      button.setAttribute('aria-expanded', 'false');
+
+      const label = document.createElement('span');
+      label.className = 'custom-select-label';
+      const chevron = document.createElement('i');
+      chevron.className = 'fa-solid fa-chevron-down custom-select-chevron';
+      button.append(label, chevron);
+
+      const menu = document.createElement('div');
+      menu.className = 'custom-select-menu';
+      menu.setAttribute('role', 'listbox');
+
+      wrapper.append(button, menu);
+      customSelectInstances.set(select, { wrapper, button, label, menu });
+      syncCustomSelect(select);
+
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if(select.disabled) return;
+        const willOpen = !wrapper.classList.contains('open');
+        if(activeCustomSelect && activeCustomSelect !== wrapper) closeCustomSelect(activeCustomSelect);
+        if(willOpen){
+          syncCustomSelect(select);
+          renderCustomSelectOptions(select);
+          const ancestors = [
+            wrapper.closest('.cardx'),
+            wrapper.closest('.settings-section'),
+            wrapper.closest('.modal-content-custom')
+          ].filter((el, index, arr) => el && arr.indexOf(el) === index);
+          ancestors.forEach(el => el.classList.add('select-open'));
+          wrapper._selectOpenAncestors = ancestors;
+          wrapper.classList.add('open');
+          button.setAttribute('aria-expanded', 'true');
+          activeCustomSelect = wrapper;
+        } else {
+          closeCustomSelect(wrapper);
+        }
+      });
+
+      select.addEventListener('change', () => {
+        syncCustomSelect(select);
+        if(wrapper.classList.contains('open')) renderCustomSelectOptions(select);
+      });
+
+      const optionObserver = new MutationObserver(() => {
+        syncCustomSelect(select);
+        if(wrapper.classList.contains('open')) renderCustomSelectOptions(select);
+      });
+      optionObserver.observe(select, { childList: true, subtree: true, attributes: true });
+    }
+
+    function enhanceCustomSelects(root = document){
+      const scope = root && root.querySelectorAll ? root : document;
+      if(scope.matches && scope.matches('select.inputx')) enhanceCustomSelect(scope);
+      scope.querySelectorAll('select.inputx').forEach(enhanceCustomSelect);
+    }
+
+    enhanceCustomSelects();
+    const customSelectObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if(node.nodeType === 1) enhanceCustomSelects(node);
+        });
+      });
+    });
+    customSelectObserver.observe(document.body, { childList: true, subtree: true });
+    document.addEventListener('click', () => closeCustomSelect(activeCustomSelect));
+    window.addEventListener('keydown', (event) => {
+      if(event.key === 'Escape') closeCustomSelect(activeCustomSelect);
+    });
 
     function formatDate(ts){
       if(!ts) return '-';

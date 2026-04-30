@@ -145,6 +145,8 @@ server_state = {
 }
 
 server_process = None
+server_stats_process = None
+server_stats_pid = None
 console_lines = []
 MAX_CONSOLE_LINES = 1000
 ragemp_startup_table_active = False
@@ -2833,6 +2835,37 @@ def _get_live_process(pid):
         return None
 
 
+def _reset_server_stats_sampler():
+    global server_stats_process, server_stats_pid
+    server_stats_process = None
+    server_stats_pid = None
+
+
+def _normalize_cpu_usage(value):
+    try:
+        numeric = float(value)
+    except Exception:
+        return 0.0
+    if numeric < 0:
+        return 0.0
+    return round(min(numeric, 100.0), 2)
+
+
+def _sample_server_process_usage(pid):
+    global server_stats_process, server_stats_pid
+
+    pid = int(pid)
+    new_sampler = server_stats_process is None or server_stats_pid != pid
+    if new_sampler:
+        server_stats_process = psutil.Process(pid)
+        server_stats_pid = pid
+
+    interval = 0.1 if new_sampler else None
+    cpu_usage = server_stats_process.cpu_percent(interval=interval)
+    memory_usage = server_stats_process.memory_info().rss / (1024 * 1024)
+    return server_stats_process, _normalize_cpu_usage(cpu_usage), round(float(memory_usage), 2)
+
+
 def sync_server_state_with_system(emit_change=False):
     
     global server_process, server_state, resource_states, connected_players, pending_actions, panel_connector_last_heartbeat
@@ -2872,6 +2905,7 @@ def sync_server_state_with_system(emit_change=False):
         server_state['attached'] = False
         server_state['cpu_usage'] = 0
         server_state['memory_usage'] = 0
+        _reset_server_stats_sampler()
         resource_states = {}
         _finalize_all_connected_sessions(reason='process-missing')
         connected_players = {}
@@ -3090,7 +3124,7 @@ def update_stats():
         sync_server_state_with_system(emit_change=True)
         if server_state['running'] and server_state['pid']:
             try:
-                process = psutil.Process(server_state['pid'])
+                process, cpu_usage, memory_usage = _sample_server_process_usage(server_state['pid'])
 
                 if not process.is_running():
                     add_console_line('!!! PROCESS TERMINATED !!!')
@@ -3102,14 +3136,15 @@ def update_stats():
                     connected_players = {}
                     pending_actions = []
                     panel_connector_last_heartbeat = 0.0
+                    _reset_server_stats_sampler()
                     remove_pid()
                     socketio.emit('server_status', {'running': False})
                     socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
                     _append_runtime_sample(force=True, emit_socket=True)
                     continue
 
-                server_state['cpu_usage'] = process.cpu_percent(interval=None)
-                server_state['memory_usage'] = process.memory_info().rss / (1024 * 1024)
+                server_state['cpu_usage'] = cpu_usage
+                server_state['memory_usage'] = memory_usage
             except psutil.NoSuchProcess:
                 add_console_line('!!! PROCESS NO LONGER EXISTS !!!')
                 server_state['running'] = False
@@ -3120,10 +3155,13 @@ def update_stats():
                 connected_players = {}
                 pending_actions = []
                 panel_connector_last_heartbeat = 0.0
+                _reset_server_stats_sampler()
                 remove_pid()
                 socketio.emit('server_status', {'running': False})
             except Exception:
                 pass
+        else:
+            _reset_server_stats_sampler()
 
         socketio.emit('stats_update', build_runtime_status_payload(include_history=False))
         _append_runtime_sample(force=False, emit_socket=True)
