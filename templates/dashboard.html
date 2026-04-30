@@ -2904,6 +2904,115 @@
       max-width:1920px;
       margin:0 auto;
     }
+    .topbar{
+      display:none !important;
+    }
+    .workspace-hero{
+      position:relative;
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) auto;
+      gap:18px;
+      align-items:end;
+      margin-bottom:16px;
+      padding:18px;
+      border:1px solid rgba(255,255,255,.095);
+      border-radius:24px;
+      background:
+        radial-gradient(620px 240px at 8% 0%, rgba(var(--primary-rgb),.18), transparent 62%),
+        linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.018)),
+        rgba(10,10,12,.70);
+      box-shadow:0 18px 52px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.05);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      overflow:hidden;
+    }
+    .workspace-hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(115deg, transparent 0 36%, rgba(255,255,255,.055) 49%, transparent 62%),
+        linear-gradient(90deg, transparent, rgba(var(--primary-rgb),.42), transparent) top / 100% 1px no-repeat;
+      opacity:.75;
+    }
+    .workspace-copy,
+    .workspace-actions{
+      position:relative;
+      z-index:1;
+    }
+    .workspace-kicker{
+      display:flex;
+      align-items:center;
+      gap:9px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .workspace-dot{
+      width:9px;
+      height:9px;
+      border-radius:999px;
+      background:var(--primary);
+      box-shadow:0 0 0 6px rgba(var(--primary-rgb),.12), 0 0 22px rgba(var(--primary-rgb),.36);
+    }
+    .workspace-page-pill{
+      padding:4px 9px;
+      border-radius:999px;
+      border:1px solid rgba(var(--primary-rgb),.34);
+      background:rgba(var(--primary-rgb),.12);
+      color:#f2dda0;
+      letter-spacing:0;
+      text-transform:none;
+    }
+    #workspaceTitle{
+      margin:10px 0 4px;
+      font-size:clamp(30px, 4vw, 54px);
+      line-height:.95;
+      color:#fff;
+      letter-spacing:-.055em;
+    }
+    #workspaceSubtitle{
+      margin:0;
+      max-width:760px;
+      color:rgba(233,233,238,.72);
+      font-size:14px;
+      line-height:1.55;
+    }
+    .workspace-status-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+    .workspace-status-chip{
+      min-width:0;
+      width:max-content;
+      max-width:100%;
+      padding:9px 11px;
+      border-radius:16px;
+      background:rgba(0,0,0,.24);
+    }
+    .workspace-actions{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(134px, 1fr));
+      gap:9px;
+      min-width:min(360px, 100%);
+    }
+    .workspace-actions .btnx{
+      justify-content:flex-start;
+      min-height:46px;
+      border-radius:15px;
+    }
+    .workspace-actions .btnx:nth-child(3){
+      grid-column:span 2;
+    }
+    .workspace-actions .btnx[data-hero-page]{
+      background:rgba(255,255,255,.045);
+    }
     .sidebar,
     .topbar,
     .cardx,
@@ -2927,13 +3036,25 @@
         linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018)),
         rgba(8,8,10,.80);
     }
-    .topbar{
-      position:sticky;
-      top:12px;
-      z-index:80;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)),
-        rgba(9,9,11,.68);
+    .sidebar-mobile-nav{
+      display:flex;
+      flex-direction:column;
+      padding:8px;
+      margin:0 0 12px;
+      background:rgba(0,0,0,.18);
+    }
+    .sidebar-mobile-nav .nav-item{
+      width:100%;
+      min-height:44px;
+      border-radius:13px;
+    }
+    .sidebar-mobile-nav .nav-item span{
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .top-nav .nav-item::before{
+      display:none;
     }
     .cardx{
       position:relative;
@@ -3073,6 +3194,20 @@
       .app{
         grid-template-columns:260px 1fr;
       }
+      .workspace-hero{
+        grid-template-columns:1fr;
+        align-items:start;
+      }
+      .workspace-actions{
+        width:100%;
+        grid-template-columns:repeat(5, minmax(0, 1fr));
+      }
+      .workspace-actions .btnx:nth-child(3){
+        grid-column:auto;
+      }
+      .workspace-actions .btnx{
+        justify-content:center;
+      }
       .dashboard-overview-layout{
         grid-template-columns:1fr;
       }
@@ -3081,8 +3216,8 @@
       }
     }
     @media (max-width:980px){
-      .topbar{
-        position:static;
+      .workspace-hero{
+        margin-top:0;
       }
       .sidebar{
         background:
@@ -3099,6 +3234,19 @@
       }
     }
     @media (max-width:720px){
+      .workspace-hero{
+        padding:15px;
+        border-radius:20px;
+      }
+      #workspaceTitle{
+        font-size:clamp(28px, 11vw, 42px);
+      }
+      .workspace-actions{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
+      .workspace-actions .btnx:nth-child(3){
+        grid-column:span 2;
+      }
       .cardx-title{
         font-size:14px;
       }
@@ -3123,6 +3271,18 @@
       .main{
         padding-left:6px;
         padding-right:6px;
+      }
+      .workspace-hero{
+        padding:13px;
+      }
+      .workspace-actions{
+        grid-template-columns:1fr;
+      }
+      .workspace-actions .btnx:nth-child(3){
+        grid-column:auto;
+      }
+      .workspace-actions .btnx{
+        justify-content:flex-start;
       }
       .cardx{
         border-radius:15px;
@@ -3289,7 +3449,35 @@
 
     
     <main class="main">
-      <div class="topbar">
+      <header class="workspace-hero">
+        <div class="workspace-copy">
+          <div class="workspace-kicker">
+            <span class="workspace-dot"></span>
+            <span>RageAdmin Control Center</span>
+            <span class="workspace-page-pill" id="workspacePagePill">Dashboard</span>
+          </div>
+          <h1 id="workspaceTitle">Dashboard</h1>
+          <p id="workspaceSubtitle">Live server overview, player signals, restarts, and update status in one place.</p>
+          <div class="workspace-status-row">
+            <div class="status-chip workspace-status-chip">
+              <span class="dot" id="statusDot"></span>
+              <div>
+                <div class="title" id="statusTitle">Server Offline</div>
+                <div class="desc" id="statusDesc">Start the server to go online.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="workspace-actions">
+          <button class="btnx success" id="btnHeroStart"><i class="fa-solid fa-play"></i> <span data-i18n="btn_start">Start</span></button>
+          <button class="btnx primary" id="btnHeroRestart"><i class="fa-solid fa-rotate"></i> <span data-i18n="btn_restart">Restart</span></button>
+          <button class="btnx warning" id="btnHeroQuickRestart"><i class="fa-solid fa-bolt"></i> <span>Quick Restart</span></button>
+          <button class="btnx" data-hero-page="console"><i class="fa-solid fa-terminal"></i> <span data-i18n="nav_console">Console</span></button>
+          <button class="btnx" data-hero-page="files"><i class="fa-solid fa-folder-open"></i> <span data-i18n="nav_files">Files</span></button>
+        </div>
+      </header>
+
+      <div class="topbar" aria-hidden="true">
         <nav class="nav top-nav">
           <div class="nav-item active" data-page="dashboard"><i class="fa-solid fa-chart-simple"></i> <span data-i18n="nav_dashboard">Dashboard</span></div>
           <div class="nav-item" data-page="console"><i class="fa-solid fa-terminal"></i> <span data-i18n="nav_console">Console</span></div>
@@ -4570,6 +4758,54 @@
       'admin': 'pageAdmin'
     };
 
+    const workspacePageMeta = {
+      dashboard: {
+        title: 'Dashboard',
+        pill: 'Overview',
+        subtitle: 'Live server overview, player signals, restarts, and update status in one place.'
+      },
+      console: {
+        title: 'Console',
+        pill: 'Operations',
+        subtitle: 'Read live server output, inspect history, and send commands without leaving the panel.'
+      },
+      files: {
+        title: 'Files',
+        pill: 'Workspace',
+        subtitle: 'Browse, upload, edit, archive, and maintain the RAGE:MP server directory safely.'
+      },
+      settings: {
+        title: 'Settings',
+        pill: 'Configuration',
+        subtitle: 'Tune panel settings, RAGE:MP conf.json values, restart schedules, and Discord integration.'
+      },
+      logs: {
+        title: 'Logs',
+        pill: 'Audit',
+        subtitle: 'Review user actions and operational history with a focused audit view.'
+      },
+      players: {
+        title: 'Players',
+        pill: 'Moderation',
+        subtitle: 'Track online and saved player profiles, warnings, notes, bans, and admin messages.'
+      },
+      admin: {
+        title: 'Admin',
+        pill: 'Access',
+        subtitle: 'Manage panel users, roles, and permissions.'
+      }
+    };
+
+    function updateWorkspaceHeader(pageId){
+      const meta = workspacePageMeta[pageId] || workspacePageMeta.dashboard;
+      const title = document.getElementById('workspaceTitle');
+      const subtitle = document.getElementById('workspaceSubtitle');
+      const pill = document.getElementById('workspacePagePill');
+      if(title) title.textContent = meta.title;
+      if(subtitle) subtitle.textContent = meta.subtitle;
+      if(pill) pill.textContent = meta.pill;
+    }
+
     function setPageNavVisibility(pageId, visible){
       document.querySelectorAll(`.nav-item[data-page="${pageId}"]`).forEach(item => {
         item.style.display = visible ? '' : 'none';
@@ -4603,6 +4839,7 @@
       panelConfigDirty = false;
       discordConfigDirty = false;
       currentPage = pageId;
+      updateWorkspaceHeader(pageId);
 
       document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
       const target = document.getElementById(pageMap[pageId] || pageId);
@@ -5197,6 +5434,8 @@
       if(quickRestartActions) quickRestartActions.hidden = !quickRestartActive;
       const quickRestartTrigger = document.getElementById('btnQuickRestart');
       if(quickRestartTrigger) quickRestartTrigger.hidden = quickRestartActive;
+      const heroQuickRestartTrigger = document.getElementById('btnHeroQuickRestart');
+      if(heroQuickRestartTrigger) heroQuickRestartTrigger.hidden = quickRestartActive;
       setButtonDisabled('btnQuickRestartEdit', !quickRestartActive);
       setButtonDisabled('btnQuickRestartCancel', !quickRestartActive);
       const nextRestartCountdown = document.getElementById('nextRestartCountdown');
@@ -5388,6 +5627,8 @@
       setButtonDisabled('btnDashStop', !running);
       setButtonDisabled('btnDashRestart', !running);
       setButtonDisabled('btnDashAnnounce', !running);
+      setButtonDisabled('btnHeroStart', running);
+      setButtonDisabled('btnHeroRestart', !running);
     }
 
     async function apiPost(url, body){
@@ -8475,10 +8716,16 @@
     bindClick('btnDashStop', stopServer);
     bindClick('btnDashRestart', restartServer);
     bindClick('btnDashAnnounce', broadcastMessage);
+    bindClick('btnHeroStart', startServer);
+    bindClick('btnHeroRestart', restartServer);
+    bindClick('btnHeroQuickRestart', scheduleQuickRestart);
     bindClick('btnQuickRestart', scheduleQuickRestart);
     bindClick('btnQuickRestartEdit', editQuickRestart);
     bindClick('btnQuickRestartCancel', cancelQuickRestart);
     bindClick('btnOpenScheduleSecondary', openScheduledRestartPanel);
+    document.querySelectorAll('[data-hero-page]').forEach(btn => {
+      btn.addEventListener('click', () => switchPage(btn.getAttribute('data-hero-page')));
+    });
     const btnRefreshStatus = document.getElementById('btnRefreshStatus');
     if(btnRefreshStatus) btnRefreshStatus.addEventListener('click', () => runWithLoading(btnRefreshStatus, () => fetchStatus(true)));
 
